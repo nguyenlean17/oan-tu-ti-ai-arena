@@ -20,6 +20,7 @@ Python strategies compete on the same 9×9 board and shared rules as the existin
 Students work with Python files, SDK examples, legal moves, match histories and competition rankings. Repository: https://github.com/nguyenlean17/network-programming.
 
 ## Capabilities and Constraints
+The Play section supports human hotseat/free play, human vs built-in strategies, human vs an owned/draft Python bot, and server-authoritative friend rooms with invite links. Friend games use the existing Site audience; invitations do not grant access. Python human opponents run in a persistent isolated worker with a 2-second move limit. These casual games never affect official rankings.
 Reuse FRONTLINE placement, P1 goal I1, P2 goal A9, king moves and ROCK/PAPER/SCISSORS capture rules. Proposed tournament defaults: maximum 200 plies, side-swapped fixtures, 3/1/0 scoring. Cloud records persist in D1. Browser-run Python practice results are untrusted and cannot become official scores. Official submitted-bot tournament execution requires the supplied external sandbox runner. The hosted app must clearly distinguish practice, reference-bot exhibition, and official results.
 
 ## Brand Commitments

@@ -20,6 +20,9 @@ The Site starts owner-private. Sign in with the owning ChatGPT account. Site vis
 - Personal practice rankings; server-run reference exhibitions with swapped sides.
 - Tournament creation, registration deadlines, version-pinned entries and submission locks.
 - Responsive interface, keyboard navigation, reduced-motion support and Vietnamese API documentation.
+- **Chơi trực tiếp**: no-bot hotseat/free play, human vs Greedy/Random AI, human vs your own saved/draft Python bot, and invite-based online 1v1 rooms.
+- Clickable board with legal-move highlights, keyboard controls, undo in local play, perspective switching, and downloadable game records.
+- Friend games validate moves, turn ownership, room membership, and revision conflicts on the server; casual games never affect tournament rankings.
 
 ## Run locally
 
@@ -29,6 +32,7 @@ Node 22.13+:
 npm ci
 npm run build
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_dry_shocker.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_first_mercury.sql
 npm run dev
 ```
 
@@ -41,6 +45,19 @@ npx tsc --noEmit
 ```
 
 `check:python` requires Python 3 on PATH (or `OTT_PYTHON`). It checks that the browser Python engine produces a replay accepted by the original JavaScript rules.
+
+To check friend-room concurrency and authorization with separate simulated identities, start the **built** Worker with `npm start -- --port 5174`, then run `npm run test:rooms`. The test only accepts loopback URLs. The production dispatcher supplies real identities; these test headers are never a browser authentication mechanism. The development preview intentionally uses only its fixed Seedy identity.
+
+## Play the game yourself
+
+Open **Chơi trực tiếp** or `/?play=1`:
+
+- **Chơi tự do**: both sides on one device, no bots, with undo and a new-game button.
+- **Đấu với máy**: choose Greedy/Random and P1/P2; the computer moves automatically on its turns.
+- **Đấu bot của tôi**: select a submitted version or the current editor draft. Python stays loaded for the game, receives fresh state each turn, and has a 2-second move deadline. Code initialization has a 5-second deadline after the runtime loads. Invalid moves or bot errors forfeit the casual game.
+- **1v1 với bạn**: create a room, copy its invitation URL, and have a friend join with a different account. The app polls for authoritative state, rejects stale/duplicate moves, and supports resignation. Rooms expire after 24 hours; each host can keep five unfinished rooms. A friend invitation does not grant access to the private Site: the owner must grant the friend Site access separately. Both users can return through the same room link while it remains valid.
+
+Human games currently have a downloadable JSON record rather than being added to tournament/practice rankings. Reloading resets unsaved local/computer/Python games; online rooms persist in D1.
 
 ## Organizer setup
 
