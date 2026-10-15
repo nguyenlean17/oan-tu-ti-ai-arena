@@ -1,0 +1,8 @@
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+export const profiles=sqliteTable('profiles',{id:text('id').primaryKey(),name:text('name').notNull(),team:text('team').notNull().default(''),created:text('created').notNull()});
+export const bots=sqliteTable('bots',{id:text('id').primaryKey(),owner:text('owner').notNull(),name:text('name').notNull(),description:text('description').notNull(),code:text('code').notNull(),hash:text('hash').notNull(),version:integer('version').notNull(),status:text('status').notNull(),created:text('created').notNull()});
+export const matches=sqliteTable('matches',{id:text('id').primaryKey(),owner:text('owner').notNull(),botId:text('bot_id'),opponent:text('opponent').notNull(),name:text('name').notNull(),replay:text('replay').notNull(),kind:text('kind').notNull(),created:text('created').notNull()});
+export const tournaments=sqliteTable('tournaments',{id:text('id').primaryKey(),name:text('name').notNull(),description:text('description').notNull(),status:text('status').notNull(),deadline:text('deadline').notNull(),created:text('created').notNull()});
+export const registrations=sqliteTable('registrations',{id:text('id').primaryKey(),owner:text('owner').notNull(),tournamentId:text('tournament_id').notNull(),botId:text('bot_id').notNull(),created:text('created').notNull()});
+export const settings=sqliteTable('settings',{key:text('key').primaryKey(),value:text('value').notNull()});
+export const audit=sqliteTable('audit',{id:text('id').primaryKey(),owner:text('owner').notNull(),action:text('action').notNull(),created:text('created').notNull()});
