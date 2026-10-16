@@ -19,7 +19,7 @@ export async function GET(){try{
   ]);
   const isAdmin=admin?.value===user.userId;
   const audit=isAdmin?await db.prepare('SELECT * FROM audit ORDER BY created DESC LIMIT 20').all():{results:[]};
-  return json({profile,bots:bots.results,matches:matches.results.map((m:any)=>({...m,replay:JSON.parse(m.replay)})),tournaments:tournaments.results,registrations:registrations.results,isAdmin,canSetup:!admin,counts,audit:audit.results});
+  return json({profile,bots:bots.results,matches:matches.results.map((m:any)=>({...m,replay:JSON.parse(m.replay)})),tournaments:tournaments.results,registrations:registrations.results,isAdmin,canSetup:!admin&&user.canBootstrap,counts,audit:audit.results});
 }catch(e){return json({error:e instanceof Error&&e.message==='AUTH'?'Vui lòng đăng nhập để lưu dữ liệu.':'Không thể tải dữ liệu. Hãy thử lại.'},e instanceof Error&&e.message==='AUTH'?401:503);}}
 export async function POST(request:Request){try{
   const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)return json({error:'Origin không hợp lệ.'},403);
@@ -46,8 +46,9 @@ export async function POST(request:Request){try{
     if(await db.prepare('SELECT id FROM registrations WHERE tournament_id=? AND owner=?').bind(t.id,user.userId).first())throw new Error('Bạn đã đăng ký giải này.');
     await db.prepare('INSERT INTO registrations(id,owner,tournament_id,bot_id,created) VALUES(?,?,?,?,?)').bind(id(),user.userId,t.id,body.botId,stamp).run();
   }else if(body.action==='setup'){
+    if(!user.canBootstrap)return json({error:'Chủ máy chủ cần cấp quyền quản trị cho tài khoản này.'},403);
     if(admin)throw new Error('Đã có người quản trị.');
-    // Bootstrap is exposed only inside the owner-private Site access boundary.
+    // Sites uses its owner-private boundary; Docker requires an explicit CLI grant.
     await db.prepare("INSERT OR IGNORE INTO settings(key,value) VALUES('admin',?)").bind(user.userId).run();
   }else{
     if(admin?.value!==user.userId)return json({error:'Chỉ ban tổ chức được thực hiện thao tác này.'},403);

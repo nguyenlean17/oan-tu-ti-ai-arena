@@ -4,6 +4,7 @@ import { ArrowRight,ArrowUpRight,Bot,Check,Copy,Download,Flag,Gamepad2,Hand,Hexa
 import { legalMoves,referenceMove } from '../lib/engine.mjs';
 import { newGame,playTurn,replayGame,botState } from '../lib/player-game.mjs';
 import { createPythonPlayer } from '../lib/python-player';
+import { BOT_EXAMPLES } from '../lib/bot-examples';
 
 const MODES=[{id:'local',label:'Chơi tự do',icon:Gamepad2},{id:'computer',label:'Đấu với máy',icon:Bot},{id:'python',label:'Đấu bot của tôi',icon:Scissors},{id:'friend',label:'1v1 với bạn',icon:Users}];
 const PIECES:Record<string,string>={ROCK:'Đấm',PAPER:'Lá',SCISSORS:'Kéo'};
@@ -48,7 +49,7 @@ export default function PlayGame({bots,draft,user,onEdit}:{bots:any[],draft:stri
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
   const [room,setRoom]=useState<any>(null),[roomInput,setRoomInput]=useState(''),[copied,setCopied]=useState(false),[onlineError,setOnlineError]=useState('');
   const player=useRef<ReturnType<typeof createPythonPlayer>|null>(null),epoch=useRef(0);
-  const bot=bots.find(b=>b.id===botId),pythonName=bot?.name||'Bot Python bản nháp';
+  const bot=bots.find(b=>b.id===botId),pythonName=bot?.name||BOT_EXAMPLES.find(b=>`example:${b.id}`===botId)?.name||'Bot Python bản nháp';
   const current=mode==='friend'&&room?room.game:game;
   const canPlay=mode==='friend'?room?.status==='playing'&&room.role===current.turn&&!busy:started&&current.status==='playing'&&!busy&&(mode==='local'||current.turn===side);
   const isFriend=mode==='friend',isPython=mode==='python';
@@ -85,7 +86,9 @@ export default function PlayGame({bots,draft,user,onEdit}:{bots:any[],draft:stri
     cancel();const version=epoch.current;setError('');setGame(newGame());setStarted(false);
     if(isPython){
       setBusy(true);setMessage('Đang tải Python. Lần đầu có thể mất một phút…');
-      try{const runner=createPythonPlayer(bot?.code||draft,setMessage);player.current=runner;await runner.ready;if(version!==epoch.current)return;setMessage('');}
+      try{let source=bot?.code||draft;
+        if(botId.startsWith('example:')){const sample=BOT_EXAMPLES.find(b=>`example:${b.id}`===botId);if(!sample)throw new Error('Không tìm thấy bot mẫu.');const response=await fetch(`/bots/${sample.id}.py`);if(!response.ok)throw new Error('Không tải được bot mẫu. Hãy thử lại.');source=await response.text();if(version!==epoch.current)return;}
+        const runner=createPythonPlayer(source,setMessage);player.current=runner;await runner.ready;if(version!==epoch.current)return;setMessage('');}
       catch(e){if(version===epoch.current){setError((e as Error).message);setBusy(false);}return;}
     }
     if(version===epoch.current){setBusy(false);setStarted(true);}
@@ -141,7 +144,7 @@ export default function PlayGame({bots,draft,user,onEdit}:{bots:any[],draft:stri
       {onlineError?<p className="connection-error" role="status">{onlineError} Đang tự kết nối lại…</p>:null}
     </section>:<section className="surface human-config">
       {mode==='local'?<div className="local-description"><Users size={22}/><div><strong>Hai người, cùng một thiết bị.</strong><p>Không có bot. Luân phiên điều khiển P1 và P2, hoặc tự thử cả hai phía.</p></div></div>:<>
-        {isPython?<label>Bot của bạn<select value={botId} disabled={busy} onChange={e=>configure(()=>setBotId(e.target.value))}><option value="draft">Bot Python · bản nháp hiện tại</option>{bots.map(b=><option key={b.id} value={b.id}>{b.name} · v{b.version}</option>)}</select></label>:<label>Đối thủ máy<select value={strategy} onChange={e=>configure(()=>setStrategy(e.target.value))}><option value="greedy">Greedy Bot · tiến về đích</option><option value="random">Random Bot · ngẫu nhiên</option></select></label>}
+        {isPython?<label>Bot của bạn<select value={botId} disabled={busy} onChange={e=>configure(()=>setBotId(e.target.value))}><option value="draft">Bot Python · bản nháp hiện tại</option>{BOT_EXAMPLES.map(b=><option key={b.id} value={`example:${b.id}`}>{b.name} · bot mẫu</option>)}{bots.map(b=><option key={b.id} value={b.id}>{b.name} · v{b.version}</option>)}</select></label>:<label>Đối thủ máy<select value={strategy} onChange={e=>configure(()=>setStrategy(e.target.value))}><option value="greedy">Greedy Bot · tiến về đích</option><option value="random">Random Bot · ngẫu nhiên</option></select></label>}
         <label>Bạn cầm quân<select value={side} onChange={e=>configure(()=>{setSide(e.target.value);setFlipped(e.target.value==='P2');})}><option value="P1">P1 · đi trước</option><option value="P2">P2 · đi sau</option></select></label>
       </>}
       <button className="button dark" disabled={busy} onClick={begin}>{busy?<LoaderCircle size={16} className="spin"/>:<Gamepad2 size={17}/>} {started?'Ván mới':'Bắt đầu chơi'}</button>

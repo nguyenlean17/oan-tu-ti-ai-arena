@@ -1,0 +1,25 @@
+name: oan-tu-ti-arena
+services:
+  app:
+    build: .
+    image: oan-tu-ti-arena:local
+    init: true
+    ports:
+      - "127.0.0.1:${ARENA_PORT:-3000}:3000"
+    environment:
+      PUBLIC_ORIGIN: "${PUBLIC_ORIGIN:-http://localhost:3000}"
+      DATA_DIR: /data
+      SITES_RUNTIME_ROOT: /data/runtime
+    volumes:
+      - arena-data:/data
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+volumes:
+  arena-data:

@@ -14,7 +14,9 @@
     "db:generate": "drizzle-kit generate",
     "test": "node tests/engine.test.mjs && node tests/player-game.test.mjs",
     "test:rooms": "node tests/rooms.test.mjs",
-    "check:python": "node scripts/check-sandbox.mjs"
+    "check:python": "node scripts/check-sandbox.mjs",
+    "test:bots": "node tests/bots.test.mjs",
+    "test:docker": "node tests/docker.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

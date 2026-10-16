@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./play.css";
+import "./bot-library.css";
 
 export const metadata: Metadata = {
   title: "Oẳn Tù Tì 2.0 — AI Coding Arena",

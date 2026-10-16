@@ -31,3 +31,6 @@ The 9-page proposal PDF and existing repository engine, tests, and README. No re
 
 ## Product Principles
 Make writing and testing a first bot immediate. Keep results reproducible and inspectable. Never execute student Python inside the web server. Do not invent participation or official results.
+
+## Self-hosted Docker copy
+The Docker copy runs the same app behind an email/password gateway with persistent SQLite accounts and server-side sessions. Accounts and data are independent from Sites. Organizer bootstrap needs an explicit host-owner CLI grant. Three labeled Python samples (Sprinter, Guardian, Tactician) can be loaded, downloaded, or selected for human play.

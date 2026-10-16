@@ -24,6 +24,12 @@ The Site starts owner-private. Sign in with the owning ChatGPT account. Site vis
 - Clickable board with legal-move highlights, keyboard controls, undo in local play, perspective switching, and downloadable game records.
 - Friend games validate moves, turn ownership, room membership, and revision conflicts on the server; casual games never affect tournament rankings.
 
+## Docker with email/password login
+
+Run `docker compose up --build -d` and open **http://localhost:3000**. Register your own account; accounts and game data persist in a named volume. See [Docker setup, security, organizer access and tests](docker/README.md). The existing Sites deployment retains ChatGPT sign-in.
+
+Three standalone Python examples are included in `public/bots/`: **Sprinter**, **Guardian** and **Tactician**. Load/download them in the bot editor, or select one directly for human-vs-Python play.
+
 ## Run locally
 
 Node 22.13+:

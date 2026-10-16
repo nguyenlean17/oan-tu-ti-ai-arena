@@ -1,11 +1,13 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { env } from 'cloudflare:workers';
 
 export type ChatGPTUser = {
   userId: string;
   displayName: string;
   email: string;
   fullName: string | null;
+  canBootstrap: boolean;
 };
 
 const USER_ID_HEADER = "oai-authenticated-user-id";
@@ -36,6 +38,7 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
     displayName: fullName ?? email,
     email,
     fullName,
+    canBootstrap: (env as unknown as Record<string, unknown>).ARENA_AUTH_PROVIDER !== 'docker' || requestHeaders.get('x-arena-bootstrap') === '1',
   };
 }
 
