@@ -3,7 +3,10 @@ import { randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 
 const base=process.env.OTT_DOCKER_URL||'http://localhost:3000';
-if(!['localhost','127.0.0.1','::1'].includes(new URL(base).hostname))throw new Error('Docker checks only run against loopback.');
+const target=new URL(base);
+const local=['localhost','127.0.0.1','::1'].includes(target.hostname);
+const deployed=process.env.OTT_ALLOW_VERCEL_TESTS==='1'&&target.protocol==='https:'&&target.hostname.endsWith('.vercel.app');
+if(!local&&!deployed)throw new Error('Account checks require loopback or explicit permission for an HTTPS Vercel test deployment.');
 class Client{
   jar=new Map();csrf='';
   async request(path,options={}){
@@ -27,6 +30,7 @@ const csrf=await anonymous.form('register',credentials,{csrf:'a'.repeat(64)});as
 const invalid=await anonymous.form('register',{...credentials,password:'short',confirm:'short'});assert.equal(invalid.status,400);
 const registered=await a.form('register',{...credentials,confirm:credentials.password});assert.equal(registered.status,303,registered.text);
 const sessionCookie=registered.headers.getSetCookie().find(v=>v.startsWith('arena_session='));assert.match(sessionCookie,/HttpOnly/);assert.match(sessionCookie,/SameSite=Lax/);assert.match(sessionCookie,/Max-Age=604800/);
+if(deployed)assert.match(sessionCookie,/Secure/);
 const firstToken=a.jar.get('arena_session');assert.ok(firstToken);
 const second={email:`qa-friend-${nonce}@example.test`,name:'QA Docker B',password:randomBytes(18).toString('base64url')};
 assert.equal((await b.form('register',{...second,confirm:second.password})).status,303);
@@ -60,4 +64,4 @@ let limited=false;
 for(let i=0;i<11;i++){const r=await anonymous.form('login',{email:`qa-missing-${nonce}@example.test`,password:'incorrect-password'});if(r.status===429){limited=true;assert.equal(r.headers.get('retry-after'),'900');break;}assert.equal(r.status,401);}
 assert.ok(limited,'Repeated login attempts must be limited');
 await a.form('logout',{});await b.form('logout',{});
-console.log('Docker login checks passed: registration, password checks, CSRF, cookie flags, session rotation/revocation, persistent user data, account isolation, friend turns, no automatic admin, spoofed identity rejection and rate limits.');
+console.log('Account checks passed: registration, password checks, CSRF, cookie flags, session rotation/revocation, persistent user data, account isolation, friend turns, no automatic admin, spoofed identity rejection and rate limits.');

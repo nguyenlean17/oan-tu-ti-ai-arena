@@ -4,6 +4,8 @@ dist
 .wrangler
 .sites-runtime
 .next
+.next-vercel
+.vercel
 .vinext
 .env*
 .agents

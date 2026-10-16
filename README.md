@@ -2,11 +2,12 @@
 
 Vietnamese-first programming-tournament MVP, built on the existing 9×9 game rules from `nguyenlean17/network-programming`.
 
-## Live site
+## Live sites
 
-https://oan-tu-ti-arena.wittylarch64.chatgpt.site
+- **Vercel (public):** https://oan-tu-ti-ai-arena.vercel.app — email/password accounts stored in Neon Postgres.
+- **ChatGPT Sites (owner-private):** https://oan-tu-ti-arena.wittylarch64.chatgpt.site — sign in with the owning ChatGPT account.
 
-The Site starts owner-private. Sign in with the owning ChatGPT account. Site visibility is controlled by the hosting platform, independently of the GitHub repository.
+The Sites deployment starts owner-private and its visibility is controlled by the hosting platform, independently of the GitHub repository. Vercel deployment protection (SSO) is turned off for this project so the production URL is reachable without a Vercel login; the app still requires its own account. Re-enable it with `vercel project protection enable --sso` if the site should be private. Accounts and records are separate per platform.
 
 ## Included
 
@@ -23,6 +24,10 @@ The Site starts owner-private. Sign in with the owning ChatGPT account. Site vis
 - **Chơi trực tiếp**: no-bot hotseat/free play, human vs Greedy/Random AI, human vs your own saved/draft Python bot, and invite-based online 1v1 rooms.
 - Clickable board with legal-move highlights, keyboard controls, undo in local play, perspective switching, and downloadable game records.
 - Friend games validate moves, turn ownership, room membership, and revision conflicts on the server; casual games never affect tournament rankings.
+
+## Vercel hosting
+
+A native Next.js deployment uses Neon Postgres for persistent accounts and game records. See [Vercel setup and deployment](deploy/VERCEL.md). The same interface and Python bots work across Vercel, Docker, and Sites; their accounts/data are separate.
 
 ## Docker with email/password login
 

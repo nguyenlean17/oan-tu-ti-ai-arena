@@ -1,5 +1,5 @@
 import { getChatGPTUser } from '../../chatgpt-auth';
-import { env } from 'cloudflare:workers';
+import { env } from '@/lib/platform';
 import { simulate,verifyReplay } from '../../../lib/engine.mjs';
 export const dynamic='force-dynamic';
 const json=(v:unknown,status=200)=>Response.json(v,{status,headers:{'Cache-Control':'no-store'}});

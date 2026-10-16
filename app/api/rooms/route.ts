@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers';
+import { env } from '@/lib/platform';
 import { getChatGPTUser } from '../../chatgpt-auth';
 import { replayGame,playTurn } from '../../../lib/player-game.mjs';
 

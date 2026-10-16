@@ -15,6 +15,8 @@
 
 # next.js
 /.next/
+/.next-vercel/
+/.vercel/
 /.vinext/
 /out/
 
@@ -49,9 +51,14 @@ next-env.d.ts
 
 /dist/
 /.wrangler/
+# Vercel CLI global config copy used by agent runs; never commit credentials.
+/.vercel-global/
 # Checkout-local execution profile and tool state; never publish them.
 /.sites-runtime/
 /.agents/
 /.codex/
 /outputs/
 /work/
+
+.vercel
+.env*

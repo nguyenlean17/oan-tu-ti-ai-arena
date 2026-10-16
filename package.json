@@ -16,11 +16,16 @@
     "test:rooms": "node tests/rooms.test.mjs",
     "check:python": "node scripts/check-sandbox.mjs",
     "test:bots": "node tests/bots.test.mjs",
-    "test:docker": "node tests/docker.test.mjs"
+    "test:docker": "node tests/docker.test.mjs",
+    "build:vercel": "node scripts/run-vercel.mjs build --webpack",
+    "dev:vercel": "node scripts/run-vercel.mjs dev --webpack",
+    "start:vercel": "node scripts/run-vercel.mjs start",
+    "test:postgres": "node tests/postgres.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "@hookform/resolvers": "^5.7.1",
+    "@neondatabase/serverless": "^1.2.0",
     "@shadcn/react": "^0.3.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",

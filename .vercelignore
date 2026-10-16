@@ -1,0 +1,15 @@
+.git
+.vercel-global
+node_modules
+dist
+.next
+.next-vercel
+.vinext
+.wrangler
+.sites-runtime
+.env*
+outputs
+work
+*.tsbuildinfo
+*.tar.gz
+**/__pycache__
