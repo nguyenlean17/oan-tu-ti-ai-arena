@@ -5,6 +5,7 @@ dist
 .sites-runtime
 .next
 .next-vercel
+.next-docker
 .vercel
 .vinext
 .env*
@@ -12,6 +13,11 @@ dist
 .codex
 outputs
 work
+.secrets
+output
+tmp
+backups
+.impeccable
 *.tsbuildinfo
 *.tar.gz
 **/__pycache__

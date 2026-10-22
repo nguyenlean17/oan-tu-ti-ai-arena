@@ -3,6 +3,7 @@
 From the repository root:
 
 ```sh
+npm run competition:init
 docker compose up --build -d
 ```
 
@@ -10,11 +11,11 @@ Open **http://localhost:3000**, choose **Đăng nhập → Tạo tài khoản**,
 
 The Docker copy has independent accounts and data. The existing ChatGPT Sites deployment keeps its platform sign-in. The Docker copy uses the same application, board rules, API, browser Python sandbox, and friend rooms.
 
-The `arena-data` named volume stores the password/session database and the local D1 application database. Restarting or rebuilding preserves them. `docker compose down` stops the app without removing the volume. Avoid `docker compose down -v` unless you intend to erase that copy's accounts and games.
+The `arena-data` named volume stores `auth.sqlite`, `competition.sqlite` and `casual.sqlite`. Restarting or rebuilding preserves them. Previous Docker D1 data is copied to the new casual SQLite database, with the original retained. `docker compose down` stops services without removing the volume. Avoid `docker compose down -v` unless you intend to erase that copy's accounts and games. Full tournament instructions: [Vietnamese manual](../docs/HUONG_DAN_SU_DUNG.md).
 
 Passwords are salted with random 16-byte salts and hashed using Node scrypt (N=32768, r=8, p=1). Sessions use random 32-byte tokens; only SHA-256 token hashes are stored. Session cookies are HttpOnly, SameSite=Lax, and expire after seven days. Login/signup have persistent per-email and per-IP limits; authentication forms use CSRF tokens, and all mutation requests must come from `PUBLIC_ORIGIN`. Logout revokes the current session on the server. User identity headers are stripped at the gateway and rebuilt from the verified session. The internal Worker only listens on the container's loopback interface.
 
-The default published port binds to the host's loopback address. For a different port, set both `ARENA_PORT` and `PUBLIC_ORIGIN`, for example `ARENA_PORT=3001` and `PUBLIC_ORIGIN=http://localhost:3001`. A remote deployment needs a TLS reverse proxy, the corresponding HTTPS `PUBLIC_ORIGIN`, and deliberate network exposure. HTTPS origins enable Secure cookies. Do not publish the internal Worker port. The bundled local Wrangler/Miniflare runtime is intended for development and demos; this is not a replacement for managed production hosting.
+The default published port binds to the host's loopback address. For a different port, set both `ARENA_PORT` and `PUBLIC_ORIGIN`, for example `ARENA_PORT=3001` and `PUBLIC_ORIGIN=http://localhost:3001`. The Docker image now runs Next.js production on loopback 8787 behind the gateway, not the Wrangler development server. A public deployment needs HTTPS and its exact `PUBLIC_ORIGIN`; the optional Caddy override is in `deploy/compose.public.yaml`. Never publish the internal web port or mount Docker socket into judge. Each bot runs in a separate Wasmtime/CPython WASI process with read-only stdlib and no network capabilities.
 
 ## Organizer access
 
@@ -24,7 +25,7 @@ Registration never grants organizer rights automatically. Register your account 
 docker compose exec app node docker/admin.mjs your@email.com
 ```
 
-Open **Ban tổ chức**, select **Thiết lập quản trị**, and claim organizer setup. Only the explicitly granted account can bootstrap; existing organizer ownership remains unchanged.
+For the official tournament, open `/competition` then **Ban tổ chức**; the CLI grant applies directly. The old practice organizer screen has its own **Thiết lập quản trị** bootstrap and cannot publish official tournament results.
 
 ## Bots
 

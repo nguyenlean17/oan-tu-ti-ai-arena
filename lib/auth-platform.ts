@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { env } from './platform';
+import { env } from '@/lib/platform';
 
 export type ChatGPTUser = {
   userId: string;

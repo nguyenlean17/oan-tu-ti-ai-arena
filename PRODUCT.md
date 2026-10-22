@@ -5,7 +5,11 @@
 web
 
 ## Stack
-React and Vinext on Cloudflare Workers, D1 persistence, isolated browser Python practice runner. The original board-game engine is reused from the supplied GitHub repository.
+Docker: Next.js production, Node session/control gateway, SQLite WAL and a separate Wasmtime/CPython WASI judging worker. Legacy practice deployments use Next.js/Neon on Vercel or Vinext/D1 on Sites. The original board-game engine is reused.
+
+## Official tournament workspace
+
+`/competition` on Docker supports roster invitations, immutable Python submissions, approved public GitHub commit imports, config JSON, balanced groups, side-swapped series, knockout brackets, authoritative replays, publication, exports, queue leases, heartbeat and bounded retries. Organizer rights require an explicit host-owner CLI grant. Source is executed only inside a read-only capability-limited WebAssembly guest. Practice results do not enter official standings. The initial capacity evidence is a 16-team/62-game end-to-end run; 4,000 concurrent entrants have not been certified. Preserve the incumbent visual system; operate-mode tables, clear states and direct actions take precedence over decoration.
 
 ## Users
 Vietnamese students writing Python strategy bots, and tournament organizers reviewing submissions and running competitions.

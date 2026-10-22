@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { openStore, authenticate, register, sessionUser, newSession, consumeAttempt, digest } from './auth-store.mjs';
 import { authPage } from './auth-view.mjs';
+import { competitionHandler } from '../competition/http.mjs';
 
 const safeReturn = value => {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\r\n]/.test(value)) return '/';
@@ -18,6 +19,7 @@ export async function startGateway({ port = Number(process.env.PORT || 3000), or
   origin = publicUrl.origin;
   const secure = publicUrl.protocol === 'https:' ? '; Secure' : '';
   const db = openStore(directory), css = readFileSync(new URL('./auth.css', import.meta.url));
+  const competition = competitionHandler(directory);
   const cookie = (name, token, ttl = 604800) => `${name}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ttl}${secure}`;
   const server = createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -30,9 +32,11 @@ export async function startGateway({ port = Number(process.env.PORT || 3000), or
         const r = await fetch(upstream + '/favicon.svg', { signal: AbortSignal.timeout(3000) }); await r.arrayBuffer();
         db.prepare('SELECT 1').get(); send(r.ok ? 200 : 503, r.ok ? 'ok' : 'unavailable'); return;
       }
+      if (url.pathname === '/api/judge') { await competition.handle(req, res, url, null); return; }
       if (req.headers.host !== publicUrl.host) { send(421, `Open the arena at ${origin}`); return; }
       if (url.pathname === '/auth.css') { send(200, css, 'text/css; charset=utf-8'); return; }
       const jar = cookies(req), user = sessionUser(db, jar.arena_session);
+      // Worker requests use a separate secret, never browser identity or cookies.
       if (url.pathname === '/signin-with-chatgpt') { redirect('/login?return_to=' + encodeURIComponent(safeReturn(url.searchParams.get('return_to')))); return; }
       if (url.pathname === '/signout-with-chatgpt') { redirect('/logout'); return; }
       const mode = url.pathname.slice(1), isAuth = ['login', 'register', 'logout'].includes(mode);
@@ -49,6 +53,7 @@ export async function startGateway({ port = Number(process.env.PORT || 3000), or
         form(); return;
       }
       if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && (req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site')) { send(403, 'Yêu cầu không hợp lệ. Mở lại trang rồi thử lại.'); req.resume(); return; }
+      if (await competition.handle(req, res, url, user)) return;
       if (isAuth) {
         if (req.method !== 'POST') { send(405, 'Method not allowed'); return; }
         if (!(req.headers['content-type'] || '').startsWith('application/x-www-form-urlencoded')) { send(415, 'Unsupported form'); req.resume(); return; }
@@ -104,7 +109,7 @@ export async function startGateway({ port = Number(process.env.PORT || 3000), or
   });
   server.requestTimeout = 15000;
   server.headersTimeout = 10000;
-  server.on('close', () => db.close());
+  server.on('close', () => { db.close(); competition.close(); });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '0.0.0.0', resolve); });
   return server;
 }

@@ -52,7 +52,9 @@ export function sessionUser(db, token) {
 }
 export function consumeAttempt(db, ip, email) {
   const stamp = Date.now();
-  for (const [key, limit] of [[`ip:${ip}`, 30], [`email:${email}`, 10]]) {
+  // Shared campus NATs must not lock out the entire class after 30 logins.
+  // Per-account limits and bounded scrypt concurrency remain enforced.
+  for (const [key, limit] of [[`ip:${ip}`, 10000], [`email:${email}`, 10]]) {
     const hashed = digest(key);
     const row = db.prepare('SELECT count,expires FROM attempts WHERE key=?').get(hashed);
     if (row && row.expires > stamp && row.count >= limit) return false;

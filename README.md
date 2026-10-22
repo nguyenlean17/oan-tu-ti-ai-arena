@@ -1,13 +1,30 @@
 # Oẳn Tù Tì 2.0 — AI Coding Arena
 
-Vietnamese-first programming-tournament MVP, built on the existing 9×9 game rules from `nguyenlean17/network-programming`.
+Nền tảng giải đấu bot Python tiếng Việt, dùng luật bàn cờ 9×9 của dự án ban đầu. Phần giải chính thức chạy bằng Docker: web/API/SQLite và worker Python WebAssembly tách biệt.
+
+## Giải đấu chính thức
+
+```sh
+npm run competition:init
+docker compose up -d --build --wait
+```
+
+Mở **http://localhost:3000/competition**. Đăng ký tài khoản, rồi chủ máy cấp quyền BTC bằng `docker compose exec app node docker/admin.mjs your@email.com`.
+
+- [Hướng dẫn sử dụng và vận hành tiếng Việt](docs/HUONG_DAN_SU_DUNG.md)
+- [PDF hướng dẫn](docs/huong-dan-su-dung-ai-arena.pdf)
+- [Thiết kế, bất biến bảo mật và giới hạn triển khai](competition/README.md)
+
+Admin panel hỗ trợ cấu hình JSON, danh sách đội/mã mời riêng, nhận bài Python hoặc commit GitHub đã duyệt, khóa phiên bản, chia bảng, hai ván đổi bên, loại trực tiếp, replay, công bố và xuất dữ liệu. Hàng đợi SQLite có lease/heartbeat, retry hữu hạn và ghi kết quả một lần. Mỗi bot chạy trong CPython WASI/Wasmtime, không được cấp mạng, secret hay dữ liệu máy chủ. Ba bot mẫu nằm ở `public/bots/`.
+
+Đã chạy E2E đủ 16 đội, 62 ván bằng worker thật và kiểm thử các mẫu Python độc hại. Đây là bằng chứng chức năng; chưa phải chứng nhận chịu tải 4.000 sinh viên hoặc kiểm định an toàn độc lập. Các giải DEMO là dữ liệu thử.
 
 ## Live sites
 
 - **Vercel (public):** https://oan-tu-ti-ai-arena.vercel.app — email/password accounts stored in Neon Postgres.
 - **ChatGPT Sites (owner-private):** https://oan-tu-ti-arena.wittylarch64.chatgpt.site — sign in with the owning ChatGPT account.
 
-The Sites deployment starts owner-private and its visibility is controlled by the hosting platform, independently of the GitHub repository. Vercel deployment protection (SSO) is turned off for this project so the production URL is reachable without a Vercel login; the app still requires its own account. Re-enable it with `vercel project protection enable --sso` if the site should be private. Accounts and records are separate per platform.
+Hai địa chỉ trên hiện là bản luyện tập riêng, chưa có backend giải chính thức mới. Giải chính thức cần bản Docker có worker dài hạn. Tài khoản/dữ liệu của từng bản độc lập; không chấm source sinh viên trong Vercel Function.
 
 ## Included
 
@@ -31,13 +48,13 @@ A native Next.js deployment uses Neon Postgres for persistent accounts and game 
 
 ## Docker with email/password login
 
-Run `docker compose up --build -d` and open **http://localhost:3000**. Register your own account; accounts and game data persist in a named volume. See [Docker setup, security, organizer access and tests](docker/README.md). The existing Sites deployment retains ChatGPT sign-in.
+Run `npm run competition:init`, then `docker compose up --build -d` and open **http://localhost:3000**. Register your own account; accounts and game data persist in a named volume. See [Docker setup, security, organizer access and tests](docker/README.md). The existing Sites deployment retains ChatGPT sign-in.
 
 Three standalone Python examples are included in `public/bots/`: **Sprinter**, **Guardian** and **Tactician**. Load/download them in the bot editor, or select one directly for human-vs-Python play.
 
 ## Run locally
 
-Node 22.13+:
+Node 22.16+ (the following commands start the legacy Sites development preview, not the official judge):
 
 ```sh
 npm ci
@@ -83,14 +100,14 @@ def choose_move(state):
 
 `state` contains `board` (9×9, empty cells are `None`, pieces have `player` and `type`), `player` (`P1` or `P2`), `legal_moves`, `turn`, and `history`. A move is `{"from": "B8", "to": "B7"}`. Use only standard-library Python. Upload limit: 64 KB. Browser practice has a 90-second runtime load deadline and a 15-second match deadline; the parent destroys the iframe on cancellation or timeout.
 
-## Trust boundaries and deliberate MVP scope
+## Practice trust boundary and current scope
 
 Student Python is never evaluated by the website backend. The practice iframe has an opaque origin, no app credentials, and a restrictive CSP permitting the pinned Pyodide CDN; the worker is destroyed after each match. It is a learning sandbox, not an official tournament judge, and browser memory is subject to browser limits rather than a dedicated VM quota. The server validates the move sequence before saving, but does not attest that a submitted bot generated it. Practice results cannot become official standings.
 
-The PDF explicitly recommends an end-to-end prototype with two example bots before public registration. This MVP delivers that prototype. **Untrusted Python tournament scheduling, a continuously hosted container runner, official result publication, finals brackets, ZIP submissions, email verification/recovery, appeals and prizes are outside this release.** The UI does not pretend a runner is connected and refuses official publication. A production judge must run each bot in a separate hardened sandbox, enforce CPU/RAM/process/filesystem/network quotas, authenticate job results, independently replay/verify moves, and publish immutable results tied to registered hashes. The original repository's multiplayer application remains intact.
+The official Docker tournament at `/competition` now supplies a separate authenticated worker, Wasmtime sandboxes, group scheduling, knockout brackets, immutable entries, replay verification and result publication. The original practice organizer screen remains separate and cannot publish browser practice as official results. ZIP/dependency installation, automatic school SSO, email verification/recovery, private GitHub App integration, appeals management and prizes are outside this release. See `competition/README.md` for operational ceilings.
 
 Scoring is 3/1/0; ties in the personal practice table use number of wins. This table is not a final tournament ranking. No entrants, prize funds, official dates or public participation numbers are fabricated.
 
 ## Deployment
 
-React/Vinext + Cloudflare Workers; D1 migrations live in `drizzle/`; `.openai/hosting.json` carries the Site identity and the logical `DB` binding. Sites owns authentication and deployment. Keep `.env*`, `.wrangler`, `.sites-runtime`, `node_modules`, build artifacts and credentials out of Git. Pyodide is loaded on demand from jsDelivr, so the first Python match requires Internet connectivity.
+Docker uses Next.js production plus a session/control gateway, SQLite WAL and a separate Wasmtime worker. `deploy/compose.public.yaml` adds HTTPS via Caddy when a real domain/server is available. Vercel and Sites retain their independent practice deployment paths. Keep `.secrets`, backups, `.env*`, `.wrangler`, `.sites-runtime`, `node_modules` and build artifacts out of Git. Browser practice loads Pyodide from jsDelivr; the official worker uses its bundled Python runtime.
