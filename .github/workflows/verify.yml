@@ -21,6 +21,8 @@ jobs:
       - run: npm test && npm run test:competition && npx tsc --noEmit
       - run: npm audit --omit=dev
       - run: npm run competition:init
+      - name: Allow the non-root container to read its worker secret
+        run: sudo chown 1000:1000 .secrets/judge-token
       - run: docker compose up -d --build --wait
       - name: Verify hostile Python in the real sandbox
         run: docker compose run --rm -v "$PWD/tests:/app/tests:ro" -v "$PWD/public/bots:/app/public/bots:ro" judge node tests/judge.test.mjs

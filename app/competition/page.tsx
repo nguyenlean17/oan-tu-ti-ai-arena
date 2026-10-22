@@ -88,7 +88,3 @@ export default function Competition() {
       <footer className="tc-footer">Kết quả luyện tập tách biệt với giải chính thức. Bài Python chạy trong sandbox WebAssembly, dưới sự điều khiển của luật cờ phía máy chủ.</footer>
     </div></main></div>;
 }
-
-
-
-
