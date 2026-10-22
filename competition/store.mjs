@@ -257,9 +257,15 @@ export function leaseJob(db, worker, runtime, now = Date.now(), queue = 'all') {
       AND (?='all' OR j.kind=?) AND ((j.kind='validate' AND e.status IN ('open','locking')) OR (j.kind='game' AND e.status IN ('groups','knockout')))
       ORDER BY CASE j.kind WHEN 'validate' THEN 0 ELSE 1 END,j.attempts,j.created,j.id LIMIT 1`).get(now, queue, queue);
     if (!row) return null;
+    const payload = JSON.parse(row.payload);
+    if (payload.engine !== ENGINE_VERSION || payload.runtime !== runtime) {
+      db.prepare("UPDATE jobs SET status='failed',lease=NULL WHERE id=?").run(row.id);
+      db.prepare('UPDATE events SET paused=1 WHERE id=?').run(row.event);
+      log(db, worker, row.event, 'runtime-mismatch-paused', { job: row.id, expectedEngine: payload.engine, expectedRuntime: payload.runtime });
+      return null;
+    }
     const lease = randomBytes(24).toString('hex');
     db.prepare("UPDATE jobs SET status='running',lease=?,until=?,attempts=attempts+1,worker=? WHERE id=?").run(lease, now + 90000, worker, row.id);
-    const payload = JSON.parse(row.payload);
     const sourceFor = (submission, expected) => {
       const v = db.prepare('SELECT source,sha FROM submissions WHERE id=?').get(submission);
       if (!v || v.sha !== expected || sha(v.source) !== expected) fail('Bài nộp lưu trữ không khớp hash.', 500);
@@ -279,6 +285,7 @@ export function heartbeat(db, worker, job, lease) {
 }
 
 export function verifyOfficial(payload, result) {
+  if (payload.engine !== ENGINE_VERSION || payload.runtime !== RUNTIME_VERSION) fail('Job thuộc phiên bản đã khóa khác. Không chấm bằng runtime mới.', 409);
   if (!result || result.engine !== ENGINE_VERSION || result.runtime !== RUNTIME_VERSION || !Array.isArray(result.moves) || result.moves.length > payload.config.maxPlies) fail('Replay hoặc phiên bản bộ chấm không hợp lệ.');
   if (result.p1sha !== payload.p1.sha || result.p2sha !== payload.p2.sha || result.seed !== payload.seed) fail('Replay không khớp bài nộp đã khóa.');
   const board = createInitialBoard(); let winner = null;
@@ -305,6 +312,7 @@ export function finishJob(db, worker, job, lease, result) {
     if (row.status === 'done' && row.lease === lease && row.worker === worker && row.result_hash === hash) return { ok: true, duplicate: true };
     if (row.status !== 'running' || row.lease !== lease || row.worker !== worker || row.until <= Date.now()) fail('Kết quả cũ hoặc sai worker.', 409);
     const payload = JSON.parse(row.payload);
+    if (payload.engine !== ENGINE_VERSION || payload.runtime !== RUNTIME_VERSION) fail('Phiên bản job đã khóa không khớp control hiện tại.', 409);
     if (row.kind === 'validate') {
       const verdict = z.object({ valid: z.boolean(), message: z.string().max(1000), sha: z.string(), engine: z.literal(ENGINE_VERSION), runtime: z.literal(RUNTIME_VERSION) }).strict().parse(result);
       if (verdict.sha !== payload.sha) fail('Hash bài kiểm tra không khớp.');

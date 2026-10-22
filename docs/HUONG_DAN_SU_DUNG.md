@@ -177,6 +177,8 @@ Bot không được thấy secret worker, database, source đối thủ hay file
 
 Lease có hạn 90 giây và được gia hạn. Nếu máy chấm chết, lease mới thay lease cũ; kết quả từ worker cũ bị từ chối. Replay phải đúng phiên bản engine/runtime, source hash và seed. Ghi kết quả, chốt cặp và tạo vòng sau trong cùng transaction, nên gửi lặp không cộng điểm hai lần.
 
+Nếu cập nhật phần mềm làm phiên bản engine/runtime khác job đã khóa, giải tự tạm dừng và ghi nhật ký. Khôi phục image tương thích trước khi tiếp tục; hệ thống không âm thầm dùng luật mới để chấm bài cũ.
+
 ---
 
 ## 7. Sao lưu và phục hồi

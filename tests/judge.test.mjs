@@ -22,7 +22,7 @@ const blocked = [
   'def choose_move(state):\n    return {"from":"A1","to":"I9"}\n',
 ];
 for (const code of blocked) { const r = await validateBot(payload(code)); assert.equal(r.valid, false, 'Harmful/invalid sample must not validate'); }
-const p = { config, seed: 42, p1: { source, sha: sha(source) }, p2: { source, sha: sha(source) } };
+const p = { config, seed: 42, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION, p1: { source, sha: sha(source) }, p2: { source, sha: sha(source) } };
 const game = await runGame(p); verifyOfficial(p, game);
 const bad = 'def choose_move(state):\n    while True: pass\n';
 const timeoutPayload = { ...p, config: { ...config, moveMs: 200 }, p2: { source: bad, sha: sha(bad) } };

@@ -35,6 +35,7 @@ Không chạy source sinh viên bằng `eval`, Python máy chủ, Node WASI hay 
 7. Worker phải có secret riêng, đúng phiên bản runtime, lease token hiện hành và còn hạn. Mất heartbeat 90 giây: job được cấp lease mới; kết quả cũ bị từ chối.
 8. Lỗi hạ tầng thử tối đa 3 lần rồi chờ BTC xử lý. Lỗi/timeout của bot xử thua ở đúng phía; không làm mất công việc.
 9. Replay được phát lại bằng engine máy chủ. Lý do xử thua do supervisor đáng tin cậy báo, không phải trình duyệt.
+10. Nếu nâng cấp làm engine/runtime khác phiên bản job đã khóa, giải tự tạm dừng và ghi audit. Cần khôi phục bản image tương thích; không âm thầm áp luật mới lên bài cũ.
 
 ## Thể thức
 

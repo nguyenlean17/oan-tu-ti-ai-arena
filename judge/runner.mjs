@@ -61,6 +61,7 @@ export function startBot(source, config, seed = 1) {
 const stateFor = (board, player, moves) => ({ board, player, legal_moves: legalMoves(board, player), turn: moves.length, history: moves });
 
 export async function validateBot(payload) {
+  if (payload.engine !== ENGINE_VERSION || payload.runtime !== RUNTIME_VERSION) throw new InfrastructureError('Pinned job version mismatch');
   if (sha(payload.source) !== payload.sha) throw new InfrastructureError('Source hash mismatch');
   let bot;
   try {
@@ -84,6 +85,7 @@ export async function validateBot(payload) {
   } finally { bot?.close(); }
 }
 export async function runGame(payload) {
+  if (payload.engine !== ENGINE_VERSION || payload.runtime !== RUNTIME_VERSION) throw new InfrastructureError('Pinned job version mismatch');
   for (const seat of ['p1', 'p2']) if (sha(payload[seat].source) !== payload[seat].sha) throw new InfrastructureError('Source hash mismatch');
   const board = createInitialBoard(), moves = [];
   const result = { moves, winner: null, reason: 'max_plies', seed: payload.seed, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION, p1sha: payload.p1.sha, p2sha: payload.p2.sha };

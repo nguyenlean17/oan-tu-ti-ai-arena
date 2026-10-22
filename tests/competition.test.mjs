@@ -25,6 +25,12 @@ try {
   rejects(() => action(db, users[0], { action: 'create', name: 'Unauthorized', config }), 403);
   rejects(() => action(db, admin, { action: 'create', name: 'Invalid groups', config: { ...config, groupCount: 3 } }));
   const event = action(db, admin, { action: 'create', name: 'Integration tournament', config }).id;
+  const mismatch = action(db, admin, { action: 'create', name: 'Pinned old runtime', config }).id;
+  action(db, admin, { action: 'open', event: mismatch });
+  db.prepare("INSERT INTO jobs(id,event,kind,subject,payload,created) VALUES('old-version',?,'validate','old-source',?,0)").run(mismatch, JSON.stringify({ engine: ENGINE_VERSION, runtime: 'old-runtime' }));
+  assert.equal(leaseJob(db, 'judge-a', RUNTIME_VERSION), null);
+  assert.equal(overview(db, admin, mismatch).event.paused, 1, 'An incompatible deployment pauses the old event instead of changing its rules');
+  assert.equal(overview(db, admin, mismatch).failed.length, 1);
   const teamIds = [];
   for (let i = 0; i < 4; i++) {
     const team = action(db, admin, { action: 'team', event, name: `Team ${i}`, seed: i + 1 }).id; teamIds.push(team);
