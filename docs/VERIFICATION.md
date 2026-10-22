@@ -29,3 +29,7 @@ E2E demo dùng tối đa 40 lượt/ván, các bot Sprinter/Guardian/Tactician v
 - Công bố kết quả chỉ từ worker có secret và lease; tính đúng của việc xử thua bot vẫn tin supervisor/host vận hành, không chứng minh bằng replay đơn thuần.
 - GitHub workflow được cung cấp để chạy lại kiểm tra trên môi trường sạch; trạng thái của từng run cần xem trên GitHub Actions, không suy ra chỉ từ file workflow.
 - Bản Vercel/Sites cũ vẫn là luyện tập; giải chính thức mới chạy Docker. Gói HTTPS cần domain và máy chủ thật do BTC quản lý.
+
+## UET–VNU UI refinement — 2026-10-23
+
+TypeScript passed. The detector flagged the blue top border on the square page header as a rounded-card accent; this is a narrow false positive (the header has no rounded card). Layout and tournament behavior are unchanged. Visual checks cover desktop, compact and mobile competition views and practice. A separate unauthenticated HTTP check verifies login branding. White on the primary blue exceeds WCAG AA text contrast.

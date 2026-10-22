@@ -18,3 +18,7 @@ This inherited-world extension supports Vietnamese students and ban tổ chức 
 - **Direct paths:** the BTC action “Tạo giải đấu mới” clears the selected tournament and opens the creation form. Student submission, recent-match replay and BTC controls retain separate navigation entries. Replay keeps the coordinate board and step/play controls; the workspace footer distinguishes official results from practice.
 
 Keep these patterns local to the official tournament workspace. Extend real rows, lifecycle labels and contextual actions when adding tournament views; preserve the incumbent palette and typography.
+
+## UET–VNU refinement (current identity)
+
+The user requested a light UET–VNU rebrand. The existing layout, typography, spacing, tournament workflows and game semantics remain unchanged. University-blue actions (#034ea1), a navy navigation rail (#102b4d), cool light surfaces and a typographic UET Arena / VNU lockup now supersede the previous lime action palette. This is a product wordmark, not a recreated official university seal. Success, error and opposing-player colors retain their semantic meanings. Login, practice and official competition share this identity.
