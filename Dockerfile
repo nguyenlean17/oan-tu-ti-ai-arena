@@ -17,6 +17,7 @@ COPY --chown=node:node public ./public
 COPY --chown=node:node docker ./docker
 COPY --chown=node:node competition ./competition
 COPY --chown=node:node lib/engine.mjs ./lib/engine.mjs
+COPY --chown=node:node lib/account-policy.mjs ./lib/account-policy.mjs
 COPY --chown=node:node lib/rules ./lib/rules
 COPY --chown=node:node scripts/backup-competition.mjs ./scripts/backup-competition.mjs
 COPY --chown=node:node scripts/restore-empty.mjs ./scripts/restore-empty.mjs
