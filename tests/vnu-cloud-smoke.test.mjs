@@ -10,10 +10,11 @@ const base=process.env.ARENA_LOCAL_TEST_ORIGIN||process.env.ARENA_CLOUD_TEST_ORI
 if(local){const u=new URL(base);if(process.env.ARENA_ALLOW_LOCAL_SMOKE!=='1'||!['localhost','127.0.0.1'].includes(u.hostname)||u.origin!==base)throw new Error('Explicit loopback-only local smoke test required.');}
 else if(process.env.ARENA_ALLOW_CLOUD_SMOKE!=='1'||base!=='https://oan-tu-ti-ai-arena.vercel.app')throw new Error('Explicit opt-in to this project production smoke test required. Creates labeled QA records.');
 const nonce=randomBytes(6).toString('hex'),admin=new CloudClient(base),guest=new CloudClient(base);
-const accountFile=local?'.secrets/local-admin.json':'.secrets/vercel-demo-admin.json';
+const accountFile=local?(process.env.ARENA_LOCAL_ADMIN_FILE||'.secrets/local-admin.json'):'.secrets/vercel-demo-admin.json';
 if(local&&!existsSync(accountFile)){
   const email=`arena-local-btc-${nonce}@vnu.edu.vn`,password=randomBytes(24).toString('base64url');
-  await admin.register(email,'BTC LOCAL QA',password);
+  const bootstrap=new CloudClient(base);
+  await bootstrap.register(email,'BTC LOCAL QA',password);
   const grant=spawnSync('docker',['compose','-f','compose.local.yaml','exec','-T','app','node','scripts/local-admin.mjs',email],{encoding:'utf8',timeout:20000,windowsHide:true});
   assert.equal(grant.status,0,'Local organizer grant failed');mkdirSync('.secrets',{recursive:true});writeFileSync(accountFile,JSON.stringify({email,password,origin:base}),{mode:0o600});
 }
