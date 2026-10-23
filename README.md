@@ -1,8 +1,12 @@
 # Oẳn Tù Tì 2.0 — AI Coding Arena
 
-Nền tảng giải đấu bot Python tiếng Việt, dùng luật bàn cờ 9×9 của dự án ban đầu. Phần giải chính thức chạy bằng Docker: web/API/SQLite và worker Python WebAssembly tách biệt.
+Nền tảng giải đấu bot Python tiếng Việt, dùng luật bàn cờ 9×9 của dự án ban đầu. Giải chính thức hỗ trợ Vercel + Neon PostgreSQL cho website và bộ chấm Docker tại máy BTC; vẫn giữ tùy chọn chạy toàn bộ bằng Docker/SQLite.
 
-## Giải đấu chính thức
+## Website Vercel + bộ chấm tại máy BTC
+
+Mở **https://oan-tu-ti-ai-arena.vercel.app/competition**. Không cần mua tên miền hoặc mở cổng máy chấm. Xem [hướng dẫn triển khai Vercel + Docker](deploy/VERCEL_JUDGE.md) và [PDF hướng dẫn mô hình mới](docs/huong-dan-vercel-docker-uet.pdf).
+
+## Chạy toàn bộ trên máy local
 
 ```sh
 npm run competition:init
@@ -24,7 +28,7 @@ Admin panel hỗ trợ cấu hình JSON, danh sách đội/mã mời riêng, nh�
 - **Vercel (public):** https://oan-tu-ti-ai-arena.vercel.app — email/password accounts stored in Neon Postgres.
 - **ChatGPT Sites (owner-private):** https://oan-tu-ti-arena.wittylarch64.chatgpt.site — sign in with the owning ChatGPT account.
 
-Hai địa chỉ trên hiện là bản luyện tập riêng, chưa có backend giải chính thức mới. Giải chính thức cần bản Docker có worker dài hạn. Tài khoản/dữ liệu của từng bản độc lập; không chấm source sinh viên trong Vercel Function.
+Vercel hỗ trợ cả luyện tập và giải chính thức qua PostgreSQL. ChatGPT Sites là bản luyện tập riêng. Dữ liệu Docker cũ độc lập và không tự động nhập lên cloud. Source Python của bài thi chỉ chạy trong bộ chấm Docker, không chạy trong Vercel Function.
 
 ## Included
 

@@ -33,3 +33,13 @@ E2E demo dùng tối đa 40 lượt/ván, các bot Sprinter/Guardian/Tactician v
 ## UET–VNU UI refinement — 2026-10-23
 
 TypeScript passed. The detector flagged the blue top border on the square page header as a rounded-card accent; this is a narrow false positive (the header has no rounded card). Layout and tournament behavior are unchanged. Visual checks cover desktop, compact and mobile competition views and practice. A separate unauthenticated HTTP check verifies login branding. White on the primary blue exceeds WCAG AA text contrast.
+
+## Vercel + local Docker judge — 23/10/2026
+
+- Production website/API deployed to https://oan-tu-ti-ai-arena.vercel.app; accounts and tournament records use Neon PostgreSQL in a separate arena_competition schema. Local SQLite data is retained independently.
+- Real production smoke: 4 labeled demo teams, 4 valid bots and 1 invalid submission, all 5 validations completed by the local Docker worker; 6 games across groups/knockout, public replay, restricted export and publication passed. Demo event: 37219666-58a9-4a3e-a437-30b801d1a4be.
+- PostgreSQL integration uses a disposable random schema: concurrent lease requests grant one worker, duplicate result submission commits once, wrong-worker heartbeat fails, numeric fields decode correctly, full tournament reaches publication. Batched writes roll back on a constraint failure.
+- Synthetic scheduling benchmark: 128 entrants, 3,968 group games scheduled in 4,497 ms. This measures scheduling only, not bot execution or simultaneous student traffic.
+- SQLite lifecycle regression, engine/human play, Vercel API auth/origin/body limits, TypeScript and production Docker build passed. Real Wasmtime image tests passed hostile-code checks, sample bots, full game and timeout forfeits.
+- New Vietnamese operating guide: deploy/VERCEL_JUDGE.md and docs/huong-dan-vercel-docker-uet.pdf (4 pages, all rendered and visually checked).
+- Remaining ceiling: pilot control serializes writes with a PostgreSQL advisory transaction lock. Free service quotas and 4,000 simultaneous participants are not certified. Stop idle workers outside contest periods; polling can prevent database suspension.

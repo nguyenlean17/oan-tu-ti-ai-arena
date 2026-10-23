@@ -13,3 +13,8 @@ work
 *.tsbuildinfo
 *.tar.gz
 **/__pycache__
+.secrets
+backups
+output
+.next-docker
+.impeccable/review

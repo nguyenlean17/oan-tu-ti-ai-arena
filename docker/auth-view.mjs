@@ -17,5 +17,5 @@ export function authPage({ mode, csrf, returnTo, error = '', email = '', name = 
     ${error ? `<div class="error" role="alert">${escape(error)}</div>` : ''}
     <form method="post" action="/${mode}"><input type="hidden" name="csrf" value="${escape(csrf)}"><input type="hidden" name="return_to" value="${escape(returnTo)}">${fields}<button type="submit">${action} <span aria-hidden="true">→</span></button></form>
     <p class="switch">${logout ? '<a href="/">Tiếp tục chơi</a>' : signup ? `Đã có tài khoản? <a href="/login?return_to=${encodeURIComponent(returnTo)}">Đăng nhập</a>` : `Lần đầu đến đây? <a href="/register?return_to=${encodeURIComponent(returnTo)}">Tạo tài khoản</a>`}</p>
-    <p class="account-note">Tài khoản của bản tự lưu trữ này được lưu riêng với tài khoản trên website ChatGPT Sites.</p></div></section></main></body></html>`;
+    <p class="account-note">Dùng tài khoản trên địa chỉ do ban tổ chức cung cấp. Mã tham gia đội được BTC cấp riêng.</p></div></section></main></body></html>`;
 }

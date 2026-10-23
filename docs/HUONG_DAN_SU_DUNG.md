@@ -1,7 +1,9 @@
 # OẲN TÙ TÌ - AI ARENA
 ## Hướng dẫn sử dụng và vận hành giải đấu
 
-Bản triển khai Docker | Tiếng Việt | 23/10/2026
+Tài liệu thao tác giải đấu | Tiếng Việt | 23/10/2026
+
+**Mô hình hiện dùng:** website Vercel + Neon và bộ chấm Docker tại máy BTC. Đọc [hướng dẫn cài đặt mới](../deploy/VERCEL_JUDGE.md) hoặc [PDF Vercel + Docker](huong-dan-vercel-docker-uet.pdf). Các bước local dưới đây vẫn áp dụng cho lựa chọn chạy toàn bộ trên một máy.
 
 Nền tảng tổ chức giải lập trình bot Python trên bàn cờ 9 × 9: ban tổ chức tạo giải, xác nhận đội, nhận bài, chia bảng, chấm tự động, theo dõi replay và công bố kết quả.
 
@@ -20,7 +22,7 @@ Tài liệu này mô tả phần đã triển khai. Giải có chữ DEMO gồm 
 | Sinh viên | Tham gia đội, viết bot, nộp bài, xem kết quả |
 | Người bảo trì | Ranh giới bảo mật, kiểm thử, xử lý sự cố |
 
-Phiên bản này ưu tiên một máy chủ điều hành, một ổ dữ liệu bền vững và các worker có thể nhân bản. Không cần Redis, Kafka hoặc Kubernetes. Vercel/Sites cũ là không gian luyện tập riêng; giải chính thức chạy trên bản Docker có worker dài hạn.
+Phiên bản này ưu tiên một máy chủ điều hành, một ổ dữ liệu bền vững và các worker có thể nhân bản. Không cần Redis, Kafka hoặc Kubernetes. Vercel hiện hỗ trợ giải chính thức với PostgreSQL và worker Docker kết nối ra ngoài; Sites vẫn là bản luyện tập riêng.
 
 ---
 

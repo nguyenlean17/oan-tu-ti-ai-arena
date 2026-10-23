@@ -1,8 +1,10 @@
 # Vercel hosting
 
+Official tournaments now work on Vercel with the local Docker judge. Follow [Vercel + Docker judge setup](VERCEL_JUDGE.md) for JUDGE_TOKEN, administration, operation and current limits.
+
 Production URL: **https://oan-tu-ti-ai-arena.vercel.app** (project `oan-tu-ti-ai-arena`, team `nguyenlean17s-projects`, alias `oan-tu-ti-arena`). Deployment protection (SSO) is disabled so the URL is publicly reachable; the app's own email/password login is the only gate. Toggle it with `vercel project protection enable --sso`.
 
-Vercel runs the shared UI and game routes as a Next.js app. The Next build aliases `lib/platform.ts` and `lib/auth-platform.ts` to the Vercel adapters. Sites/Vinext and Docker retain their default Cloudflare adapters and existing data. Vercel accounts, bots, matches, registrations and friend rooms persist in Neon Postgres; user identity comes only from a verified HttpOnly session cookie, never incoming user headers.
+Vercel runs the shared UI and game routes as a Next.js app. The Next build aliases `lib/platform.ts` and `lib/auth-platform.ts` to the Vercel adapters. Sites retains its Cloudflare adapter; Docker uses native Next.js behind its gateway and a separate SQLite volume. Vercel accounts, bots, matches, registrations and friend rooms persist in Neon Postgres; user identity comes only from a verified HttpOnly session cookie, never incoming user headers.
 
 The `oan-tu-ti-ai-arena` project uses the owner's Vercel Hobby account. Provision a **Neon Free (`free_v3`)** database in Singapore and connect its `DATABASE_URL` to production/development. Neon managed auth is disabled because the app already implements its own email/password accounts. Preview deployments need a separate database connection before building; they do not silently share production data.
 
@@ -36,7 +38,7 @@ New accounts never become organizers automatically. The database owner may grant
 node --env-file=.env.vercel.local scripts/vercel-admin.mjs your@email.com
 ```
 
-Then use **Ban tổ chức → Thiết lập quản trị** in the app. Existing organizer ownership is preserved. Do not expose a public setup token or put an administrator password in the repository.
+For the official tournament workspace, open **/competition → Ban tổ chức** directly. The legacy practice area retains its own organizer setup. Existing organizer ownership is preserved. Do not expose a public setup token or put an administrator password in the repository.
 
 The Docker volume and ChatGPT Sites database are independent from this new deployment. This setup does not copy or publish their existing users or records.
 

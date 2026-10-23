@@ -43,7 +43,8 @@ export default function Competition() {
   const [viewReplay, setViewReplay] = useState<Replay | null>(null);
   const newTournament = () => { setSelected(''); location.hash = ''; setName(''); setConfigText(JSON.stringify(initialConfig(), null, 2)); setTab('admin'); setError(''); setNotice(''); };
   const refresh = useCallback(async () => { try { setData(await request<Data>(selected ? `?event=${selected}` : '')); setLoaded(true); } catch (e) { setError((e as Error).message); setLoaded(true); } }, [selected]);
-  useEffect(() => { refresh(); const t = setInterval(() => { if (!document.hidden) refresh(); }, 5000); return () => clearInterval(t); }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { const t = setInterval(() => { if (!document.hidden && data.event?.status !== 'published') refresh(); }, 15000); return () => clearInterval(t); }, [refresh, data.event?.status]);
   useEffect(() => { const hash = location.hash.slice(1); if (/^[a-f0-9-]{36}$/.test(hash)) setSelected(hash); }, []);
   useEffect(() => { if (data.event?.id === selected) setConfigText(JSON.stringify(data.event.config, null, 2)); }, [data.event?.id, selected]);
   const choose = (id: string) => { setSelected(id); location.hash = id; setViewReplay(null); setError(''); setNotice(''); };

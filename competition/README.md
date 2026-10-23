@@ -1,6 +1,6 @@
 # Hệ thống giải đấu chính thức
 
-Mở `/competition` trên bản Docker. Tài liệu thao tác đầy đủ: [`docs/HUONG_DAN_SU_DUNG.md`](../docs/HUONG_DAN_SU_DUNG.md).
+Mở `/competition` trên Vercel hoặc bản Docker. [Triển khai Vercel + bộ chấm local](../deploy/VERCEL_JUDGE.md). Tài liệu thao tác đầy đủ: [`docs/HUONG_DAN_SU_DUNG.md`](../docs/HUONG_DAN_SU_DUNG.md).
 
 ## Ranh giới trách nhiệm
 
@@ -51,4 +51,4 @@ Vòng loại trực tiếp lấy `qualifiers` đội mỗi bảng. Tổng số �
 - Seed không bảo đảm source bất kỳ hoàn toàn deterministic: đồng hồ/entropy trong WASI có thể làm bot tự ngẫu nhiên. Replay lưu diễn biến thật; không lấy kết quả chạy lại để ghi đè trận cũ.
 - `maxPlies` 20–200, thời gian mỗi nước 100–5.000 ms, bộ nhớ linear Wasm 64–256 MiB, fuel tổng mỗi bot 5 tỷ lệnh Wasm. Wall time, fuel và giới hạn container cùng có hiệu lực. Không có quyền ghi tệp hoặc tạo tiến trình cho bot.
 - Export toàn giải là JSON trong RAM, dành cho pilot/vừa. Với giải nhiều chục nghìn ván, dùng backup SQLite thay vì xuất tất cả replay qua HTTP; cần streaming export và cache bảng điểm trước khi nhận 4.000 bot đồng thời.
-- Vercel/Sites hiện là bản luyện tập riêng. Giải chính thức cần backend và worker dài hạn của Docker; không chạy bộ chấm trong Vercel Function.
+- Vercel dùng schema PostgreSQL riêng và API server-side, worker Docker chủ động lấy việc qua HTTPS. Bản Docker/SQLite vẫn dùng được độc lập; Sites là bản luyện tập. Không chạy bộ chấm trong Vercel Function.

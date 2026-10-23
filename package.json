@@ -24,7 +24,9 @@
     "competition:init": "node scripts/competition-init.mjs",
     "test:competition": "node tests/competition.test.mjs",
     "test:judge": "node tests/judge.test.mjs",
-    "test:competition:e2e": "node tests/competition-e2e.test.mjs"
+    "test:competition:e2e": "node tests/competition-e2e.test.mjs",
+    "judge:cloud:init": "node scripts/cloud-judge-init.mjs",
+    "test:competition:api": "node tests/vercel-competition.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

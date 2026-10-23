@@ -18,7 +18,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: npm test && npm run test:competition && npx tsc --noEmit
+      - run: npm test && npm run test:competition && npm run test:competition:api && npx tsc --noEmit
       - run: npm audit --omit=dev
       - run: npm run competition:init
       - name: Allow the non-root container to read its worker secret

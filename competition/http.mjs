@@ -26,21 +26,21 @@ export function competitionHandler(directory) {
           if (req.method !== 'POST') fail('Method not allowed', 405);
           const body = await bodyOf(req, 262144);
           const worker = z.string().min(1).max(100).parse(body.worker);
-          if (body.action === 'lease') send(200, leaseJob(db, worker, body.runtime, Date.now(), body.queue || 'all'));
-          else if (body.action === 'heartbeat') send(200, heartbeat(db, worker, body.job, body.lease));
-          else if (body.action === 'finish') send(200, finishJob(db, worker, body.job, body.lease, body.result));
-          else if (body.action === 'fail') send(200, failJob(db, worker, body.job, body.lease));
+          if (body.action === 'lease') send(200, (await leaseJob(db, worker, body.runtime, Date.now(), body.queue || 'all')));
+          else if (body.action === 'heartbeat') send(200, (await heartbeat(db, worker, body.job, body.lease)));
+          else if (body.action === 'finish') send(200, (await finishJob(db, worker, body.job, body.lease, body.result)));
+          else if (body.action === 'fail') send(200, (await failJob(db, worker, body.job, body.lease)));
           else fail('Thao tác worker không hợp lệ.');
         } else if (req.method === 'GET') {
           const event = url.searchParams.get('event');
-          if (url.searchParams.has('game')) send(200, replay(db, url.searchParams.get('game')));
-          else if (url.searchParams.has('export')) send(200, exportEvent(db, user, event), { 'Content-Disposition': 'attachment; filename="tournament-export.json"' });
-          else send(200, overview(db, user, event));
+          if (url.searchParams.has('game')) send(200, (await replay(db, url.searchParams.get('game'))));
+          else if (url.searchParams.has('export')) send(200, (await exportEvent(db, user, event)), { 'Content-Disposition': 'attachment; filename="tournament-export.json"' });
+          else send(200, (await overview(db, user, event)));
         } else if (req.method === 'POST') {
           if (!user) fail('Bạn cần đăng nhập.', 401);
           const body = await bodyOf(req, 100000);
           if (body.action === 'git') {
-            const membership = db.prepare('SELECT t.repo FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(body.event, user.id);
+            const membership = (await db.prepare('SELECT t.repo FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(body.event, user.id));
             if (!membership?.repo) fail('BTC chưa gắn GitHub repository cho đội.', 403);
             const commit = z.string().regex(/^[a-f0-9]{40}$/).parse(body.commit);
             // Exact approved public repo + immutable commit + fixed file. No clone, hooks, redirects or build scripts.
@@ -49,8 +49,8 @@ export function competitionHandler(directory) {
             const parts = []; let bytes = 0;
             for await (const chunk of response.body) { bytes += chunk.length; if (bytes > 65536) { await response.body.cancel().catch(() => {}); fail('bot.py vượt 64 KiB.'); } parts.push(Buffer.from(chunk)); }
             const source = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(parts));
-            send(200, submit(db, user, body.event, source, `github:${membership.repo}@${commit}:bot.py`));
-          } else send(200, action(db, user, body));
+            send(200, (await submit(db, user, body.event, source, `github:${membership.repo}@${commit}:bot.py`)));
+          } else send(200, (await action(db, user, body)));
         } else fail('Method not allowed', 405);
       } catch (error) {
         const validation = error instanceof z.ZodError;

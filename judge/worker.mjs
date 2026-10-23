@@ -4,6 +4,10 @@ import { RUNTIME_VERSION } from '../competition/store.mjs';
 import { runGame, validateBot } from './runner.mjs';
 
 const base = process.env.CONTROL_URL || 'http://app:3000';
+const target = new URL(base);
+if (target.protocol !== 'https:' && !['app', 'localhost', '127.0.0.1'].includes(target.hostname)) throw new Error('Remote CONTROL_URL must use HTTPS.');
+if (target.username || target.password || target.search || target.hash || target.pathname !== '/') throw new Error('CONTROL_URL must be an origin.');
+const idlePoll = Math.max(1500, Math.min(30000, Number(process.env.IDLE_POLL_MS) || 5000));
 const key = (process.env.JUDGE_TOKEN_FILE ? readFileSync(process.env.JUDGE_TOKEN_FILE, 'utf8') : process.env.JUDGE_TOKEN || '').trim();
 if (key.length < 32) throw new Error('Create the shared worker secret with npm run competition:init.');
 const worker = process.env.WORKER_ID || `judge-${randomUUID()}`;
@@ -12,18 +16,20 @@ process.on('SIGTERM', () => { stopping = true; });
 process.on('SIGINT', () => { stopping = true; });
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function call(body) {
-  const r = await fetch(base + '/api/judge', { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, worker, runtime: RUNTIME_VERSION }), signal: AbortSignal.timeout(15000) });
+  const r = await fetch(target.origin + '/api/judge', { method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, worker, runtime: RUNTIME_VERSION }), signal: AbortSignal.timeout(15000) });
   const data = await r.json();
   if (!r.ok) throw Object.assign(new Error(data.error || 'Control unavailable'), { status: r.status });
   return data;
 }
 console.log(`Judge ${worker}: ${RUNTIME_VERSION}`);
 async function work(queue) {
+let idle = idlePoll;
 while (!stopping) {
   let job = null, timer;
   try {
     job = await call({ action: 'lease', queue });
-    if (!job) { await sleep(1500); continue; }
+    if (!job) { await sleep(idle + Math.floor(Math.random() * 500)); idle = Math.min(15000, idle * 1.5); continue; }
+    idle = idlePoll;
     let leaseLost = false;
     timer = setInterval(() => { call({ action: 'heartbeat', job: job.id, lease: job.lease }).catch(error => { if (error.status === 409) leaseLost = true; }); }, 20000);
     const result = await (job.kind === 'validate' ? validateBot(job.payload) : runGame(job.payload));
