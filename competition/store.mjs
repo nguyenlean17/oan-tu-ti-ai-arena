@@ -132,13 +132,12 @@ async function saveSubmission(db, user, event, source, provenance = 'upload') {
   const e = (await eventOf(db, event)), team = (await teamOf(db, event, user));
   if (e.status !== 'open' || Date.now() >= Date.parse(e.config.deadline)) fail('Đã hết thời gian nộp bài.');
   if (typeof source !== 'string' || Buffer.byteLength(source) > 65536 || !source.trim() || source.includes('\0')) fail('Nộp một tệp Python UTF-8, tối đa 64 KiB.');
-  const hash = sha(source), existing = (await db.prepare('SELECT id,status FROM submissions WHERE team=? AND sha=?').get(team.id, hash));
-  if (existing) return { ...existing, duplicate: true };
-  const newest = (await db.prepare('SELECT created FROM submissions WHERE team=? ORDER BY created DESC LIMIT 1').get(team.id));
-  if (newest && Date.now() - newest.created < 5000) fail('Mỗi đội nộp tối đa một phiên bản mỗi 5 giây.', 429);
-  const pending = (await db.prepare("SELECT COUNT(*) n FROM submissions WHERE team=? AND status='pending'").get(team.id)).n;
-  if (pending >= 2) fail('Đội đang có 2 bài chờ kiểm tra. Hãy đợi kết quả.', 429);
-  if ((await db.prepare('SELECT COUNT(*) n FROM submissions WHERE team=?').get(team.id)).n >= 200) fail('Đội đã đạt giới hạn 200 phiên bản. Liên hệ ban tổ chức.');
+  const hash = sha(source);
+  const stats = await db.prepare("SELECT COUNT(*) total,MAX(created) newest,SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) pending,MAX(CASE WHEN sha=? THEN id END) duplicate_id,MAX(CASE WHEN sha=? THEN status END) duplicate_status FROM submissions WHERE team=?").get(hash, hash, team.id);
+  if (stats.duplicate_id) return { id: stats.duplicate_id, status: stats.duplicate_status, duplicate: true };
+  if (stats.newest !== null && Date.now() - stats.newest < 5000) fail('Mỗi đội nộp tối đa một phiên bản mỗi 5 giây.', 429);
+  if (stats.pending >= 2) fail('Đội đang có 2 bài chờ kiểm tra. Hãy đợi kết quả.', 429);
+  if (stats.total >= 200) fail('Đội đã đạt giới hạn 200 phiên bản. Liên hệ ban tổ chức.');
   const submission = id();
   (await transaction(db, async () => {
     (await db.prepare("INSERT INTO submissions(id,team,source,sha,status,provenance,created) VALUES(?,?,?,?,'pending',?,?)").run(submission, team.id, source, hash, provenance, Date.now()));

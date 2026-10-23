@@ -3,6 +3,7 @@ import { randomBytes, randomUUID, createHash, scrypt, timingSafeEqual } from 'no
 import { promisify } from 'node:util';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
+import { accountAllowed, normalizeEmail, requireVnuEmail } from '../lib/account-policy.mjs';
 
 const derive = promisify(scrypt);
 export const digest = value => createHash('sha256').update(value).digest('hex');
@@ -26,6 +27,7 @@ async function hashPassword(password, salt) {
   finally { hashing--; }
 }
 export async function register(db, { email, name, password }) {
+  email = requireVnuEmail(email);
   const salt = randomBytes(16).toString('hex');
   const hash = (await hashPassword(password, salt)).toString('hex');
   const id = `local_${randomUUID()}`;
@@ -34,10 +36,11 @@ export async function register(db, { email, name, password }) {
   return db.prepare('SELECT id,email,name,is_admin FROM users WHERE id=?').get(id);
 }
 export async function authenticate(db, email, password) {
+  email = normalizeEmail(email);
   const user = db.prepare('SELECT * FROM users WHERE email=?').get(email);
   const candidate = await hashPassword(password, user?.salt || 'unregistered-account-dummy-salt');
   const expected = user ? Buffer.from(user.password_hash, 'hex') : Buffer.alloc(64);
-  return timingSafeEqual(candidate, expected) && user ? user : null;
+  return timingSafeEqual(candidate, expected) && accountAllowed(user) ? user : null;
 }
 export function newSession(db, userId) {
   const token = randomBytes(32).toString('hex'), stamp = Date.now();
@@ -48,7 +51,8 @@ export function newSession(db, userId) {
 }
 export function sessionUser(db, token) {
   if (!/^[0-9a-f]{64}$/.test(token || '')) return null;
-  return db.prepare('SELECT u.id,u.email,u.name,u.is_admin FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires>?').get(digest(token), Date.now()) || null;
+  const user = db.prepare('SELECT u.id,u.email,u.name,u.is_admin FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires>?').get(digest(token), Date.now());
+  return accountAllowed(user) ? user : null;
 }
 export function consumeAttempt(db, ip, email) {
   const stamp = Date.now();

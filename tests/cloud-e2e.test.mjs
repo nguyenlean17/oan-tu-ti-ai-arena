@@ -7,7 +7,7 @@ const base = process.env.ARENA_CLOUD_TEST_ORIGIN;
 if (process.env.ARENA_ALLOW_CLOUD_SMOKE !== '1' || base !== 'https://oan-tu-ti-ai-arena.vercel.app') throw new Error('Explicit cloud smoke-test opt-in and the exact project URL are required. This creates labeled demo records.');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const nonce = randomBytes(5).toString('hex'), admin = new CloudClient(base), guest = new CloudClient(base);
-const email = `cloud-btc-${nonce}@example.test`, password = randomBytes(24).toString('base64url');
+const email = `arena-test-btc-${nonce}@vnu.edu.vn`, password = randomBytes(24).toString('base64url');
 await admin.register(email, 'BTC DEMO Vercel', password);
 await database().prepare('UPDATE auth_users SET is_admin=1 WHERE email=?').bind(email).run();
 mkdirSync('.secrets', { recursive: true });
@@ -20,7 +20,7 @@ await guest.post({ action: 'team', event, name: 'Spoofed', seed: 9 }, 401);
 await admin.post({ action: 'open', event });
 const users = [];
 for (let i=0;i<4;i++) {
-  const user = new CloudClient(base), account = `cloud-${nonce}-${i}@example.test`;
+  const user = new CloudClient(base), account = `arena-test-${nonce}-${i}@vnu.edu.vn`;
   await user.register(account, `Đội DEMO ${i+1}`, randomBytes(18).toString('base64url'));
   const team = (await admin.post({ action: 'team', event, name: `DEMO ${i+1}`, seed: i+1 })).id;
   const { token } = await admin.post({ action: 'invite', event, team, email: account, student: `CLOUD${nonce}${i}` });

@@ -24,15 +24,16 @@ class Client{
   async room(body,expected=200){const r=await this.request('/api/rooms',{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},body:JSON.stringify(body)});assert.equal(r.status,expected,r.text);return r.headers.get('content-type')?.includes('application/json')?JSON.parse(r.text):r.text;}
 }
 const a=new Client(),b=new Client(),anonymous=new Client(),nonce=randomBytes(6).toString('hex');
-const credentials={email:`qa-${nonce}@example.test`,name:'QA Docker A',password:randomBytes(18).toString('base64url')};
+const credentials={email:`arena-qa-${nonce}@vnu.edu.vn`,name:'QA Docker A',password:randomBytes(18).toString('base64url')};
 assert.equal((await anonymous.request('/api/data',{headers:{'oai-authenticated-user-id':'forged','oai-authenticated-user-email':'forged@example.test','x-arena-bootstrap':'1'}})).status,401);
 const csrf=await anonymous.form('register',credentials,{csrf:'a'.repeat(64)});assert.equal(csrf.status,403);
 const invalid=await anonymous.form('register',{...credentials,password:'short',confirm:'short'});assert.equal(invalid.status,400);
+const wrongDomain=await anonymous.form('register',{...credentials,email:`qa-${nonce}@vnu.edu.vn.evil.test`,confirm:credentials.password});assert.equal(wrongDomain.status,400);
 const registered=await a.form('register',{...credentials,confirm:credentials.password});assert.equal(registered.status,303,registered.text);
 const sessionCookie=registered.headers.getSetCookie().find(v=>v.startsWith('arena_session='));assert.match(sessionCookie,/HttpOnly/);assert.match(sessionCookie,/SameSite=Lax/);assert.match(sessionCookie,/Max-Age=604800/);
 if(deployed)assert.match(sessionCookie,/Secure/);
 const firstToken=a.jar.get('arena_session');assert.ok(firstToken);
-const second={email:`qa-friend-${nonce}@example.test`,name:'QA Docker B',password:randomBytes(18).toString('base64url')};
+const second={email:`arena-qa-friend-${nonce}@vnu.edu.vn`,name:'QA Docker B',password:randomBytes(18).toString('base64url')};
 assert.equal((await b.form('register',{...second,confirm:second.password})).status,303);
 await a.api({action:'profile',name:'QA saved profile',team:'Docker test'});
 await a.api({action:'submit',name:'QA bot',description:'Disposable integration fixture',code:"def choose_move(state):\n    return state['legal_moves'][0]\n"});

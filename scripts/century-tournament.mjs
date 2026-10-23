@@ -26,7 +26,7 @@ if(command==='prepare'){
  if((await detail()).event.status==='draft')await post(admin,{action:'open',event:state.event});
  for(let i=0;i<99;i++){
   const bot=opponent(i);let row=state.opponents[i];
-  if(!row){row={index:i,name:bot.name,family:bot.family,email:`test100-${state.nonce}-${i}@example.test`,password:randomBytes(24).toString('base64url'),seed:i+1>=state.playerSeed?i+2:i+1};state.opponents[i]=row;save();}
+  if(!row){row={index:i,name:bot.name,family:bot.family,email:`arena-test100-${state.nonce}-${i}@vnu.edu.vn`,password:randomBytes(24).toString('base64url'),seed:i+1>=state.playerSeed?i+2:i+1};state.opponents[i]=row;save();}
   const client=new CloudClient(base);
   if(row.jar)client.jar=new Map(row.jar);
   else{await client.register(row.email,`BOT TEST ${String(i+1).padStart(3,'0')}`,row.password);row.jar=[...client.jar];save();}

@@ -21,7 +21,7 @@ class Client {
   post(body, expected = 200) { return this.call('/api/competition', body, expected); }
 }
 const nonce = randomBytes(4).toString('hex'), admin = new Client(), anonymous = new Client();
-const email = `demo-btc-${nonce}@example.test`, password = randomBytes(24).toString('base64url');
+const email = `arena-demo-btc-${nonce}@vnu.edu.vn`, password = randomBytes(24).toString('base64url');
 await admin.register(email, 'BTC giải demo', password);
 const grant = spawnSync('docker', ['compose', 'exec', '-T', 'app', 'node', 'docker/admin.mjs', email], { encoding: 'utf8', timeout: 20000 });
 assert.equal(grant.status, 0, grant.stderr);
@@ -34,7 +34,7 @@ const workerDenied = await fetch(base + '/api/judge', { method: 'POST', headers:
 await admin.post({ action: 'open', event });
 const started = Date.now();
 for (let i = 0; i < 16; i++) {
-  const user = new Client(), studentEmail = `demo-${nonce}-${i}@example.test`;
+  const user = new Client(), studentEmail = `arena-demo-${nonce}-${i}@vnu.edu.vn`;
   await user.register(studentEmail, `Sinh viên DEMO ${i + 1}`, randomBytes(18).toString('base64url'));
   const team = (await admin.post({ action: 'team', event, name: `DEMO ${String(i + 1).padStart(2, '0')}`, seed: i + 1 })).id;
   const token = (await admin.post({ action: 'invite', event, team, email: studentEmail, student: `DEMO${nonce}${i}` })).token;

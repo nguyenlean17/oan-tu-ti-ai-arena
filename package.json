@@ -12,7 +12,7 @@
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "test": "node tests/engine.test.mjs && node tests/player-game.test.mjs",
+    "test": "node tests/engine.test.mjs && node tests/player-game.test.mjs && node tests/account-policy.test.mjs",
     "test:rooms": "node tests/rooms.test.mjs",
     "check:python": "node scripts/check-sandbox.mjs",
     "test:bots": "node tests/bots.test.mjs",
@@ -26,7 +26,9 @@
     "test:judge": "node tests/judge.test.mjs",
     "test:competition:e2e": "node tests/competition-e2e.test.mjs",
     "judge:cloud:init": "node scripts/cloud-judge-init.mjs",
-    "test:competition:api": "node tests/vercel-competition.test.mjs"
+    "test:competition:api": "node tests/vercel-competition.test.mjs",
+    "test:accounts": "node tests/account-policy.test.mjs",
+    "test:submissions": "node tests/submission-concurrency.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

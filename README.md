@@ -6,6 +6,8 @@ Nền tảng giải đấu bot Python tiếng Việt, dùng luật bàn cờ 9×
 
 Mở **https://oan-tu-ti-ai-arena.vercel.app/competition**. Không cần mua tên miền hoặc mở cổng máy chấm. Xem [hướng dẫn triển khai Vercel + Docker](deploy/VERCEL_JUDGE.md) và [PDF hướng dẫn mô hình mới](docs/huong-dan-vercel-docker-uet.pdf).
 
+Sinh viên đăng ký/đăng nhập bằng email **đúng tên miền `@vnu.edu.vn`**, dùng mật khẩu riêng của website. Không gửi mã xác nhận theo yêu cầu BTC: đây là lọc tên miền, **không xác minh chủ hộp thư**. Tài khoản admin hiện có được giữ lối đăng nhập; phiên cũ của tài khoản thường ngoài VNU không còn được chấp nhận. Dữ liệu và kết quả cũ vẫn được giữ. Xem [nộp đồng thời và chính sách tài khoản](docs/NOP_DONG_THOI_VNU.md).
+
 ## Chạy toàn bộ trên máy local
 
 ```sh
@@ -13,7 +15,7 @@ npm run competition:init
 docker compose up -d --build --wait
 ```
 
-Mở **http://localhost:3000/competition**. Đăng ký tài khoản, rồi chủ máy cấp quyền BTC bằng `docker compose exec app node docker/admin.mjs your@email.com`.
+Mở **http://localhost:3000/competition**. Đăng ký tài khoản VNU, rồi chủ máy cấp quyền BTC bằng `docker compose exec app node docker/admin.mjs your@vnu.edu.vn`.
 
 - [Hướng dẫn sử dụng và vận hành tiếng Việt](docs/HUONG_DAN_SU_DUNG.md)
 - [PDF hướng dẫn](docs/huong-dan-su-dung-ai-arena.pdf)

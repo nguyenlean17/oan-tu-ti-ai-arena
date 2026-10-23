@@ -12,7 +12,7 @@ function normalize(row, fields) {
   const numbers = new Set(fields.filter(field => field.dataTypeID === 20).map(field => field.name));
   return Object.fromEntries(Object.entries(row).map(([key, value]) => [key, numbers.has(key) && value !== null ? Number(value) : value]));
 }
-export async function withCompetition(fn, { write = false, connectionString = process.env.DATABASE_URL, schema = 'arena_competition' } = {}) {
+export async function withCompetition(fn, { write = false, submission, connectionString = process.env.DATABASE_URL, schema = 'arena_competition' } = {}) {
   if (!connectionString) throw new Error('DATABASE_URL is required.');
   if (!/^[a-z][a-z0-9_]*$/.test(schema)) throw new Error('Invalid database schema.');
   const client = new Client({ connectionString, connectionTimeoutMillis: 10000 });
@@ -22,9 +22,13 @@ export async function withCompetition(fn, { write = false, connectionString = pr
     await client.query(write ? 'BEGIN' : 'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY'); begun = true;
     await client.query(`SET LOCAL search_path TO ${schema},public`);
     await client.query("SET LOCAL statement_timeout='45000'; SET LOCAL lock_timeout='8000'");
-    // ponytail: pilot-sized tournaments serialize writes, matching SQLite's safety.
-    // Upgrade to event-scoped locks only after measuring contention; reads do not wait.
-    if (write) await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [schema]);
+    if (submission && (!write || typeof submission.event !== 'string' || typeof submission.user !== 'string')) throw new Error('Invalid submission transaction.');
+    // Submissions share the control lock, then serialize only their own team.
+    // Exclusive control writes (freeze/revoke/results/leases) still fence every
+    // submission, including during rolling deployments of the old adapter.
+    // ponytail: control writes remain serialized; shard these after measuring worker contention.
+    if (write) await client.query(submission ? 'SELECT pg_advisory_xact_lock_shared(hashtext($1))' : 'SELECT pg_advisory_xact_lock(hashtext($1))', [schema]);
+    if (submission) await client.query('SELECT t.id FROM members m JOIN teams t ON t.id=m.team WHERE m.event=$1 AND m."user"=$2 FOR UPDATE OF t', [submission.event, submission.user]);
     let batching = false;
     const inserts = new Map();
     async function flush() {

@@ -62,11 +62,16 @@ export async function competitionRequest(request, judge = false) {
       const membership = await withCompetition(db => db.prepare('SELECT t.repo FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(body.event, user.id));
       if (!membership?.repo) fail('BTC chưa gắn GitHub repository cho đội.', 403);
       const source = await gitSource(membership.repo, body.commit);
-      return send(200, await withCompetition(db => submit(db, user, body.event, source, `github:${membership.repo}@${body.commit}:bot.py`), { write: true }));
+      return send(200, await withCompetition(db => submit(db, user, body.event, source, `github:${membership.repo}@${body.commit}:bot.py`), { write: true, submission: { event: body.event, user: user.id } }));
+    }
+    if (body.action === 'submit') {
+      z.string().min(1).max(100).parse(body.event);
+      return send(200, await withCompetition(db => submit(db, user, body.event, body.source), { write: true, submission: { event: body.event, user: user.id } }));
     }
     return send(200, await withCompetition(db => action(db, user, body), { write: true }));
   } catch (error) {
     const validation = error instanceof z.ZodError, conflict = error.code === '23505';
-    return send(error.status || (validation || conflict ? 400 : 503), { error: validation ? error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ') : conflict ? 'Tên đội, hạt giống hoặc sinh viên đã tồn tại.' : error.status ? error.message : 'Không thể kết nối giải đấu. Hãy thử lại sau.' });
+    const status = error.status || (validation || conflict ? 400 : 503);
+    return send(status, { error: validation ? error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ') : conflict ? 'Tên đội, hạt giống hoặc sinh viên đã tồn tại.' : error.status ? error.message : 'Hệ thống đang bận. Hãy thử lại sau vài giây; gửi lại cùng bài sẽ không tạo bản trùng.' }, status === 503 || status === 429 ? { 'Retry-After': status === 429 ? '5' : '3' } : {});
   }
 }

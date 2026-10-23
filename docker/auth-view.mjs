@@ -4,7 +4,7 @@ export function authPage({ mode, csrf, returnTo, error = '', email = '', name = 
   const title = logout ? 'Hẹn gặp lại trên bàn cờ.' : signup ? 'Chiến thuật của bạn bắt đầu ở đây.' : 'Trở lại đấu trường.';
   const action = logout ? 'Đăng xuất' : signup ? 'Tạo tài khoản' : 'Đăng nhập';
   const fields = logout ? '<p class="logout-copy">Bạn muốn đăng xuất tài khoản trên thiết bị này?</p>' : `${signup ? `<label>Tên hiển thị<input name="name" autocomplete="nickname" minlength="2" maxlength="60" value="${escape(name)}" required></label>` : ''}
-    <label>Email<input name="email" type="email" autocomplete="username" maxlength="254" value="${escape(email)}" required></label>
+    <label>Email VNU<input name="email" type="email" autocomplete="username" maxlength="254" placeholder="tenban@vnu.edu.vn" value="${escape(email)}" required></label>
     <label>Mật khẩu<input name="password" type="password" autocomplete="${signup ? 'new-password' : 'current-password'}" ${signup ? 'minlength="12"' : ''} maxlength="128" required aria-describedby="password-help"></label>
     <p id="password-help" class="field-help">${signup ? 'Dùng 12–128 ký tự. Chọn mật khẩu riêng cho tài khoản này.' : 'Nhập mật khẩu bạn đã tạo tại đấu trường này.'}</p>
     ${signup ? '<label>Nhập lại mật khẩu<input name="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>' : ''}`;
@@ -17,5 +17,5 @@ export function authPage({ mode, csrf, returnTo, error = '', email = '', name = 
     ${error ? `<div class="error" role="alert">${escape(error)}</div>` : ''}
     <form method="post" action="/${mode}"><input type="hidden" name="csrf" value="${escape(csrf)}"><input type="hidden" name="return_to" value="${escape(returnTo)}">${fields}<button type="submit">${action} <span aria-hidden="true">→</span></button></form>
     <p class="switch">${logout ? '<a href="/">Tiếp tục chơi</a>' : signup ? `Đã có tài khoản? <a href="/login?return_to=${encodeURIComponent(returnTo)}">Đăng nhập</a>` : `Lần đầu đến đây? <a href="/register?return_to=${encodeURIComponent(returnTo)}">Tạo tài khoản</a>`}</p>
-    <p class="account-note">Dùng tài khoản trên địa chỉ do ban tổ chức cung cấp. Mã tham gia đội được BTC cấp riêng.</p></div></section></main></body></html>`;
+    <p class="account-note">Sinh viên dùng email @vnu.edu.vn và mật khẩu riêng của website, không dùng mật khẩu hộp thư trường. Không gửi mã xác nhận email. Mã tham gia đội được BTC cấp riêng. Tài khoản quản trị hiện có vẫn đăng nhập được.</p></div></section></main></body></html>`;
 }
