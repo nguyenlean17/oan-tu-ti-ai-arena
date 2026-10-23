@@ -29,6 +29,11 @@ jobs:
         run: node tests/vnu-cloud-smoke.test.mjs
       - name: Verify PostgreSQL transactions, leases and frozen results
         run: docker compose -f compose.local.yaml run --rm --no-deps -v "$PWD:/workspace" -w /workspace app node tests/competition-postgres.test.mjs
+      - name: Verify profiles, bot storage, friend rooms and account isolation
+        env:
+          OTT_DOCKER_URL: http://localhost:3000
+          OTT_DOCKER_RESTART: '0'
+        run: node tests/docker.test.mjs
       - name: Verify 4000 total submissions at concurrency 64
         run: docker compose -f compose.local.yaml run --rm --no-deps -e SUBMISSION_TEST_TOTAL=4000 -e SUBMISSION_TEST_CONCURRENCY=64 -e SUBMISSION_TEST_REPORT=/tmp/submission-load.json -v "$PWD:/workspace" -w /workspace app node tests/submission-concurrency.test.mjs
       - name: Verify operation with app Internet disconnected

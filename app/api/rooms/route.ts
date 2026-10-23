@@ -1,6 +1,7 @@
 import { env } from '@/lib/platform';
 import { getChatGPTUser } from '../../chatgpt-auth';
 import { replayGame,playTurn } from '../../../lib/player-game.mjs';
+import { validRequestOrigin } from '../../../lib/request-origin.mjs';
 
 export const dynamic='force-dynamic';
 type Room={id:string,host_id:string,host_name:string,guest_id:string|null,guest_name:string|null,moves:string,revision:number,status:string,winner:string|null,reason:string|null,created:string,expires:string};
@@ -24,7 +25,7 @@ export async function GET(request:Request){
 export async function POST(request:Request){
   const user=await getChatGPTUser();if(!user)return json({error:'Đăng nhập để chơi với bạn bè.'},401);
   const db=env.DB;if(!db)return json({error:'Không thể kết nối phòng đấu.'},503);
-  const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)return json({error:'Origin không hợp lệ.'},403);
+  if(!validRequestOrigin(request))return json({error:'Origin không hợp lệ.'},403);
   try{
     const raw=await request.text();if(raw.length>2048)return json({error:'Yêu cầu quá lớn.'},413);
     const input=JSON.parse(raw),stamp=new Date().toISOString();

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { localSandbox } from '../lib/local-sandbox.mjs';
+import './request-origin.test.mjs';
 for(const kind of ['runner','player']){
   const html=localSandbox(kind,'http://localhost:3000');
   assert.ok(html.includes('http://localhost:3000/pyodide/'));

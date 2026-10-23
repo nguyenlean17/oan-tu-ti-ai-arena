@@ -1,6 +1,7 @@
 import { getChatGPTUser } from '../../chatgpt-auth';
 import { env } from '@/lib/platform';
 import { simulate,verifyReplay } from '../../../lib/engine.mjs';
+import { validRequestOrigin } from '../../../lib/request-origin.mjs';
 export const dynamic='force-dynamic';
 const json=(v:unknown,status=200)=>Response.json(v,{status,headers:{'Cache-Control':'no-store'}});
 const now=()=>new Date().toISOString();
@@ -22,7 +23,7 @@ export async function GET(){try{
   return json({profile,bots:bots.results,matches:matches.results.map((m:any)=>({...m,replay:JSON.parse(m.replay)})),tournaments:tournaments.results,registrations:registrations.results,isAdmin,canSetup:!admin&&user.canBootstrap,counts,audit:audit.results});
 }catch(e){return json({error:e instanceof Error&&e.message==='AUTH'?'Vui lòng đăng nhập để lưu dữ liệu.':'Không thể tải dữ liệu. Hãy thử lại.'},e instanceof Error&&e.message==='AUTH'?401:503);}}
 export async function POST(request:Request){try{
-  const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)return json({error:'Origin không hợp lệ.'},403);
+  if(!validRequestOrigin(request))return json({error:'Origin không hợp lệ.'},403);
   if(Number(request.headers.get('content-length')||0)>100000)return json({error:'Dữ liệu quá lớn.'},413);
   const {user,db}=await context();const raw=await request.text();if(raw.length>100000)return json({error:'Dữ liệu quá lớn.'},413);const body=JSON.parse(raw);const stamp=now();
   const admin=await db.prepare("SELECT value FROM settings WHERE key='admin'").first<{value:string}>();
