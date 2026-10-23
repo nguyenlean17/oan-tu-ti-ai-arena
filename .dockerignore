@@ -9,6 +9,7 @@ dist
 .next-local
 public/pyodide
 .vercel
+.vercel-global
 .vinext
 .env*
 .agents
