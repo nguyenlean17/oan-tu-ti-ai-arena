@@ -44,7 +44,8 @@ assert.equal(data.jobs.find(j=>j.kind==='validate'&&j.status==='done')?.count,5)
 const own = await users[0].call(`/api/competition?event=${event}`);
 assert.ok(own.submissions.some(s=>s.status==='invalid'));
 assert.ok(own.submissions.some(s=>s.status==='valid'));
-await admin.post({ action:'config', event, config:{...config,deadline:new Date(admin.serverTime-60000).toISOString()} });
+await admin.post({ action:'config', event, config:{...config,deadline:new Date(admin.serverTime+2000).toISOString()} });
+await sleep(3000);
 assert.equal((await admin.post({action:'freeze',event})).entrants,4);
 for(let n=0;n<180;n++) {
   data=await admin.call(`/api/competition?event=${event}`);

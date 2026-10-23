@@ -37,9 +37,10 @@ TypeScript passed. The detector flagged the blue top border on the square page h
 ## Vercel + local Docker judge — 23/10/2026
 
 - Production website/API deployed to https://oan-tu-ti-ai-arena.vercel.app; accounts and tournament records use Neon PostgreSQL in a separate arena_competition schema. Local SQLite data is retained independently.
-- Real production smoke: 4 labeled demo teams, 4 valid bots and 1 invalid submission, all 5 validations completed by the local Docker worker; 6 games across groups/knockout, public replay, restricted export and publication passed. Demo event: 37219666-58a9-4a3e-a437-30b801d1a4be.
+- Real production smoke: 4 labeled demo teams, 4 valid bots and 1 invalid submission, all 5 validations completed by the local Docker worker; 6 games across groups/knockout, public replay, restricted export and publication passed. Final production demo event: b5cc42fd-dc64-4a95-8922-bf296f99ba0e.
 - PostgreSQL integration uses a disposable random schema: concurrent lease requests grant one worker, duplicate result submission commits once, wrong-worker heartbeat fails, numeric fields decode correctly, full tournament reaches publication. Batched writes roll back on a constraint failure.
 - Synthetic scheduling benchmark: 128 entrants, 3,968 group games scheduled in 4,497 ms. This measures scheduling only, not bot execution or simultaneous student traffic.
 - SQLite lifecycle regression, engine/human play, Vercel API auth/origin/body limits, TypeScript and production Docker build passed. Real Wasmtime image tests passed hostile-code checks, sample bots, full game and timeout forfeits.
 - New Vietnamese operating guide: deploy/VERCEL_JUDGE.md and docs/huong-dan-vercel-docker-uet.pdf (4 pages, all rendered and visually checked).
 - Remaining ceiling: pilot control serializes writes with a PostgreSQL advisory transaction lock. Free service quotas and 4,000 simultaneous participants are not certified. Stop idle workers outside contest periods; polling can prevent database suspension.
+- GitHub CI passed for the deployed runtime/Compose revision e4e35b7: https://github.com/nguyenlean17/oan-tu-ti-ai-arena/actions/runs/39898390014. Cloud smoke-test deadlines use the server Date header with a short future cutoff, so fresh submissions remain eligible despite clock skew.
