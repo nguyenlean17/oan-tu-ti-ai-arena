@@ -16,7 +16,7 @@ def choose_move(state):
     return max(state["legal_moves"], key=score)
 `;
 export function runPython(code:string,opponent:string,onReady:()=>void):{promise:Promise<any>,cancel:()=>void}{
-  const frame=document.createElement('iframe');frame.sandbox.add('allow-scripts');frame.src='/sandbox/runner.html';frame.hidden=true;frame.setAttribute('aria-hidden','true');
+  const frame=document.createElement('iframe');frame.sandbox.add('allow-scripts');frame.src=process.env.NEXT_PUBLIC_LOCAL_RUNTIME==='1'?'/api/sandbox?kind=runner':'/sandbox/runner.html';frame.hidden=true;frame.setAttribute('aria-hidden','true');
   const runId=crypto.randomUUID();let rejectRun:(e:Error)=>void=()=>{};let watchdog:ReturnType<typeof setTimeout>;
   const cleanup=()=>{clearTimeout(watchdog);window.removeEventListener('message',receive);frame.remove();};
   let resolveRun:(r:any)=>void=()=>{};

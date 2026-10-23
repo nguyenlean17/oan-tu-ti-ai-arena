@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
-import { neon } from '@neondatabase/serverless';
+import { database } from '../lib/postgres.mjs';
 import { withCompetition } from '../competition/postgres.mjs';
 import { action, overview, leaseJob, heartbeat, finishJob, exportEvent, sha, RUNTIME_VERSION } from '../competition/store.mjs';
 import { createInitialBoard, referenceMove, applyMove, ENGINE_VERSION } from '../lib/engine.mjs';
 
-if (!process.env.DATABASE_URL) throw new Error('Run with an explicit database environment file.');
-const schema = `test_comp_${randomBytes(8).toString('hex')}`, sql = neon(process.env.DATABASE_URL);
+if (!process.env.DATABASE_URL && !process.env.DATABASE_URL_FILE) throw new Error('Run with an explicit database environment file.');
+const schema = `test_comp_${randomBytes(8).toString('hex')}`, sql = database();
 const statements = (await readFile(new URL('../deploy/competition-schema.sql', import.meta.url), 'utf8')).replaceAll('arena_competition', schema).split(';').map(s => s.trim()).filter(Boolean);
-await sql.transaction(statements.map(text => sql.query(text)));
+await sql.transaction(statements);
 const write = fn => withCompetition(fn, { schema, write: true }), read = fn => withCompetition(fn, { schema });
 const admin = { id: 'test-admin', email: 'test-admin@example.test', is_admin: 1 };
 const users = [0, 1].map(i => ({ id: `test-user-${i}`, email: `test-${i}@example.test` }));

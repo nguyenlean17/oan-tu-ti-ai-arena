@@ -2,6 +2,16 @@
 
 Nền tảng giải đấu bot Python tiếng Việt, dùng luật bàn cờ 9×9 của dự án ban đầu. Giải chính thức hỗ trợ Vercel + Neon PostgreSQL cho website và bộ chấm Docker tại máy BTC; vẫn giữ tùy chọn chạy toàn bộ bằng Docker/SQLite.
 
+## Toàn bộ chạy local: Docker + PostgreSQL
+
+```sh
+npm ci
+npm run local:init
+docker compose -f compose.local.yaml up -d --build --wait
+```
+
+Mở **http://localhost:3000/competition**. Web, API, tài khoản, hàng đợi, database, bộ chấm và runtime Python luyện tập đều chạy tại máy. Xem [hướng dẫn setup, chuyển dữ liệu, LAN và backup](deploy/LOCAL_POSTGRES.md). Project Vercel/Neon và volume SQLite cũ được giữ nguyên; các bản có dữ liệu độc lập. Lần build đầu và nộp bài qua GitHub vẫn cần Internet; tải `.py` và chấm giải không cần cloud khi chạy.
+
 ## Website Vercel + bộ chấm tại máy BTC
 
 Mở **https://oan-tu-ti-ai-arena.vercel.app/competition**. Không cần mua tên miền hoặc mở cổng máy chấm. Xem [hướng dẫn triển khai Vercel + Docker](deploy/VERCEL_JUDGE.md) và [PDF hướng dẫn mô hình mới](docs/huong-dan-vercel-docker-uet.pdf).

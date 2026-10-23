@@ -17,4 +17,6 @@ work
 backups
 output
 .next-docker
+.next-local
+public/pyodide
 .impeccable/review

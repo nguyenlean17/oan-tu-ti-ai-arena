@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import { sessionUser } from '../lib/vercel-auth-store.mjs';
 import { withCompetition } from './postgres.mjs';
@@ -33,7 +34,7 @@ export async function competitionRequest(request, judge = false) {
   try {
     if (process.env.ARENA_DEPLOYMENT === 'docker') fail('API này do gateway Docker xử lý.', 503);
     if (judge) {
-      const key = process.env.JUDGE_TOKEN || '';
+      const key = process.env.JUDGE_TOKEN_FILE ? readFileSync(process.env.JUDGE_TOKEN_FILE, 'utf8').trim() : process.env.JUDGE_TOKEN || '';
       if (key.length < 32 || !timingSafeEqual(hash(request.headers.get('authorization') || ''), hash(`Bearer ${key}`))) fail('Worker chưa được cấp quyền.', 401);
       if (request.method !== 'POST') fail('Method not allowed', 405);
       const body = await bodyOf(request, 262144), worker = z.string().min(1).max(100).parse(body.worker);

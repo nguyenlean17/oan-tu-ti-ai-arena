@@ -1,13 +1,23 @@
 import assert from 'node:assert/strict';
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { CloudClient } from './cloud-client.mjs';
 import { verifyExport } from '../scripts/verify-tournament-export.mjs';
 
-const base=process.env.ARENA_CLOUD_TEST_ORIGIN;
-if(process.env.ARENA_ALLOW_CLOUD_SMOKE!=='1'||base!=='https://oan-tu-ti-ai-arena.vercel.app')throw new Error('Explicit opt-in to this project production smoke test required. Creates labeled QA records.');
+const local=!!process.env.ARENA_LOCAL_TEST_ORIGIN;
+const base=process.env.ARENA_LOCAL_TEST_ORIGIN||process.env.ARENA_CLOUD_TEST_ORIGIN;
+if(local){const u=new URL(base);if(process.env.ARENA_ALLOW_LOCAL_SMOKE!=='1'||!['localhost','127.0.0.1'].includes(u.hostname)||u.origin!==base)throw new Error('Explicit loopback-only local smoke test required.');}
+else if(process.env.ARENA_ALLOW_CLOUD_SMOKE!=='1'||base!=='https://oan-tu-ti-ai-arena.vercel.app')throw new Error('Explicit opt-in to this project production smoke test required. Creates labeled QA records.');
 const nonce=randomBytes(6).toString('hex'),admin=new CloudClient(base),guest=new CloudClient(base);
-const credentials=JSON.parse(readFileSync('.secrets/vercel-demo-admin.json','utf8'));
+const accountFile=local?'.secrets/local-admin.json':'.secrets/vercel-demo-admin.json';
+if(local&&!existsSync(accountFile)){
+  const email=`arena-local-btc-${nonce}@vnu.edu.vn`,password=randomBytes(24).toString('base64url');
+  await admin.register(email,'BTC LOCAL QA',password);
+  const grant=spawnSync('docker',['compose','-f','compose.local.yaml','exec','-T','app','node','scripts/local-admin.mjs',email],{encoding:'utf8',timeout:20000,windowsHide:true});
+  assert.equal(grant.status,0,'Local organizer grant failed');mkdirSync('.secrets',{recursive:true});writeFileSync(accountFile,JSON.stringify({email,password,origin:base}),{mode:0o600});
+}
+const credentials=JSON.parse(readFileSync(accountFile,'utf8'));
 await admin.login(credentials.email,credentials.password);
 assert.equal((await admin.call('/api/competition')).user.admin,true,'Existing admin retains access');
 const attempt=async(mode,email,password)=>{
@@ -18,7 +28,13 @@ for(const email of [`qa-${nonce}@gmail.com`,`qa-${nonce}@vnu.edu.vn.evil.test`,`
   const response=await attempt('register',email,randomBytes(24).toString('base64url'));await response.text();assert.equal(response.status,400);
 }
 const config={groupCount:1,qualifiers:2,deadline:new Date(admin.serverTime+86400000).toISOString(),seed:42,maxPlies:20,moveMs:2000,startupMs:8000,memoryMB:128,extraSets:0};
-const event=(await admin.post({action:'create',name:`QA VNU + nộp đồng thời — ${nonce}`,config})).id;
+if(local){
+  for(const kind of ['runner','player']){const r=await fetch(base+'/api/sandbox?kind='+kind);assert.equal(r.status,200);const html=await r.text();assert.ok(!html.includes('https://cdn.jsdelivr.net'));assert.ok(html.includes(base+'/pyodide/'));}
+  const manifest=await(await fetch(base+'/pyodide/manifest.json')).json();assert.equal(manifest.version,'0.27.7');
+  for(const [file,entry]of Object.entries(manifest.files)){const r=await fetch(base+'/pyodide/'+file);assert.equal(r.status,200);assert.equal(r.headers.get('access-control-allow-origin'),'*');assert.equal((await r.arrayBuffer()).byteLength,entry.bytes);}
+  console.log('Local Python assets and opaque sandbox URLs verified; no runtime CDN references.');
+}
+const event=(await admin.post({action:'create',name:`QA ${local?'LOCAL ':''}VNU + nộp đồng thời — ${nonce}`,config})).id;
 await admin.post({action:'open',event});
 const users=[];
 for(let i=0;i<2;i++){
@@ -60,4 +76,4 @@ assert.equal(detail.event.status,'review');await admin.post({action:'publish',ev
 const exported=await admin.call(`/api/competition?event=${event}&export=1`),verification=verifyExport(exported);
 assert.equal(verification.entrants,2);assert.equal(verification.verifiedReplays,4);
 const report={url:`${base}/competition#${event}`,status:exported.event.status,concurrentPosts:16,uniqueSubmissions:2,verification,checks:['VNU registration and uppercase login','non-VNU/lookalike/subdomain rejected','wrong password rejected','existing admin preserved','membership required; forged team ignored','concurrent duplicate posts committed once per team','Docker validation and full tournament','late submission rejected'],finishedAt:new Date().toISOString()};
-mkdirSync('output',{recursive:true});writeFileSync('output/vnu-cloud-smoke.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+mkdirSync('output',{recursive:true});writeFileSync(local?'output/local-smoke.json':'output/vnu-cloud-smoke.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));

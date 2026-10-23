@@ -1,19 +1,20 @@
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
-import { neon } from '@neondatabase/serverless';
+import path from 'node:path';
+import { database } from '../lib/postgres.mjs';
 import { withCompetition } from '../competition/postgres.mjs';
 import { submit } from '../competition/store.mjs';
 
 // Synthetic roster only, in a disposable schema. Never creates student accounts
 // or jobs in the live tournament schema, and never invokes a Python worker.
-if (!process.env.DATABASE_URL) throw new Error('Supply a test database environment.');
+if (!process.env.DATABASE_URL && !process.env.DATABASE_URL_FILE) throw new Error('Supply a test database environment.');
 const total=Number(process.env.SUBMISSION_TEST_TOTAL||100),concurrency=Number(process.env.SUBMISSION_TEST_CONCURRENCY||16);
 assert.ok(Number.isInteger(total)&&total>=4&&total<=4000);
 assert.ok(Number.isInteger(concurrency)&&concurrency>=2&&concurrency<=128);
-const schema=`test_submit_${randomBytes(8).toString('hex')}`,sql=neon(process.env.DATABASE_URL);
+const schema=`test_submit_${randomBytes(8).toString('hex')}`,sql=database();
 const ddl=(await readFile(new URL('../deploy/competition-schema.sql',import.meta.url),'utf8')).replaceAll('arena_competition',schema).split(';').map(s=>s.trim()).filter(Boolean);
-await sql.transaction(ddl.map(text=>sql.query(text)));
+await sql.transaction(ddl);
 const write=fn=>withCompetition(fn,{schema,write:true});
 const send=(i,source='def choose_move(state): return state["legal_moves"][0]')=>withCompetition(db=>submit(db,{id:`user-${i}`},'event',source),{schema,write:true,submission:{event:'event',user:`user-${i}`}});
 const config={groupCount:32,qualifiers:1,deadline:new Date(Date.now()+86400000).toISOString(),seed:42,maxPlies:200,moveMs:2000,startupMs:8000,memoryMB:128,extraSets:1};
@@ -56,7 +57,8 @@ try {
   await assert.rejects(()=>send(total,'# late\ndef choose_move(s): return s["legal_moves"][0]'),{status:400});
   samples.sort((a,b)=>a-b);
   const report={total,concurrency,successful:samples.length,errors,elapsedMs,throughputPerSecond:Number((total*1000/elapsedMs).toFixed(2)),p50Ms:samples[Math.floor(samples.length*.5)],p95Ms:samples[Math.floor(samples.length*.95)],maxMs:samples.at(-1),checks:['independent teams overlap','duplicate source commits once','same team burst rate limited','atomic source/job/audit counts','closed deadline rejects late submission'],scope:'Database submission path with synthetic memberships, not end-to-end HTTP or 4000 simultaneous users',finishedAt:new Date().toISOString()};
-  await mkdir('output',{recursive:true});await writeFile('output/submission-load.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+  const reportFile=process.env.SUBMISSION_TEST_REPORT||'output/submission-load.json';
+  await mkdir(path.dirname(reportFile),{recursive:true});await writeFile(reportFile,JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 } finally {
   assert.match(schema,/^test_submit_[a-f0-9]{16}$/);
   await sql.query(`DROP SCHEMA ${schema} CASCADE`);

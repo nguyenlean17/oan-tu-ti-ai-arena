@@ -1,5 +1,5 @@
 export function createPythonPlayer(code:string,onStatus:(status:string)=>void){
-  const frame=document.createElement('iframe');frame.sandbox.add('allow-scripts');frame.src='/sandbox/player.html';frame.hidden=true;frame.setAttribute('aria-hidden','true');
+  const frame=document.createElement('iframe');frame.sandbox.add('allow-scripts');frame.src=process.env.NEXT_PUBLIC_LOCAL_RUNTIME==='1'?'/api/sandbox?kind=player':'/sandbox/player.html';frame.hidden=true;frame.setAttribute('aria-hidden','true');
   const session=crypto.randomUUID();let disposed=false,sequence=0;
   let readyResolve:()=>void=()=>{},readyReject:(e:Error)=>void=()=>{};
   let pending:{request:number,resolve:(move:any)=>void,reject:(error:Error)=>void}|null=null;

@@ -1,5 +1,5 @@
 import { Client, neonConfig } from '@neondatabase/serverless';
-import { sqlForPostgres } from '../lib/postgres.mjs';
+import { sqlForPostgres, nativePostgres, postgresPool, connectionString as configuredConnection } from '../lib/postgres.mjs';
 
 neonConfig.webSocketConstructor = globalThis.WebSocket;
 
@@ -12,13 +12,14 @@ function normalize(row, fields) {
   const numbers = new Set(fields.filter(field => field.dataTypeID === 20).map(field => field.name));
   return Object.fromEntries(Object.entries(row).map(([key, value]) => [key, numbers.has(key) && value !== null ? Number(value) : value]));
 }
-export async function withCompetition(fn, { write = false, submission, connectionString = process.env.DATABASE_URL, schema = 'arena_competition' } = {}) {
-  if (!connectionString) throw new Error('DATABASE_URL is required.');
+export async function withCompetition(fn, { write = false, submission, connectionString, schema = 'arena_competition' } = {}) {
+  connectionString = configuredConnection(connectionString);
   if (!/^[a-z][a-z0-9_]*$/.test(schema)) throw new Error('Invalid database schema.');
-  const client = new Client({ connectionString, connectionTimeoutMillis: 10000 });
+  const native = nativePostgres();
+  const client = native ? await postgresPool(connectionString).connect() : new Client({ connectionString, connectionTimeoutMillis: 10000 });
   let begun = false;
   try {
-    await client.connect();
+    if (!native) await client.connect();
     await client.query(write ? 'BEGIN' : 'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY'); begun = true;
     await client.query(`SET LOCAL search_path TO ${schema},public`);
     await client.query("SET LOCAL statement_timeout='45000'; SET LOCAL lock_timeout='8000'");
@@ -71,5 +72,5 @@ export async function withCompetition(fn, { write = false, submission, connectio
   } catch (error) {
     if (begun) await client.query('ROLLBACK').catch(() => {});
     throw error;
-  } finally { await client.end().catch(() => {}); }
+  } finally { if (native) client.release(); else await client.end().catch(() => {}); }
 }

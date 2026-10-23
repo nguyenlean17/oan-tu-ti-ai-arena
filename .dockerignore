@@ -6,6 +6,8 @@ dist
 .next
 .next-vercel
 .next-docker
+.next-local
+public/pyodide
 .vercel
 .vinext
 .env*
