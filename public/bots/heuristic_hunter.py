@@ -110,3 +110,21 @@ def choose_move(state: dict) -> dict:
 
     best_move = max(options, key=evaluate_move)
     return {"from": best_move["from"], "to": best_move["to"]}
+
+
+if __name__ == "__main__":
+    import sys
+    if "--self-test" in sys.argv:
+        print("=== BỘ TỰ CHẨN ĐOÁN THÍ SINH (UC Berkeley Tri-Tier Support) ===")
+        test_state = {
+            "player": "P1",
+            "board": [[None]*9 for _ in range(9)],
+            "legal_moves": [{"from": "B8", "to": "B7"}, {"from": "B8", "to": "A7"}],
+            "history": [],
+            "turn": 0
+        }
+        test_state["board"][7][1] = {"player": "P1", "type": "ROCK"}
+        res = choose_move(test_state)
+        assert res in test_state["legal_moves"], f"[E03] Nước đi không hợp lệ: {res}"
+        print(f"✅ [Tự Kiểm Tra]: Hàm choose_move hoạt động tốt, trả về: {res}")
+        print("🎉 Bot của bạn ĐẠT CHUẨN để nộp bài vào giải đấu UET BattleCode 2026!")
