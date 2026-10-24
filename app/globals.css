@@ -13,3 +13,19 @@
 @media(max-width:380px){.content{padding:22px 13px 0}.intro-copy{padding:24px 21px}.intro-copy h2{font-size:29px}.intro-copy p{max-width:180px;font-size:10px}.strategy-tokens{right:7px;width:95px}.token{width:59px;height:66px}.token svg{width:34px}.token-paper{right:20px;top:60px}.token-scissors{top:113px}.intro-copy>.text-link{display:flex;margin:12px 0 0}.intro-footer{font-size:7px;gap:12px;padding:12px 18px}.stats-strip>div{padding:18px 13px;gap:10px}.stats-strip small{display:none}.mini-arena{padding:20px}.mini-board{padding:0;gap:12px}.mini-match{min-width:75px}.mini-match strong{font-size:9px}.mini-match button{font-size:7px}.mini-match .versus{margin:7px 0}.board-wrap{width:65%}.arena-foot{font-size:6px}.arena-foot>.mono{display:none}.replay-controls{gap:10px}.replay-controls .mono{margin-left:4px}}
 @media(max-width:650px){.strategy-tokens{display:none}.intro-copy{max-width:100%;padding-right:27px}.intro-copy p{max-width:275px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.sidebar{max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.main-shell,.content,.overview-hero>*,.lower-grid>*,.editor-layout>*,.replay-layout>*{min-width:0}
+
+@media(max-width:800px){.sidebar{width:min(228px,calc(100vw - 32px))}}
+@media(max-width:650px){
+.content{padding-left:clamp(13px,4.4vw,18px);padding-right:clamp(13px,4.4vw,18px)}
+.topbar{padding-left:clamp(12px,3.1vw,20px);padding-right:clamp(12px,3.1vw,20px)}
+.page-title{gap:clamp(12px,4vw,18px)}
+.page-title h1{font-size:clamp(23px,7vw,25px)}
+.intro-copy{padding-left:clamp(21px,6.8vw,27px);padding-right:clamp(21px,6.8vw,27px)}
+.intro-copy h2{font-size:clamp(29px,8.8vw,34px)}
+.mini-arena{padding-left:clamp(18px,6.4vw,25px);padding-right:clamp(18px,6.4vw,25px)}
+.stats-strip>div,.stats-strip>div>div{min-width:0}
+.stats-strip>div>div>span{overflow-wrap:anywhere}
+}
