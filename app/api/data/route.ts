@@ -1,4 +1,4 @@
-import { getChatGPTUser } from '../../chatgpt-auth';
+import { getArenaUser } from '../../arena-auth';
 import { env } from '@/lib/platform';
 import { simulate,verifyReplay } from '../../../lib/engine.mjs';
 import { validRequestOrigin } from '../../../lib/request-origin.mjs';
@@ -6,7 +6,7 @@ export const dynamic='force-dynamic';
 const json=(v:unknown,status=200)=>Response.json(v,{status,headers:{'Cache-Control':'no-store'}});
 const now=()=>new Date().toISOString();
 const id=()=>crypto.randomUUID();
-async function context(){const user=await getChatGPTUser();if(!user)throw new Error('AUTH');if(!env.DB)throw new Error('DB');return {user,db:env.DB};}
+async function context(){const user=await getArenaUser();if(!user)throw new Error('AUTH');if(!env.DB)throw new Error('DB');return {user,db:env.DB};}
 export async function GET(){try{
   const {user,db}=await context();
   const [profile,admin,bots,matches,tournaments,registrations,counts]=await Promise.all([

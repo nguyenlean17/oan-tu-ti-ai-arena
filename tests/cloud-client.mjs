@@ -16,7 +16,7 @@ export class CloudClient {
   post(body, status) { return this.call('/api/competition', body, status); }
   async auth(mode, email, name, password) {
     const html = await this.call('/' + mode), csrf = /name="csrf" value="([a-f0-9]+)"/.exec(html)[1];
-    const r = await fetch(this.base + '/' + mode, { redirect: 'manual', method: 'POST', headers: { Cookie: this.cookies(), Origin: this.base, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email, name, password, confirm: password, csrf, return_to: '/competition' }) });
+    const r = await fetch(this.base + '/' + mode, { redirect: 'manual', method: 'POST', headers: { Cookie: this.cookies(), Origin: this.base, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email, name, phone:'0123456789', password, confirm: password, csrf, return_to: '/competition' }) });
     assert.equal(r.status, 303, (await r.text()).slice(0,300)); this.remember(r);
   }
   register(email, name, password) { return this.auth('register', email, name, password); }

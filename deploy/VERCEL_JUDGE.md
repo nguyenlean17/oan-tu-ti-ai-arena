@@ -2,7 +2,7 @@
 
 Website: **https://oan-tu-ti-ai-arena.vercel.app/competition**. Không cần mua tên miền.
 
-Sinh viên dùng email đúng `@vnu.edu.vn` và mật khẩu riêng của website. Không gửi mã xác nhận email theo yêu cầu BTC; lọc tên miền không chứng minh chủ hộp thư. Admin hiện có giữ quyền đăng nhập. Xem [chính sách tài khoản và nộp đồng thời](../docs/NOP_DONG_THOI_VNU.md).
+Thí sinh dùng email hợp lệ bất kỳ, họ tên, số điện thoại và mật khẩu riêng của website. Email không được xác minh qua thư; BTC cần gửi reset link dùng một lần bằng kênh đáng tin cậy. Xem [hướng dẫn tài khoản và tham gia](../docs/TAI_KHOAN_VA_THAM_GIA.md).
 
 ## Ai dùng gì?
 
@@ -48,7 +48,7 @@ npx vercel deploy --prod
 5. BTC đăng ký tài khoản trên website. Chủ database cấp quyền cho **đúng tài khoản đã xác nhận**:
 
 ```powershell
-node --env-file=.env.vercel.local scripts/vercel-admin.mjs your@vnu.edu.vn
+node --env-file=.env.vercel.local scripts/vercel-admin.mjs your@email.com
 ```
 
 Ở `/competition`, quyền này mở trực tiếp mục **Ban tổ chức**. Không lấy quyền từ tên hiển thị, email tự khai hay header do trình duyệt gửi. Nhiều máy chấm có thể dùng cùng secret; khi thay secret trên Vercel, phải cập nhật tất cả máy được phép rồi redeploy.

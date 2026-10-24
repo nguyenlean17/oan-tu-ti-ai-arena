@@ -7,9 +7,9 @@ npm run competition:init
 docker compose up --build -d
 ```
 
-Open **http://localhost:3000**, choose **Đăng nhập → Tạo tài khoản**, and register your own email, display name, and password (12–128 characters). No default passwords or seeded accounts exist. The app does not send email or offer email verification/password recovery in this version.
+Open **http://localhost:3000** and register with your name, email, phone number, and password (12–128 characters). Any syntactically valid email domain is accepted; the app does not verify mailbox ownership or send email.
 
-The Docker copy has independent accounts and data. The existing ChatGPT Sites deployment keeps its platform sign-in. The Docker copy uses the same application, board rules, API, browser Python sandbox, and friend rooms.
+The Docker copy has independent accounts and data. Sites is public and anonymous; it has no sign-in or account features. On `/competition`, an entrant creates a team of up to four people or requests to join an existing team. BTC can manage accounts and teams there, including one-use password-reset links that expire after 30 minutes; BTC must deliver the link manually over a trusted channel.
 
 The `arena-data` named volume stores `auth.sqlite`, `competition.sqlite` and `casual.sqlite`. Restarting or rebuilding preserves them. Previous Docker D1 data is copied to the new casual SQLite database, with the original retained. `docker compose down` stops services without removing the volume. Avoid `docker compose down -v` unless you intend to erase that copy's accounts and games. Full tournament instructions: [Vietnamese manual](../docs/HUONG_DAN_SU_DUNG.md).
 

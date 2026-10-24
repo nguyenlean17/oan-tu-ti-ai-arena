@@ -1,5 +1,5 @@
 import { env } from '@/lib/platform';
-import { getChatGPTUser } from '../../chatgpt-auth';
+import { getArenaUser } from '../../arena-auth';
 import { replayGame,playTurn } from '../../../lib/player-game.mjs';
 import { validRequestOrigin } from '../../../lib/request-origin.mjs';
 
@@ -17,13 +17,13 @@ async function find(db:D1Database,id:unknown){
   return db.prepare('SELECT * FROM rooms WHERE id=? AND expires>?').bind(id,new Date().toISOString()).first<Room>();
 }
 export async function GET(request:Request){
-  const user=await getChatGPTUser();if(!user)return json({error:'Đăng nhập để vào phòng.'},401);
+  const user=await getArenaUser();if(!user)return json({error:'Đăng nhập để vào phòng.'},401);
   if(!env.DB)return json({error:'Không thể kết nối phòng đấu.'},503);
   try{const room=await find(env.DB,new URL(request.url).searchParams.get('room'));return room?json(view(room,user.userId)):json({error:'Phòng không tồn tại hoặc đã hết hạn (24 giờ).'},404);}
   catch{return json({error:'Không tải được phòng. Hãy thử lại.'},503);}
 }
 export async function POST(request:Request){
-  const user=await getChatGPTUser();if(!user)return json({error:'Đăng nhập để chơi với bạn bè.'},401);
+  const user=await getArenaUser();if(!user)return json({error:'Đăng nhập để chơi với bạn bè.'},401);
   const db=env.DB;if(!db)return json({error:'Không thể kết nối phòng đấu.'},503);
   if(!validRequestOrigin(request))return json({error:'Origin không hợp lệ.'},403);
   try{

@@ -14,10 +14,11 @@ class Client {
   async register(email, name, password) {
     const html = await this.call('/register');
     const csrf = /name="csrf" value="([a-f0-9]+)"/.exec(html)[1];
-    const r = await fetch(base + '/register', { redirect: 'manual', method: 'POST', headers: { Cookie: [...this.jar].map(([k, v]) => `${k}=${v}`).join('; '), Origin: base, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email, name, password, confirm: password, csrf, return_to: '/competition' }) });
+    const r = await fetch(base + '/register', { redirect: 'manual', method: 'POST', headers: { Cookie: [...this.jar].map(([k, v]) => `${k}=${v}`).join('; '), Origin: base, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email, name, phone:'0123456789', password, confirm: password, csrf, return_to: '/competition' }) });
     assert.equal(r.status, 303, await r.text());
     for (const c of r.headers.getSetCookie()) { const [k, v] = c.split(';')[0].split('='); this.jar.set(k, v); }
   }
+  registerParticipant(input) { return this.call('/api/competition', { action:'register', phone:'0123456789', ...input }); }
   post(body, expected = 200) { return this.call('/api/competition', body, expected); }
 }
 const nonce = randomBytes(4).toString('hex'), admin = new Client(), anonymous = new Client();
@@ -33,16 +34,25 @@ await anonymous.post({ action: 'team', event, name: 'Spoofed', seed: 99 }, 401);
 const workerDenied = await fetch(base + '/api/judge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }); assert.equal(workerDenied.status, 401);
 await admin.post({ action: 'open', event });
 const started = Date.now();
+const participants=[];
 for (let i = 0; i < 16; i++) {
   const user = new Client(), studentEmail = `arena-demo-${nonce}-${i}@vnu.edu.vn`;
-  await user.register(studentEmail, `Sinh viên DEMO ${i + 1}`, randomBytes(18).toString('base64url'));
-  const team = (await admin.post({ action: 'team', event, name: `DEMO ${String(i + 1).padStart(2, '0')}`, seed: i + 1 })).id;
-  const token = (await admin.post({ action: 'invite', event, team, email: studentEmail, student: `DEMO${nonce}${i}` })).token;
-  await user.post({ action: 'join', token });
+  const studentPassword=randomBytes(18).toString('base64url');
+  const registration=await user.registerParticipant({event,role:'leader',email:studentEmail,name:`Sinh viên DEMO ${i + 1}`,password:studentPassword,confirm:studentPassword,teamName:`DEMO ${String(i + 1).padStart(2, '0')}`,roster:[]});
+  const team=registration.team;
+  participants.push({user,team});
   await user.post({ action: 'create', name: 'Not allowed', config }, 403);
   const botName = ['sprinter', 'guardian', 'tactician'][i % 3];
   await user.post({ action: 'submit', event, team: 'forged-other-team', source: readFileSync(`public/bots/${botName}.py`, 'utf8') });
 }
+const joining=new Client(),joiningEmail=`arena-demo-join-${nonce}@gmail.com`;
+const joiningPassword=randomBytes(18).toString('base64url');
+await joining.registerParticipant({event,role:'member',team:participants[0].team,email:joiningEmail,name:'Thành viên thử nghiệm',password:joiningPassword,confirm:joiningPassword});
+const pending=(await participants[0].user.call(`/api/competition?event=${event}`)).requests.find(request=>request.email===joiningEmail);
+assert.ok(pending,'Leader can see the join request');
+await participants[0].user.post({action:'team-request',event,team:participants[0].team,request:pending.id,approve:true});
+assert.equal((await joining.call(`/api/competition?event=${event}`)).owned,participants[0].team);
+await joining.post({action:'team-leave',event,team:participants[0].team});
 let detail;
 for (let attempt = 0; attempt < 300; attempt++) {
   detail = await admin.call(`/api/competition?event=${event}`);

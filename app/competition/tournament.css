@@ -7,3 +7,15 @@
 
 /* UET competition identity: blue actions; game and verdict colors retain their meaning. */
 .tc .primary,.tc-rail nav button.active{color:#fff}.tc-brand .tc-uet-mark{display:grid;place-items:center;width:43px;height:43px;border:1px solid #6e98c7;border-radius:7px;font-size:14px;font-weight:800;letter-spacing:-.05em;color:#fff;flex:none}.tc-brand b{letter-spacing:.08em}.tc-brand{gap:10px}.tc-top{border-top:3px solid #034ea1}.tc .primary:focus-visible{outline-color:#034ea1}
+.tc-participation{background:#fff;border:1px solid var(--tc-line);border-radius:12px;padding:24px!important;margin:0 0 30px!important}
+.tc-participation>p{color:var(--tc-muted)}
+.tc-participation-form{max-width:820px}
+.tc-registration-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;border:0;padding:0;margin:0}
+.tc-registration-grid legend{font-weight:650;padding:0}
+.tc-participant-team{max-width:800px}
+.tc-participant-team li{margin:8px 0;overflow-wrap:anywhere}
+.tc-participation .tc-small{margin-left:8px}
+.tc-account-actions{display:flex;gap:4px;flex-wrap:wrap}
+.tc-account-actions .tc-small{margin:0}
+.tc-account-management .tc-issued input{max-width:100%;font-size:12px}
+@media(max-width:650px){.tc-participation{padding:18px!important}.tc-registration-grid{grid-template-columns:minmax(0,1fr)}}

@@ -37,19 +37,30 @@ Mở **http://localhost:3000/competition**. `local:init` không ghi đè secret 
 sudo chown 1000:1000 .secrets/local-postgres-url .secrets/local-judge-token
 ```
 
+### Sửa giao diện với dữ liệu database
+
+Giữ Podman chạy, mở terminal PowerShell khác và chạy dev server có hot reload:
+
+```powershell
+$env:ARENA_LOCAL_API_ORIGIN = "http://localhost:3000"
+npm run dev
+```
+
+Mở **http://localhost:5173/competition**. Giao diện được cập nhật trực tiếp khi sửa code; API, đăng nhập và database tiếp tục dùng app trong Podman. Nếu sửa API/server, chạy lại `npm run podman:up` để build app mới.
+
 Không xóa `.secrets/` khi vẫn dùng volume cũ: database và worker cần đúng secret ban đầu. Secret không nằm trong Git/image. Build app tự tạo schema khi chạy trên database mới.
 
 ### Đăng nhập và cấp quyền BTC
 
 Nếu đã nhập dữ liệu cloud: dùng lại tài khoản/mật khẩu cũ; phải đăng nhập lại vì phiên local đã được làm mới. Thông tin BTC demo local được lưu riêng trong `.secrets/local-admin.json` trên máy hiện tại, không nằm trong repository.
 
-Nếu cài mới hoàn toàn: đăng ký tài khoản `@vnu.edu.vn` ở website local rồi cấp quyền đúng người:
+Nếu cài mới hoàn toàn: đăng ký tài khoản bằng email cá nhân ở website local rồi cấp quyền BTC cho đúng người:
 
 ```powershell
-docker compose -f compose.local.yaml exec app node scripts/local-admin.mjs your@vnu.edu.vn
+docker compose -f compose.local.yaml exec app node scripts/local-admin.mjs your@email.com
 ```
 
-Đăng xuất/đăng nhập lại để dùng mục Ban tổ chức. Lọc tên miền VNU không xác minh chủ hộp thư; BTC vẫn phải đối chiếu danh sách và cấp mã đội riêng. Không dùng mật khẩu hộp thư trường làm mật khẩu website.
+Đăng xuất/đăng nhập lại để dùng mục Ban tổ chức. Email không được xác minh qua thư; không dùng mật khẩu hộp thư làm mật khẩu website. Thí sinh đăng ký đội tại `/competition`.
 
 ## 2. Dữ liệu đã chuyển
 
@@ -116,7 +127,7 @@ Sinh viên mở `http://IP-MAY-CHU:3000/competition`, không dùng `localhost` t
 
 ## 7. Kết quả kiểm thử và giới hạn
 
-- HTTP: đăng nhập admin đã nhập, đăng ký VNU, 16 POST đồng thời thành đúng 2 bài; giải QA đủ 4 ván, replay khớp và đã công bố.
+- HTTP: đăng nhập admin đã nhập, tài khoản đăng ký email cá nhân, 16 POST đồng thời thành đúng 2 bài; giải QA đủ 4 ván, replay khớp và đã công bố.
 - PostgreSQL local: 4.000 bài tổng, concurrency 64, **0 lỗi**, 11,981 giây, 333,86 bài/giây, p95 260 ms. Đây là đường nhận bài vào database, không phải 4.000 người qua HTTP và không phải chấm xong 4.000 bot; không so trực tiếp với phép đo cloud khác môi trường.
 - Khi ngắt mạng Internet của riêng app, đăng nhập/đăng ký, chạy Pyodide local, kiểm tra bài bằng worker, thi đấu đủ 4 ván và công bố vẫn thành công. Mạng nội bộ database/judge được giữ; Internet được nối lại sau bài thử.
 - Lease, kết quả trùng, chia bảng/loại trực tiếp, rollback được kiểm thử trên PostgreSQL local. Control/worker vẫn còn khóa ghi chung; cần đo contention khi tăng số máy chấm. Cấu hình máy, điện, ổ đĩa và mạng LAN trở thành giới hạn thay cho quota cloud.

@@ -6,7 +6,7 @@ const request = (headers = {}, body = '{}') => new Request(origin + '/api/compet
 assert.equal((await competitionRequest(request(), true)).status, 401);
 assert.equal((await competitionRequest(request({ Origin: 'https://attacker.example' }))).status, 403);
 assert.equal((await competitionRequest(request({ 'sec-fetch-site': 'cross-site' }))).status, 403);
-assert.equal((await competitionRequest(request({ 'x-arena-bootstrap': '1', 'oai-authenticated-user-id': 'admin' }))).status, 401);
+assert.equal((await competitionRequest(request({ 'x-arena-admin': '1', 'x-arena-user-id': 'admin' }))).status, 401);
 process.env.JUDGE_TOKEN = 'test-secret-that-is-long-enough-for-worker-authentication';
 assert.equal((await competitionRequest(request({ Authorization: 'Bearer wrong' }), true)).status, 401);
 assert.equal((await competitionRequest(request({ Authorization: `Bearer ${process.env.JUDGE_TOKEN}` }, 'invalid'), true)).status, 400);

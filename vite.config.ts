@@ -13,6 +13,7 @@ const { d1, r2 } = hostingConfig;
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const managedLinux = readExecutionProfile() === "managed-linux";
+const localApiOrigin = process.env.ARENA_LOCAL_API_ORIGIN;
 
 const localBindingConfig = {
   main: "./build/sites-worker.ts",
@@ -56,13 +57,31 @@ export default defineConfig(async ({ command }) => {
       ...(managedLinux
         ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] }
         : {}),
+      ...(localApiOrigin
+        ? {
+            proxy: Object.fromEntries(
+              ["/api", "/login", "/logout", "/reset-password"].map((path) => [
+                path,
+                {
+                  target: localApiOrigin,
+                  changeOrigin: true,
+                  configure(proxy) {
+                    proxy.on("proxyReq", (proxyRequest) => {
+                      proxyRequest.setHeader("origin", new URL(localApiOrigin).origin);
+                    });
+                  },
+                },
+              ]),
+            ),
+          }
+        : {}),
       ...(isCodexSeatbeltSandbox
         ? { watch: { useFsEvents: false, usePolling: true } }
         : {}),
     },
     plugins: [
       vinext(),
-      sites({ mockAuth: !managedLinux }),
+      sites(),
       connectorPreview(),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },

@@ -30,7 +30,10 @@
     "test:accounts": "node tests/account-policy.test.mjs",
     "test:submissions": "node tests/submission-concurrency.test.mjs",
     "local:init": "node scripts/local-init.mjs",
-    "local:backup": "node scripts/local-backup.mjs"
+    "local:backup": "node scripts/local-backup.mjs",
+    "podman:up": "powershell -ExecutionPolicy Bypass -File scripts/podman-local.ps1 up",
+    "podman:down": "powershell -ExecutionPolicy Bypass -File scripts/podman-local.ps1 down",
+    "podman:status": "powershell -ExecutionPolicy Bypass -File scripts/podman-local.ps1 status"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

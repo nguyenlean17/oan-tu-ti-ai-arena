@@ -23,9 +23,10 @@ await admin.login(credentials.email,credentials.password);
 assert.equal((await admin.call('/api/competition')).user.admin,true,'Existing admin retains access');
 const attempt=async(mode,email,password)=>{
   const c=new CloudClient(base),html=await c.call('/'+mode),csrf=/name="csrf" value="([a-f0-9]+)"/.exec(html)[1];
-  return fetch(base+'/'+mode,{redirect:'manual',method:'POST',headers:{Cookie:c.cookies(),Origin:base,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({email,name:'QA domain rejection',password,confirm:password,csrf})});
+  return fetch(base+'/'+mode,{redirect:'manual',method:'POST',headers:{Cookie:c.cookies(),Origin:base,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({email,name:'QA email policy',phone:'0123456789',password,confirm:password,csrf})});
 };
-for(const email of [`qa-${nonce}@gmail.com`,`qa-${nonce}@vnu.edu.vn.evil.test`,`qa-${nonce}@uet.vnu.edu.vn`]){
+const gmail=await attempt('register',`qa-${nonce}@gmail.com`,randomBytes(24).toString('base64url'));await gmail.text();assert.equal(gmail.status,303,'Any valid email domain is allowed');
+for(const email of [`qa-${nonce}@@example.test`,`qa-${nonce}@`,`qa-${nonce}@.example.test`]){
   const response=await attempt('register',email,randomBytes(24).toString('base64url'));await response.text();assert.equal(response.status,400);
 }
 const config={groupCount:1,qualifiers:2,deadline:new Date(admin.serverTime+86400000).toISOString(),seed:42,maxPlies:20,moveMs:2000,startupMs:8000,memoryMB:128,extraSets:0};

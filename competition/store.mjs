@@ -32,9 +32,13 @@ export function openCompetition(directory) {
   const db = new DatabaseSync(path.join(directory, 'competition.sqlite'));
   db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
     CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY,name TEXT NOT NULL,status TEXT NOT NULL,config TEXT NOT NULL,paused INTEGER NOT NULL DEFAULT 0,snapshot TEXT,created INTEGER NOT NULL);
-    CREATE TABLE IF NOT EXISTS teams(id TEXT PRIMARY KEY,event TEXT NOT NULL REFERENCES events(id),name TEXT NOT NULL,seed INTEGER NOT NULL,repo TEXT,UNIQUE(event,name),UNIQUE(event,seed));
+    CREATE TABLE IF NOT EXISTS teams(id TEXT PRIMARY KEY,event TEXT NOT NULL REFERENCES events(id),name TEXT NOT NULL,seed INTEGER NOT NULL,repo TEXT,leader TEXT,deleted INTEGER NOT NULL DEFAULT 0,UNIQUE(event,name),UNIQUE(event,seed));
     CREATE TABLE IF NOT EXISTS members(event TEXT NOT NULL REFERENCES events(id),user TEXT NOT NULL,team TEXT NOT NULL REFERENCES teams(id),student TEXT NOT NULL,PRIMARY KEY(event,user));
     CREATE TABLE IF NOT EXISTS invites(hash TEXT PRIMARY KEY,event TEXT NOT NULL REFERENCES events(id),team TEXT NOT NULL REFERENCES teams(id),email TEXT NOT NULL,student TEXT NOT NULL,expires INTEGER NOT NULL,redeemed INTEGER NOT NULL DEFAULT 0);
+    CREATE TABLE IF NOT EXISTS team_roster(id TEXT PRIMARY KEY,event TEXT NOT NULL REFERENCES events(id),team TEXT NOT NULL REFERENCES teams(id),name TEXT NOT NULL,email TEXT NOT NULL,account_id TEXT);
+    CREATE UNIQUE INDEX IF NOT EXISTS team_roster_email ON team_roster(event,team,email);
+    CREATE TABLE IF NOT EXISTS team_requests(id TEXT PRIMARY KEY,event TEXT NOT NULL REFERENCES events(id),team TEXT NOT NULL REFERENCES teams(id),user TEXT NOT NULL,name TEXT NOT NULL,email TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'pending',created INTEGER NOT NULL,UNIQUE(event,user));
+    CREATE INDEX IF NOT EXISTS team_requests_team ON team_requests(team,status,created);
     CREATE TABLE IF NOT EXISTS submissions(id TEXT PRIMARY KEY,team TEXT NOT NULL REFERENCES teams(id),source TEXT NOT NULL,sha TEXT NOT NULL,status TEXT NOT NULL,verdict TEXT,provenance TEXT,created INTEGER NOT NULL,UNIQUE(team,sha));
     CREATE TABLE IF NOT EXISTS entries(event TEXT NOT NULL REFERENCES events(id),team TEXT NOT NULL REFERENCES teams(id),submission TEXT NOT NULL REFERENCES submissions(id),group_no INTEGER NOT NULL,seed INTEGER NOT NULL,PRIMARY KEY(event,team));
     CREATE TABLE IF NOT EXISTS series(id TEXT PRIMARY KEY,event TEXT NOT NULL REFERENCES events(id),stage TEXT NOT NULL,round INTEGER NOT NULL,group_no INTEGER,a TEXT NOT NULL REFERENCES teams(id),b TEXT NOT NULL REFERENCES teams(id),winner TEXT,status TEXT NOT NULL DEFAULT 'queued',extra INTEGER NOT NULL DEFAULT 0);
@@ -45,6 +49,9 @@ export function openCompetition(directory) {
     CREATE INDEX IF NOT EXISTS series_event ON series(event,stage,round);
     CREATE TABLE IF NOT EXISTS workers(id TEXT PRIMARY KEY,seen INTEGER NOT NULL,runtime TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT,actor TEXT NOT NULL,event TEXT,action TEXT NOT NULL,detail TEXT NOT NULL,created INTEGER NOT NULL);`);
+  const teamColumns = new Set(db.prepare('PRAGMA table_info(teams)').all().map(c => c.name));
+  if (!teamColumns.has('leader')) db.exec('ALTER TABLE teams ADD COLUMN leader TEXT');
+  if (!teamColumns.has('deleted')) db.exec('ALTER TABLE teams ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0');
   if (!db.prepare('PRAGMA table_info(games)').all().some(c => c.name === 'completed')) {
     db.exec('BEGIN IMMEDIATE');
     try {
@@ -89,6 +96,131 @@ export async function editConfig(db, user, event, input) {
   if (e.status === 'open' && Object.keys(config).some(key => key !== 'deadline' && config[key] !== e.config[key])) fail('Khi đã mở nhận bài, chỉ được sửa hạn nộp. Luật và giới hạn tài nguyên đã cố định.');
   (await transaction(db, async () => { (await db.prepare('UPDATE events SET config=? WHERE id=?').run(encode(config), event)); (await log(db, user.id, event, 'config', config)); }));
   return { ok: true };
+}
+const validEmail = value => z.string().trim().email().max(254).parse(value).toLowerCase();
+const rosterSize = async (db, team) => (await db.prepare(`SELECT
+  (SELECT COUNT(*) FROM members WHERE team=?) +
+  (SELECT COUNT(*) FROM team_roster r WHERE r.team=? AND r.account_id IS NULL) AS size`).get(team, team)).size;
+export async function registerTeam(db, user, input) {
+  if (!user) fail('Bạn cần đăng nhập.', 401);
+  const event = z.string().min(1).max(100).parse(input.event);
+  const e = await eventOf(db, event);
+  if (e.status !== 'open') fail('Giải hiện chưa mở đăng ký đội.');
+  if (await db.prepare('SELECT 1 FROM members WHERE event=? AND user=?').get(event, user.id)) fail('Bạn đã có đội trong giải này.');
+  if (input.role === 'member') {
+    const team = await db.prepare("SELECT id FROM teams WHERE id=? AND event=? AND deleted=0").get(input.team, event);
+    if (!team) fail('Đội không còn nhận yêu cầu tham gia.', 404);
+    if (await rosterSize(db, team.id) >= 4) fail('Đội đã đủ tối đa 4 thành viên.');
+    if (await db.prepare("SELECT 1 FROM team_requests WHERE event=? AND user=? AND status='pending'").get(event, user.id)) fail('Bạn đã gửi yêu cầu tham gia đội.');
+    const requestId = id();
+    await db.prepare(`INSERT INTO team_requests(id,event,team,user,name,email,created) VALUES(?,?,?,?,?,?,?)
+      ON CONFLICT(event,user) DO UPDATE SET id=excluded.id,team=excluded.team,name=excluded.name,email=excluded.email,status='pending',created=excluded.created`).run(requestId,event,team.id,user.id,user.name,user.email,Date.now());
+    await log(db,user.id,event,'team-request',{team:team.id,request:requestId});
+    return { request: requestId, message: 'Đã gửi yêu cầu. Chờ trưởng nhóm duyệt.' };
+  }
+  if (input.role !== 'leader') fail('Chọn vai trò trưởng nhóm hoặc thành viên.');
+  const data = z.object({
+    teamName: z.string().trim().min(2).max(80),
+    roster: z.array(z.object({ name: z.string().trim().min(2).max(60), email: z.string().trim().email().max(254) }).strict()).max(3),
+  }).strict().parse({ teamName: input.teamName, roster: input.roster });
+  const seen = new Set([user.email.toLowerCase()]);
+  for (const person of data.roster) {
+    person.email = validEmail(person.email);
+    if (seen.has(person.email)) fail('Mỗi thành viên cần một email khác nhau.');
+    seen.add(person.email);
+  }
+  const seed = ((await db.prepare('SELECT COALESCE(MAX(seed),0)+1 seed FROM teams WHERE event=?').get(event)).seed);
+  const team = id();
+  await db.prepare('INSERT INTO teams(id,event,name,seed,leader) VALUES(?,?,?,?,?)').run(team,event,data.teamName,seed,user.id);
+  await db.prepare('INSERT INTO members(event,user,team,student) VALUES(?,?,?,?)').run(event,user.id,team,user.name);
+  await db.prepare('INSERT INTO team_roster(id,event,team,name,email,account_id) VALUES(?,?,?,?,?,?)').run(id(),event,team,user.name,user.email,user.id);
+  for (const person of data.roster) await db.prepare('INSERT INTO team_roster(id,event,team,name,email) VALUES(?,?,?,?,?)').run(id(),event,team,person.name,person.email);
+  await log(db,user.id,event,'team-register',{team,size:data.roster.length+1});
+  return { team, message: 'Đã tạo đội và lưu danh sách thành viên.' };
+}
+async function manageTeam(db, user, event, input) {
+  const team = await db.prepare('SELECT * FROM teams WHERE id=? AND event=? AND deleted=0').get(input.team,event);
+  if (!team) fail('Không tìm thấy đội.',404);
+  const isLeader = team.leader === user.id;
+  if(input.action==='team-request-cancel') {
+    const request=await db.prepare("SELECT id FROM team_requests WHERE id=? AND user=? AND team=? AND status='pending'").get(input.request,user.id,team.id);
+    if(!request)fail('Yêu cầu không tồn tại hoặc đã được xử lý.',404);
+    await db.prepare("UPDATE team_requests SET status='cancelled' WHERE id=?").run(request.id);
+    await log(db,user.id,event,'team-request-cancelled',{team:team.id,request:request.id});
+    return {ok:true};
+  }
+  if (!isLeader && !user.is_admin && input.action!=='team-leave') fail('Chỉ trưởng nhóm hoặc ban tổ chức được thực hiện thao tác này.',403);
+  const e = await eventOf(db,event);
+  if (!['draft','open'].includes(e.status)) fail('Danh sách đội đã khóa.');
+  if (input.action === 'team-request') {
+    if (!isLeader) fail('Chỉ trưởng nhóm được duyệt yêu cầu.',403);
+    const request = await db.prepare("SELECT * FROM team_requests WHERE id=? AND team=? AND status='pending'").get(input.request,team.id);
+    if (!request) fail('Yêu cầu không tồn tại hoặc đã được xử lý.',404);
+    if (input.approve) {
+      const listed=await db.prepare('SELECT id FROM team_roster WHERE event=? AND team=? AND email=?').get(event,team.id,request.email);
+      if (await rosterSize(db,team.id)>=4&&!listed) fail('Đội đã đủ tối đa 4 thành viên.');
+      if (await db.prepare('SELECT 1 FROM members WHERE event=? AND user=?').get(event,request.user)) fail('Tài khoản này đã thuộc một đội.');
+      await db.prepare('INSERT INTO members(event,user,team,student) VALUES(?,?,?,?)').run(event,request.user,team.id,request.name);
+      await db.prepare(`INSERT INTO team_roster(id,event,team,name,email,account_id) VALUES(?,?,?,?,?,?)
+        ON CONFLICT(event,team,email) DO UPDATE SET name=excluded.name,account_id=excluded.account_id`).run(id(),event,team.id,request.name,request.email,request.user);
+      await db.prepare("UPDATE team_requests SET status='approved' WHERE id=?").run(request.id);
+    } else await db.prepare("UPDATE team_requests SET status='declined' WHERE id=?").run(request.id);
+    await log(db,user.id,event,input.approve?'team-request-approved':'team-request-declined',{team:team.id,request:request.id});
+    return { ok:true };
+  }
+  if (input.action === 'team-leader') {
+    if (!isLeader) fail('Chỉ trưởng nhóm hiện tại được chuyển quyền.',403);
+    if (!await db.prepare('SELECT 1 FROM members WHERE event=? AND team=? AND user=?').get(event,team.id,input.user)) fail('Trưởng nhóm mới phải là thành viên đang hoạt động.');
+    await db.prepare('UPDATE teams SET leader=? WHERE id=?').run(input.user,team.id);
+    await log(db,user.id,event,'team-leader',{team:team.id,to:input.user});
+    return { ok:true };
+  }
+  if (input.action === 'team-remove-member') {
+    if (!isLeader) fail('Chỉ trưởng nhóm được xóa thành viên.',403);
+    if (input.user===team.leader) fail('Hãy chuyển quyền trưởng nhóm trước khi rời đội.');
+    const member = await db.prepare('SELECT user FROM members WHERE event=? AND team=? AND user=?').get(event,team.id,input.user);
+    if (!member) fail('Không tìm thấy thành viên.',404);
+    await db.prepare('DELETE FROM members WHERE event=? AND team=? AND user=?').run(event,team.id,input.user);
+    await db.prepare('DELETE FROM team_roster WHERE event=? AND team=? AND account_id=?').run(event,team.id,input.user);
+    await log(db,user.id,event,'team-member-removed',{team:team.id,user:input.user});
+    return {ok:true};
+  }
+  if(input.action==='team-roster-add') {
+    if(!isLeader)fail('Chỉ trưởng nhóm được cập nhật roster.',403);
+    if(await rosterSize(db,team.id)>=4)fail('Đội đã đủ tối đa 4 thành viên.');
+    const person=z.object({name:z.string().trim().min(2).max(60),email:z.string().trim().email().max(254)}).parse(input);
+    await db.prepare('INSERT INTO team_roster(id,event,team,name,email) VALUES(?,?,?,?,?)').run(id(),event,team.id,person.name,validEmail(person.email));
+    await log(db,user.id,event,'team-roster-add',{team:team.id,email:person.email});
+    return {ok:true};
+  }
+  if(input.action==='team-roster-remove') {
+    if(!isLeader)fail('Chỉ trưởng nhóm được cập nhật roster.',403);
+    const person=await db.prepare('SELECT id FROM team_roster WHERE id=? AND event=? AND team=? AND account_id IS NULL').get(input.roster,event,team.id);
+    if(!person)fail('Chỉ có thể xóa thành viên roster chưa có tài khoản.',404);
+    await db.prepare('DELETE FROM team_roster WHERE id=?').run(person.id);
+    await log(db,user.id,event,'team-roster-remove',{team:team.id,roster:person.id});
+    return {ok:true};
+  }
+  if (input.action === 'team-leave') {
+    const member = await db.prepare('SELECT team FROM members WHERE event=? AND user=?').get(event,user.id);
+    if (!member || member.team!==team.id) fail('Bạn không thuộc đội này.',403);
+    if (team.leader===user.id) fail('Trưởng nhóm cần chuyển quyền trước khi rời đội.');
+    await db.prepare('DELETE FROM members WHERE event=? AND user=?').run(event,user.id);
+    await db.prepare('DELETE FROM team_roster WHERE event=? AND team=? AND account_id=?').run(event,team.id,user.id);
+    await log(db,user.id,event,'team-leave',{team:team.id});
+    return {ok:true};
+  }
+  if (input.action === 'team-delete') {
+    if (!isLeader && !user.is_admin) fail('Chỉ trưởng nhóm hoặc ban tổ chức được giải tán đội.',403);
+    if (await db.prepare('SELECT 1 FROM submissions WHERE team=? LIMIT 1').get(team.id) || await db.prepare('SELECT 1 FROM entries WHERE event=? AND team=? LIMIT 1').get(event,team.id)) fail('Đội đã có bài nộp hoặc lịch sử thi đấu; không thể xóa để bảo toàn kết quả.');
+    await db.prepare('UPDATE teams SET deleted=1 WHERE id=?').run(team.id);
+    await db.prepare('DELETE FROM members WHERE event=? AND team=?').run(event,team.id);
+    await db.prepare('DELETE FROM team_roster WHERE event=? AND team=?').run(event,team.id);
+    await db.prepare('UPDATE team_requests SET status=\'cancelled\' WHERE event=? AND team=? AND status=\'pending\'').run(event,team.id);
+    await log(db,user.id,event,'team-deleted',{team:team.id});
+    return {ok:true};
+  }
+  fail('Thao tác đội không hợp lệ.');
 }
 export async function addTeam(db, user, event, input) {
   admin(user); const e = (await eventOf(db, event));
@@ -357,6 +489,15 @@ async function dispatchAction(db, user, body) {
   switch (body.action) {
     case 'create': return (await createEvent(db, user, body));
     case 'config': return (await editConfig(db, user, event, body.config));
+    case 'register-team': return (await registerTeam(db, user, body));
+    case 'team-request':
+    case 'team-request-cancel':
+    case 'team-leader':
+    case 'team-remove-member':
+    case 'team-roster-add':
+    case 'team-roster-remove':
+    case 'team-leave':
+    case 'team-delete': return (await manageTeam(db, user, event, body));
     case 'team': return (await addTeam(db, user, event, body));
     case 'invite': return (await invite(db, user, event, body));
     case 'join': return (await join(db, user, body.token));
@@ -389,12 +530,35 @@ async function dispatchAction(db, user, body) {
   }
 }
 
+export async function deleteParticipantAccount(db, actor, userId) {
+  admin(actor);
+  const leadership = await db.prepare("SELECT id,event FROM teams WHERE leader=? AND deleted=0").all(userId);
+  for (const team of leadership) {
+    if (await db.prepare('SELECT 1 FROM members WHERE event=? AND team=? AND user<>? LIMIT 1').get(team.event,team.id,userId)) fail('Chuyển quyền trưởng nhóm trước khi xóa tài khoản.',409);
+  }
+  return transaction(db,async()=>{
+    await db.prepare('DELETE FROM members WHERE user=?').run(userId);
+    await db.prepare('DELETE FROM team_roster WHERE account_id=?').run(userId);
+    await db.prepare("UPDATE team_requests SET status='cancelled' WHERE user=? AND status='pending'").run(userId);
+    for(const team of leadership) {
+      const history=await db.prepare('SELECT 1 FROM submissions WHERE team=? UNION SELECT 1 FROM entries WHERE event=? AND team=? LIMIT 1').get(team.id,team.event,team.id);
+      await db.prepare('UPDATE teams SET leader=NULL,deleted=? WHERE id=?').run(history?0:1,team.id);
+    }
+    await db.prepare('INSERT INTO audit(actor,event,action,detail,created) VALUES(?,NULL,?,?,?)').run(actor.id,'account-delete',encode({user:userId}),Date.now());
+    return {ok:true};
+  });
+}
 async function readOverview(db, user, event) {
   const events = (await db.prepare('SELECT * FROM events ORDER BY created DESC LIMIT 50').all()).map(decode);
-  if (!event) return { events, user: user ? { id: user.id, name: user.name, admin: !!user.is_admin } : null, runtime: RUNTIME_VERSION };
+  if (!event) return { events, user: user ? { id: user.id, name: user.name, email:user.email, phone:user.phone||'', admin: !!user.is_admin } : null, runtime: RUNTIME_VERSION };
   const e = (await eventOf(db, event)), isAdmin = !!user?.is_admin;
   const owned = user ? (await db.prepare('SELECT team FROM members WHERE event=? AND user=?').get(event, user.id))?.team : null;
-  const teams = (await db.prepare('SELECT id,name,seed,repo FROM teams WHERE event=? ORDER BY seed').all(event));
+  const teams = (await db.prepare(`SELECT t.id,t.name,t.seed,t.repo,t.leader,t.deleted,
+    (SELECT COUNT(*) FROM members m WHERE m.team=t.id)+(SELECT COUNT(*) FROM team_roster r WHERE r.team=t.id AND r.account_id IS NULL) size
+    FROM teams t WHERE t.event=? ORDER BY t.seed`).all(event));
+  const ownedTeam = owned ? teams.find(t => t.id === owned) : null;
+  const roster = owned ? await db.prepare('SELECT id,name,email,account_id FROM team_roster WHERE event=? AND team=? ORDER BY id').all(event,owned) : [];
+  const requests = user ? await db.prepare("SELECT id,team,name,email,status,created FROM team_requests WHERE event=? AND status='pending' AND (user=? OR team IN (SELECT id FROM teams WHERE leader=?)) ORDER BY created").all(event,user.id,user.id) : [];
   const submissions = owned ? (await db.prepare('SELECT id,sha,status,verdict,created,provenance FROM submissions WHERE team=? ORDER BY created DESC LIMIT 30').all(owned)) : [];
   const series = (await db.prepare('SELECT s.*,a.name a_name,b.name b_name FROM series s JOIN teams a ON a.id=s.a JOIN teams b ON b.id=s.b WHERE s.event=? ORDER BY s.stage,s.round,s.rowid LIMIT 500').all(event));
   const jobs = (await db.prepare('SELECT status,kind,COUNT(*) count FROM jobs WHERE event=? GROUP BY status,kind').all(event));
@@ -402,8 +566,10 @@ async function readOverview(db, user, event) {
   const workers = isAdmin ? (await db.prepare('SELECT id,seen,runtime FROM workers ORDER BY seen DESC LIMIT 50').all()) : [];
   const failed = isAdmin ? (await db.prepare("SELECT id,kind,subject,attempts FROM jobs WHERE event=? AND status='failed' LIMIT 50").all(event)) : [];
   const members = isAdmin ? (await db.prepare('SELECT * FROM members WHERE event=?').all(event)) : [];
+  const allRosters = isAdmin ? (await db.prepare('SELECT * FROM team_roster WHERE event=? ORDER BY team,id').all(event)) : roster;
+  const allRequests = isAdmin ? (await db.prepare('SELECT * FROM team_requests WHERE event=? ORDER BY created DESC LIMIT 500').all(event)) : requests;
   const audit = isAdmin ? (await db.prepare('SELECT * FROM audit WHERE event=? ORDER BY id DESC LIMIT 50').all(event)) : [];
-  return { ...(await overview(db, user)), event: e, owned, teams, submissions, standings: (await standings(db, event)), series, jobs, recentGames, workers, failed, members, audit };
+  return { ...(await overview(db, user)), event: e, owned, ownedTeam, roster: allRosters, requests: allRequests, teams, submissions, standings: (await standings(db, event)), series, jobs, recentGames, workers, failed, members, audit };
 }
 async function readReplay(db, game) {
   const row = (await db.prepare('SELECT g.*,s.event FROM games g JOIN series s ON s.id=g.series WHERE g.id=?').get(game));

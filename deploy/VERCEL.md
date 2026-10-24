@@ -30,7 +30,7 @@ VERCEL=1 vercel <command>
 
 `.vercel-global/` is git-ignored and Vercel-ignored because it holds credentials.
 
-Registration/login/logout reuse the Docker forms and password policy. Passwords use salted scrypt; only session-token hashes are stored. All mutations check the same origin, authentication forms also use CSRF tokens, and rate limits are incremented atomically in Postgres so concurrent serverless instances cannot bypass them. HTTPS sessions have Secure, HttpOnly and SameSite=Lax cookies. Sessions expire in seven days and logout revokes the current token in the database. This release has no email verification or password recovery.
+Registration/login/logout reuse the Docker forms and password policy. Registration requires name, phone, a syntactically valid email address from any domain, and a password from 12–128 characters. The site does not verify mailbox ownership or send email. Passwords use salted scrypt; only session-token hashes are stored. All mutations check the same origin, authentication forms also use CSRF tokens, and rate limits are incremented atomically in Postgres so concurrent serverless instances cannot bypass them. HTTPS sessions have Secure, HttpOnly and SameSite=Lax cookies. Sessions expire in seven days and logout revokes the current token in the database. BTC can issue a one-use, 30-minute password-reset link from `/competition`; the link must be delivered manually over a trusted channel.
 
 New accounts never become organizers automatically. The database owner may grant a registered account permission to claim organizer setup:
 
@@ -38,9 +38,9 @@ New accounts never become organizers automatically. The database owner may grant
 node --env-file=.env.vercel.local scripts/vercel-admin.mjs your@email.com
 ```
 
-For the official tournament workspace, open **/competition → Ban tổ chức** directly. The legacy practice area retains its own organizer setup. Existing organizer ownership is preserved. Do not expose a public setup token or put an administrator password in the repository.
+For registration, team roster management and the official tournament workspace, use **/competition**. The root path `/` remains the practice area; its duplicated tournament and organizer screens redirect to `/competition`. Sites is anonymous and has no account or sign-in routes. Existing organizer ownership is preserved. Do not expose a public setup token or put an administrator password in the repository.
 
-The Docker volume and ChatGPT Sites database are independent from this new deployment. This setup does not copy or publish their existing users or records.
+The Docker volume and Sites public practice data are independent from this deployment. This setup does not copy or publish historical records.
 
 Checks: `npm test`, `npm run test:postgres`, `npm run test:bots`. The login integration checks can target a local Next server with `OTT_DOCKER_URL=http://localhost:3001 node tests/docker.test.mjs`. To explicitly test a newly deployed Vercel site, use `OTT_ALLOW_VERCEL_TESTS=1` and set `OTT_DOCKER_URL` to its exact HTTPS URL. Those tests create labeled QA accounts and game records; use an empty test deployment before public usage.
 

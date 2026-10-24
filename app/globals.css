@@ -29,3 +29,4 @@
 .stats-strip>div,.stats-strip>div>div{min-width:0}
 .stats-strip>div>div>span{overflow-wrap:anywhere}
 }
+.reset-password{max-width:560px;margin:10vh auto;padding:32px;border:1px solid #d6dfe9;border-radius:12px;background:#fff;color:#172c44;font-family:'Be Vietnam Pro',sans-serif}.reset-password form{display:grid;gap:12px}.reset-password label{display:grid;gap:6px}.reset-password input{width:100%;padding:11px;border:1px solid #b8c8da;border-radius:7px}.reset-password button{padding:11px;border:0;border-radius:7px;background:#034ea1;color:#fff;font-weight:650}.reset-password p[role=status]{padding:12px;background:#e5efd8;border-radius:7px}

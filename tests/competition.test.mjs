@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
-import { openCompetition, action, overview, leaseJob, heartbeat, finishJob, failJob, RUNTIME_VERSION, sha, exportEvent } from '../competition/store.mjs';
+import { openCompetition, action, overview, leaseJob, heartbeat, finishJob, failJob, RUNTIME_VERSION, sha, exportEvent, deleteParticipantAccount } from '../competition/store.mjs';
 import { createInitialBoard, applyMove, legalMoves, referenceMove, ENGINE_VERSION } from '../lib/engine.mjs';
 
 mkdirSync('work', { recursive: true });
@@ -24,6 +24,32 @@ function result(job) {
 try {
   (await rejects(async () => (await action(db, users[0], { action: 'create', name: 'Unauthorized', config })), 403));
   (await rejects(async () => (await action(db, admin, { action: 'create', name: 'Invalid groups', config: { ...config, groupCount: 3 } }))));
+  const registrationEvent=(await action(db,admin,{action:'create',name:'Registration event',config})).id;
+  await action(db,admin,{action:'open',event:registrationEvent});
+  const leader={id:'new-leader',name:'Team Leader',email:'leader@example.test',is_admin:0};
+  const registered=await action(db,leader,{action:'register-team',event:registrationEvent,role:'leader',teamName:'Four Players',roster:[
+    {name:'Player Two',email:'player2@example.test'},{name:'Player Three',email:'player3@example.test'},{name:'Player Four',email:'player4@example.test'},
+  ]});
+  let registration=await overview(db,leader,registrationEvent);
+  assert.equal(registration.ownedTeam.id,registered.team);
+  assert.equal(registration.roster.length,4);
+  assert.equal(registration.teams.find(team=>team.id===registered.team).size,4);
+  await rejects(()=>action(db,{id:'fifth',name:'Fifth Player',email:'fifth@example.test'},{action:'register-team',event:registrationEvent,role:'member',team:registered.team}),400);
+  const secondLeader={id:'second-leader',name:'Second Leader',email:'second@example.test',is_admin:0};
+  const secondTeam=(await action(db,secondLeader,{action:'register-team',event:registrationEvent,role:'leader',teamName:'Open Team',roster:[]})).team;
+  const member={id:'joining-member',name:'Joining Member',email:'joining@example.test'};
+  const joinRequest=await action(db,member,{action:'register-team',event:registrationEvent,role:'member',team:secondTeam});
+  assert.equal((await db.prepare('SELECT COUNT(*) n FROM members WHERE event=? AND user=?').get(registrationEvent,member.id)).n,0);
+  assert.equal((await overview(db,secondLeader,registrationEvent)).requests.some(request=>request.id===joinRequest.request),true);
+  await action(db,secondLeader,{action:'team-request',event:registrationEvent,team:secondTeam,request:joinRequest.request,approve:true});
+  assert.equal((await db.prepare('SELECT team FROM members WHERE event=? AND user=?').get(registrationEvent,member.id)).team,secondTeam);
+  await action(db,member,{action:'team-leave',event:registrationEvent,team:secondTeam});
+  await action(db,secondLeader,{action:'team-delete',event:registrationEvent,team:secondTeam});
+  assert.equal((await db.prepare('SELECT deleted FROM teams WHERE id=?').get(secondTeam)).deleted,1);
+  const disposable={id:'disposable-leader',name:'Disposable',email:'disposable@example.test'};
+  const disposableTeam=(await action(db,disposable,{action:'register-team',event:registrationEvent,role:'leader',teamName:'Disposable Team',roster:[]})).team;
+  await deleteParticipantAccount(db,admin,disposable.id);
+  assert.equal((await db.prepare('SELECT deleted FROM teams WHERE id=?').get(disposableTeam)).deleted,1);
   const event = (await action(db, admin, { action: 'create', name: 'Integration tournament', config })).id;
   const mismatch = (await action(db, admin, { action: 'create', name: 'Pinned old runtime', config })).id;
   (await action(db, admin, { action: 'open', event: mismatch }));

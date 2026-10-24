@@ -8,7 +8,7 @@ import { competitionHandler } from '../competition/http.mjs';
 const safeReturn = value => {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\r\n]/.test(value)) return '/';
   const parsed = new URL(value, 'http://arena.invalid');
-  if (['/login', '/register', '/logout', '/signin-with-chatgpt', '/signout-with-chatgpt'].includes(parsed.pathname)) return '/';
+  if (['/login', '/register', '/logout'].includes(parsed.pathname)) return '/';
   return parsed.pathname + parsed.search + parsed.hash;
 };
 const cookies = request => Object.fromEntries((request.headers.cookie || '').split(';').map(s => s.trim().split(/=(.*)/s).slice(0, 2)));
@@ -19,7 +19,7 @@ export async function startGateway({ port = Number(process.env.PORT || 3000), or
   origin = publicUrl.origin;
   const secure = publicUrl.protocol === 'https:' ? '; Secure' : '';
   const db = openStore(directory), css = readFileSync(new URL('./auth.css', import.meta.url));
-  const competition = competitionHandler(directory);
+  const competition = competitionHandler(directory, db);
   const cookie = (name, token, ttl = 604800) => `${name}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ttl}${secure}`;
   const server = createServer(async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -36,9 +36,7 @@ export async function startGateway({ port = Number(process.env.PORT || 3000), or
       if (req.headers.host !== publicUrl.host) { send(421, `Open the arena at ${origin}`); return; }
       if (url.pathname === '/auth.css') { send(200, css, 'text/css; charset=utf-8'); return; }
       const jar = cookies(req), user = sessionUser(db, jar.arena_session);
-      // Worker requests use a separate secret, never browser identity or cookies.
-      if (url.pathname === '/signin-with-chatgpt') { redirect('/login?return_to=' + encodeURIComponent(safeReturn(url.searchParams.get('return_to')))); return; }
-      if (url.pathname === '/signout-with-chatgpt') { redirect('/logout'); return; }
+      // Competition workers use a separate secret, never browser identity or cookies.
       const mode = url.pathname.slice(1), isAuth = ['login', 'register', 'logout'].includes(mode);
       let returnTo = safeReturn(url.searchParams.get('return_to'));
       function form(status = 200, error = '', values = {}) {
@@ -67,13 +65,13 @@ export async function startGateway({ port = Number(process.env.PORT || 3000), or
           if (jar.arena_session) db.prepare('DELETE FROM sessions WHERE token_hash=?').run(digest(jar.arena_session));
           res.setHeader('Set-Cookie', [cookie('arena_session', '', 0), cookie('arena_csrf', '', 0)]); redirect('/'); return;
         }
-        const email = (input.get('email') || '').trim().toLowerCase(), password = input.get('password') || '', name = (input.get('name') || '').trim();
+        const email = (input.get('email') || '').trim().toLowerCase(), password = input.get('password') || '', name = (input.get('name') || '').trim(), phone = (input.get('phone') || '').trim();
         if (!consumeAttempt(db, req.socket.remoteAddress, email)) { res.setHeader('Retry-After', '900'); form(429, 'Bạn đã thử quá nhiều lần. Vui lòng đợi 15 phút.'); return; }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || !password || password.length > 128) { form(400, 'Nhập email hợp lệ và mật khẩu tối đa 128 ký tự.', { email, name }); return; }
         let account;
         if (mode === 'register') {
-          if (name.length < 2 || name.length > 60 || password.length < 12 || password !== input.get('confirm')) { form(400, 'Tên cần 2–60 ký tự. Mật khẩu cần 12–128 ký tự và hai lần nhập phải khớp.', { email, name }); return; }
-          try { account = await register(db, { email, name, password }); }
+          if (name.length < 2 || name.length > 60 || phone.length < 7 || phone.length > 30 || password.length < 12 || password !== input.get('confirm')) { form(400, 'Họ tên cần 2–60 ký tự, số điện thoại 7–30 ký tự. Mật khẩu cần 12–128 ký tự và hai lần nhập phải khớp.', { email, name, phone }); return; }
+          try { account = await register(db, { email, name, phone, password }); }
           catch (error) { if (error.status) { form(error.status, error.message, { email, name }); return; } throw error; }
         } else {
           account = await authenticate(db, email, password);
@@ -88,11 +86,10 @@ export async function startGateway({ port = Number(process.env.PORT || 3000), or
       const headers = { ...req.headers };
       for (const key of Object.keys(headers)) if (/^(oai-|x-arena-|x-forwarded-|cf-)/i.test(key) || ['cookie','authorization','origin','connection','transfer-encoding'].includes(key)) delete headers[key];
       if (user) {
-        headers['oai-authenticated-user-id'] = user.id;
-        headers['oai-authenticated-user-email'] = user.email;
-        headers['oai-authenticated-user-full-name'] = encodeURIComponent(user.name);
-        headers['oai-authenticated-user-full-name-encoding'] = 'percent-encoded-utf-8';
-        headers['x-arena-bootstrap'] = user.is_admin ? '1' : '0';
+        headers['x-arena-user-id'] = user.id;
+        headers['x-arena-user-email'] = user.email;
+        headers['x-arena-user-name'] = encodeURIComponent(user.name);
+        headers['x-arena-admin'] = user.is_admin ? '1' : '0';
       }
       const backend = proxyRequest(new URL(url.pathname + url.search, upstream), { method: req.method, headers, timeout: 30000 }, response => {
         const outgoing = { ...response.headers, 'Cache-Control': 'no-store' };

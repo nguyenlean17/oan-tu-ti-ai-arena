@@ -1,1 +1,0 @@
-export function GET(request:Request){const url=new URL(request.url);const target=new URL('/login',url);target.searchParams.set('return_to',url.searchParams.get('return_to')||'/');return Response.redirect(target,303);}

@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { z } from 'zod';
-import { sessionUser } from '../lib/vercel-auth-store.mjs';
+import { sessionUser, register as registerAccount, newSession, removeUnlinkedAccount } from '../lib/vercel-auth-store.mjs';
 import { withCompetition } from './postgres.mjs';
 import { overview, action, leaseJob, heartbeat, finishJob, failJob, replay, exportEvent, submit, fail } from './store.mjs';
 
@@ -57,8 +57,31 @@ export async function competitionRequest(request, judge = false) {
       return send(200, result, url.searchParams.has('export') ? { 'Content-Disposition': 'attachment; filename="tournament-export.json"' } : {});
     }
     if (request.method !== 'POST') fail('Method not allowed', 405);
-    if (!user) fail('Bạn cần đăng nhập.', 401);
     const body = await bodyOf(request, 100000);
+    if (body.action === 'register') {
+      if (user) fail('Bạn đã đăng nhập; dùng biểu mẫu đăng ký đội.');
+      const credentials = z.object({
+        email:z.string().trim().email().max(254),
+        name:z.string().trim().min(2).max(60),
+        phone:z.string().trim().min(7).max(30),
+        password:z.string().min(12).max(128),
+        confirm:z.string().min(12).max(128),
+        role:z.enum(['leader','member']),
+        event:z.string().min(1).max(100),
+      }).passthrough().parse(body);
+      if(credentials.password!==credentials.confirm) fail('Hai lần nhập mật khẩu không khớp.');
+      const account=await registerAccount(credentials);
+      let result;
+      try { result=await withCompetition(db=>action(db,account,{...credentials,...body,action:'register-team'}),{write:true}); }
+      catch(error) { await removeUnlinkedAccount(account.id); throw error; }
+      const token=await newSession(account.id), secure=request.url.startsWith('https:')||process.env.VERCEL==='1'?'; Secure':'';
+      return send(200,{...result,user:{id:account.id,name:account.name}}, {'Set-Cookie':`arena_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${secure}`});
+    }
+    if (!user) fail('Bạn cần đăng nhập.', 401);
+    if (body.action==='register-team') {
+      const result=await withCompetition(db=>action(db,user,body),{write:true});
+      return send(200,result);
+    }
     if (body.action === 'git') {
       const membership = await withCompetition(db => db.prepare('SELECT t.repo FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(body.event, user.id));
       if (!membership?.repo) fail('BTC chưa gắn GitHub repository cho đội.', 403);
