@@ -12,7 +12,7 @@
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "test": "node tests/engine.test.mjs && node tests/player-game.test.mjs && node tests/account-policy.test.mjs && node tests/local-sandbox.test.mjs",
+    "test": "node tests/engine.test.mjs && node tests/player-game.test.mjs && node tests/account-policy.test.mjs && node tests/local-sandbox.test.mjs && node tests/replay-html.test.mjs",
     "test:rooms": "node tests/rooms.test.mjs",
     "check:python": "node scripts/check-sandbox.mjs",
     "test:bots": "node tests/bots.test.mjs",

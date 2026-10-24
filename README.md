@@ -31,7 +31,7 @@ Mở **http://localhost:3000/competition**. Đăng ký tài khoản VNU, rồi c
 - [PDF hướng dẫn](docs/huong-dan-su-dung-ai-arena.pdf)
 - [Thiết kế, bất biến bảo mật và giới hạn triển khai](competition/README.md)
 
-Admin panel hỗ trợ cấu hình JSON, danh sách đội/mã mời riêng, nhận bài Python hoặc commit GitHub đã duyệt, khóa phiên bản, chia bảng, hai ván đổi bên, loại trực tiếp, replay, công bố và xuất dữ liệu. Hàng đợi SQLite có lease/heartbeat, retry hữu hạn và ghi kết quả một lần. Mỗi bot chạy trong CPython WASI/Wasmtime, không được cấp mạng, secret hay dữ liệu máy chủ. Ba bot mẫu nằm ở `public/bots/`.
+Admin panel hỗ trợ cấu hình JSON, danh sách đội/mã mời riêng, nhận bài Python hoặc commit GitHub đã duyệt, khóa phiên bản, chia bảng, hai ván đổi bên, loại trực tiếp, replay, công bố và xuất dữ liệu. Hàng đợi SQLite có lease/heartbeat, retry hữu hạn và ghi kết quả một lần. Mỗi bot chạy trong CPython WASI/Wasmtime, không được cấp mạng, secret hay dữ liệu máy chủ. Các bot mẫu nằm ở `public/bots/`.
 
 Đã chạy E2E đủ 16 đội, 62 ván bằng worker thật và kiểm thử các mẫu Python độc hại. Đây là bằng chứng chức năng; chưa phải chứng nhận chịu tải 4.000 sinh viên hoặc kiểm định an toàn độc lập. Các giải DEMO là dữ liệu thử.
 
@@ -66,7 +66,9 @@ A native Next.js deployment uses Neon Postgres for persistent accounts and game 
 
 Run `npm run competition:init`, then `docker compose up --build -d` and open **http://localhost:3000**. Register your own account; accounts and game data persist in a named volume. See [Docker setup, security, organizer access and tests](docker/README.md). The existing Sites deployment retains ChatGPT sign-in.
 
-Three standalone Python examples are included in `public/bots/`: **Sprinter**, **Guardian** and **Tactician**. Load/download them in the bot editor, or select one directly for human-vs-Python play.
+Five standalone Python examples are included in `public/bots/`: **Sprinter**, **Guardian**, **Tactician**, **Starter Config** and **Heuristic Hunter**. Load/download them in the bot editor, or select one directly for human-vs-Python play. Starter Config exposes strategy weights for beginners.
+
+Official replays can also be downloaded as a self-contained offline HTML viewer. This renders saved moves without running Python. See [selective enhancements and usage](docs/SAFE_ENHANCEMENTS.md).
 
 ## Run locally
 

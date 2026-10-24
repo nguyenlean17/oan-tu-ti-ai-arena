@@ -128,7 +128,9 @@ def choose_move(state):
 
 Bot được giữ trạng thái trong một ván, nhưng khởi tạo lại ở ván tiếp theo. Không in debug ra stdout; có thể dùng stderr với lượng nhỏ. Không dùng mạng, subprocess, pip hay extension native. Python WASI chỉ hỗ trợ một tập con thư viện chuẩn; kết quả kiểm tra chính thức mới quyết định tương thích.
 
-Ba mẫu tải được tại `/bots/sprinter.py`, `/bots/guardian.py`, `/bots/tactician.py`. Có thể luyện tập ở giao diện cũ nhưng điểm luyện tập không được tính vào giải.
+Các mẫu tải được tại `/bots/sprinter.py`, `/bots/guardian.py`, `/bots/tactician.py`, `/bots/starter_config.py` và `/bots/heuristic_hunter.py`. Starter Config cho phép chỉnh trọng số trong `BOT_CONFIG`. Điểm luyện tập không được tính vào giải.
+
+Khi xem replay chính thức, chọn **Tải HTML ngoại tuyến** để mở lại trên máy không có mạng. Tệp chỉ phát lại các nước đã lưu, không chạy bot và không thay đổi điểm giải. Đây là bản sao để xem, không phải hồ sơ có chữ ký; kết quả chính thức vẫn được quản lý trên hệ thống. Nút tải JSON vẫn được giữ để đối soát.
 
 ### Sau khi bấm nộp
 
