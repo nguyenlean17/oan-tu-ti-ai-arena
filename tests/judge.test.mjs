@@ -21,7 +21,7 @@ const blocked = [
   'print("X"*100000)\n' + source,
   'def choose_move(state):\n    return {"from":"A1","to":"I9"}\n',
 ];
-for (const code of blocked) { const r = await validateBot(payload(code)); assert.equal(r.valid, false, 'Harmful/invalid sample must not validate'); }
+for (const code of blocked) { const r = await validateBot(payload(code)); assert.equal(r.valid, false, 'Harmful/invalid sample must not validate'); assert.deepEqual(Object.keys(r).sort(), ['engine', 'message', 'runtime', 'sha', 'valid'], 'Validation must retain the strict control-plane contract'); assert.match(r.message, /^\[E0[1-6]\]/); }
 const p = { config, seed: 42, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION, p1: { source, sha: sha(source) }, p2: { source, sha: sha(source) } };
 const game = await runGame(p); verifyOfficial(p, game);
 for (const file of ['starter_config', 'heuristic_hunter']) {

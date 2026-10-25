@@ -19,6 +19,7 @@ work
 .secrets
 output
 tmp
+.report-deps
 backups
 .impeccable
 *.tsbuildinfo

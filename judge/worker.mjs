@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { RUNTIME_VERSION } from '../competition/store.mjs';
 import { runGame, validateBot } from './runner.mjs';
+import { runSimilarity } from './similarity.mjs';
 
 const base = process.env.CONTROL_URL || 'http://app:3000';
 const target = new URL(base);
@@ -16,7 +17,7 @@ process.on('SIGTERM', () => { stopping = true; });
 process.on('SIGINT', () => { stopping = true; });
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function call(body) {
-  const r = await fetch(target.origin + '/api/judge', { method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, worker, runtime: RUNTIME_VERSION }), signal: AbortSignal.timeout(15000) });
+  const r = await fetch(target.origin + '/api/judge', { method: 'POST', redirect: 'error', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, worker, runtime: RUNTIME_VERSION, capabilities: ['operations-v1'] }), signal: AbortSignal.timeout(15000) });
   const data = await r.json();
   if (!r.ok) throw Object.assign(new Error(data.error || 'Control unavailable'), { status: r.status });
   return data;
@@ -32,7 +33,7 @@ while (!stopping) {
     idle = idlePoll;
     let leaseLost = false;
     timer = setInterval(() => { call({ action: 'heartbeat', job: job.id, lease: job.lease }).catch(error => { if (error.status === 409) leaseLost = true; }); }, 20000);
-    const result = await (job.kind === 'validate' ? validateBot(job.payload) : runGame(job.payload));
+    const result = await (job.kind === 'validate' ? validateBot(job.payload) : job.kind === 'similarity' ? runSimilarity(job.payload) : runGame(job.payload));
     if (leaseLost) throw new Error('Lease expired');
     // Retrying the exact result is safe: the control commits once by lease + hash.
     for (let attempt = 0; ; attempt++) {

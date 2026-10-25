@@ -36,6 +36,7 @@ services:
     volumes:
       - ./.secrets/local-postgres-url:/run/secrets/database-url:ro
       - ./.secrets/local-judge-token:/run/secrets/judge-token:ro
+      - ./backups/local:/run/arena-backups:ro
     networks: [web, database, judge]
     mem_limit: 2g
     cpus: 2

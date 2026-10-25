@@ -1,0 +1,11 @@
+{
+  "groupCount": 8,
+  "qualifiers": 2,
+  "deadline": "2026-12-01T10:00:00.000Z",
+  "seed": 2026,
+  "maxPlies": 200,
+  "moveMs": 2000,
+  "startupMs": 8000,
+  "memoryMB": 128,
+  "extraSets": 1
+}

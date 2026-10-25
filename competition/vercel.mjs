@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { sessionUser } from '../lib/vercel-auth-store.mjs';
 import { withCompetition } from './postgres.mjs';
 import { overview, action, leaseJob, heartbeat, finishJob, failJob, replay, exportEvent, submit, fail } from './store.mjs';
+import { leaseOperation, heartbeatOperation, finishOperation, failOperation } from '../operations/store.mjs';
 
 const hash = value => createHash('sha256').update(value).digest();
 async function bodyOf(request, limit) {
@@ -38,8 +39,16 @@ export async function competitionRequest(request, judge = false) {
       if (key.length < 32 || !timingSafeEqual(hash(request.headers.get('authorization') || ''), hash(`Bearer ${key}`))) fail('Worker chưa được cấp quyền.', 401);
       if (request.method !== 'POST') fail('Method not allowed', 405);
       const body = await bodyOf(request, 262144), worker = z.string().min(1).max(100).parse(body.worker);
-      const result = await withCompetition(db => {
-        if (body.action === 'lease') return leaseJob(db, worker, body.runtime, Date.now(), body.queue || 'all');
+      const result = await withCompetition(async db => {
+        if (body.action === 'lease') {
+          const regular = await leaseJob(db, worker, body.runtime, Date.now(), body.queue || 'all');
+          return regular || (body.capabilities?.includes('operations-v1') ? leaseOperation(db, worker, body.queue || 'game') : null);
+        }
+        if (typeof body.job === 'string' && body.job.startsWith('ops-')) {
+          if (body.action === 'heartbeat') return heartbeatOperation(db, worker, body.job, body.lease);
+          if (body.action === 'finish') return finishOperation(db, worker, body.job, body.lease, body.result);
+          if (body.action === 'fail') return failOperation(db, worker, body.job, body.lease);
+        }
         if (body.action === 'heartbeat') return heartbeat(db, worker, body.job, body.lease);
         if (body.action === 'finish') return finishJob(db, worker, body.job, body.lease, body.result);
         if (body.action === 'fail') return failJob(db, worker, body.job, body.lease);

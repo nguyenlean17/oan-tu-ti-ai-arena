@@ -1,0 +1,14 @@
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+const git = args => execFileSync('git', args, { encoding: 'utf8', windowsHide: true }).trim();
+const files = git(['ls-files']).split('\n');
+if (files.some(p => /(^|\/)(\.secrets|\.env[^/]*|backups|node_modules|\.report-deps)(\/|$)/.test(p))) throw new Error('Private/runtime files must not enter the bundle');
+for (const required of ['docs/submission/BAO_CAO_UET_ARENA.pdf','docs/submission/load-overview.png','docs/submission/evidence/load-run.json']) if (!files.includes(required)) throw new Error('Commit final deliverables first: ' + required);
+if (git(['status','--porcelain'])) throw new Error('Commit reviewed changes before packaging');
+const directory = 'output/handin'; mkdirSync(directory, { recursive: true });
+const zip = directory + '/UET_Arena_Bo_Nop.zip';
+git(['archive','--format=zip','--prefix=UET-Arena/','--output='+zip,'HEAD']);
+const report = { commit: git(['rev-parse','HEAD']), branch: git(['branch','--show-current']), createdAt: new Date().toISOString(), archive: 'UET_Arena_Bo_Nop.zip', bytes: readFileSync(zip).length, sha256: createHash('sha256').update(readFileSync(zip)).digest('hex'), entrypoint: 'UET-Arena/docs/submission/README.md', excludes: ['credentials','database dumps','node_modules','local runtime data'] };
+writeFileSync(directory+'/BUNDLE_INFO.json', JSON.stringify(report,null,2));
+console.log(JSON.stringify(report,null,2));

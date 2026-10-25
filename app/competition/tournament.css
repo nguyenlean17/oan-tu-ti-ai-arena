@@ -7,3 +7,5 @@
 
 /* UET competition identity: blue actions; game and verdict colors retain their meaning. */
 .tc .primary,.tc-rail nav button.active{color:#fff}.tc-brand .tc-uet-mark{display:grid;place-items:center;width:43px;height:43px;border:1px solid #6e98c7;border-radius:7px;font-size:14px;font-weight:800;letter-spacing:-.05em;color:#fff;flex:none}.tc-brand b{letter-spacing:.08em}.tc-brand{gap:10px}.tc-top{border-top:3px solid #034ea1}.tc .primary:focus-visible{outline-color:#034ea1}
+
+.tc-rail nav a.tc-nav-link{display:block;padding:12px 14px;color:#e2edf8;font-size:13px;text-decoration:none;border-radius:7px}.tc-rail nav a.tc-nav-link:hover{background:#1e4168}.tc-queue-status{margin:22px 0;padding:16px;background:#edf4fb;border:1px solid #d5e0ea;border-radius:8px}

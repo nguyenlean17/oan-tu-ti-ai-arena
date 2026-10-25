@@ -18,6 +18,7 @@ RUN npm ci --omit=dev --ignore-scripts
 COPY judge ./judge
 COPY competition ./competition
 COPY lib/engine.mjs ./lib/engine.mjs
+COPY lib/bot-diagnostics.mjs ./lib/bot-diagnostics.mjs
 COPY lib/rules ./lib/rules
 ENV JUDGE_PYTHON=python3
 USER node

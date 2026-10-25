@@ -1,0 +1,6 @@
+{$ARENA_DOMAIN} {
+    encode zstd gzip
+    @internal path /api/judge /api/judge/*
+    respond @internal 404
+    reverse_proxy app:3000
+}

@@ -12,7 +12,7 @@
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "test": "node tests/engine.test.mjs && node tests/player-game.test.mjs && node tests/account-policy.test.mjs && node tests/local-sandbox.test.mjs && node tests/replay-html.test.mjs",
+    "test": "node tests/engine.test.mjs && node tests/player-game.test.mjs && node tests/account-policy.test.mjs && node tests/local-sandbox.test.mjs && node tests/replay-html.test.mjs && node tests/operations.test.mjs",
     "test:rooms": "node tests/rooms.test.mjs",
     "check:python": "node scripts/check-sandbox.mjs",
     "test:bots": "node tests/bots.test.mjs",
@@ -30,7 +30,9 @@
     "test:accounts": "node tests/account-policy.test.mjs",
     "test:submissions": "node tests/submission-concurrency.test.mjs",
     "local:init": "node scripts/local-init.mjs",
-    "local:backup": "node scripts/local-backup.mjs"
+    "local:backup": "node scripts/local-backup.mjs",
+    "load:init": "node scripts/load-init.mjs",
+    "load:demo": "node scripts/load-demo.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

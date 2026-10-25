@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createInitialBoard, legalMoves, applyMove, referenceMove, ENGINE_VERSION } from '../lib/engine.mjs';
 import { RUNTIME_VERSION, sha } from '../competition/store.mjs';
+import { botDiagnostic } from '../lib/bot-diagnostics.mjs';
 
 export class InfrastructureError extends Error {}
 class BotFailure extends Error {
@@ -81,7 +82,8 @@ export async function validateBot(payload) {
     return { valid: true, message: 'Đạt kiểm tra cơ bản ở hai phía. Mỗi trận vẫn áp dụng giới hạn tài nguyên.', sha: payload.sha, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION };
   } catch (error) {
     if (error instanceof InfrastructureError) throw error;
-    return { valid: false, message: String(error.message).slice(0, 1000), sha: payload.sha, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION };
+    const diagnostic = botDiagnostic(error.reason, error.message);
+    return { valid: false, message: `[${diagnostic.code}] ${diagnostic.help} ${diagnostic.message}`.slice(0, 1000), sha: payload.sha, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION };
   } finally { bot?.close(); }
 }
 export async function runGame(payload) {
@@ -106,7 +108,9 @@ export async function runGame(payload) {
     }
   } catch (error) {
     if (error instanceof InfrastructureError) throw error;
-    result.winner = player === 'P1' ? 'P2' : 'P1'; result.reason = error.reason || 'bot_error'; result.faultPlayer = player; result.phase = phase; result.message = String(error.message).slice(0, 1000);
+    result.winner = player === 'P1' ? 'P2' : 'P1'; result.reason = error.reason || 'bot_error'; result.faultPlayer = player; result.phase = phase;
+    result.diagnostic = botDiagnostic(result.reason, error.message);
+    result.message = `[${result.diagnostic.code}] ${result.diagnostic.help} ${result.diagnostic.message}`.slice(0, 1000);
   } finally { bots.forEach(bot => bot.close()); }
   return result;
 }

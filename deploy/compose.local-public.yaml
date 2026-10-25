@@ -1,0 +1,20 @@
+services:
+  app:
+    environment:
+      PUBLIC_ORIGIN: "https://${ARENA_DOMAIN:?Set the university domain}"
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      ARENA_DOMAIN: "${ARENA_DOMAIN:?Set the university domain}"
+    volumes:
+      - ./deploy/Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - campus-caddy-data:/data
+      - campus-caddy-config:/config
+    networks: [web]
+    depends_on:
+      app: { condition: service_healthy }
+volumes:
+  campus-caddy-data:
+  campus-caddy-config:

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-25T00:00:00+07:00",
+  "title": "Design System: UET Arena operations",
+  "extensions": {
+    "breakpoints": [
+      {"name":"compact-desktop","value":"1000px"},
+      {"name":"mobile","value":"650px"}
+    ],
+    "shadows": [],
+    "motion": []
+  },
+  "components": [],
+  "narrative": {
+    "overview":"Source-based inventory of the operations/practice surfaces; rendered desktop/mobile review remains pending.",
+    "keyCharacteristics":["UET blue","Flat tables","Measured telemetry","Labelled replay mode"],
+    "dos":["Use visible focus indicators and state labels."],
+    "donts":["Do not fabricate missing measurements or present replay as live traffic."]
+  }
+}

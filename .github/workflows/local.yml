@@ -29,6 +29,8 @@ jobs:
         run: node tests/vnu-cloud-smoke.test.mjs
       - name: Verify PostgreSQL transactions, leases and frozen results
         run: docker compose -f compose.local.yaml run --rm --no-deps -v "$PWD:/workspace" -w /workspace app node tests/competition-postgres.test.mjs
+      - name: Verify practice ratings, fenced leases and official isolation
+        run: docker compose -f compose.local.yaml run --rm --no-deps -e ARENA_ALLOW_OPERATIONS_TEST=1 -v "$PWD:/workspace" -w /workspace app node tests/operations-postgres.test.mjs
       - name: Verify profiles, bot storage, friend rooms and account isolation
         env:
           OTT_DOCKER_URL: http://localhost:3000

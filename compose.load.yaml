@@ -1,0 +1,76 @@
+name: uet-arena-load
+services:
+  db:
+    image: postgres:18-bookworm
+    environment:
+      POSTGRES_USER: arena
+      POSTGRES_DB: arena
+      POSTGRES_PASSWORD_FILE: /run/secrets/db-password
+    volumes:
+      - load-postgres:/var/lib/postgresql
+      - ./.secrets/load-postgres-password:/run/secrets/db-password:ro
+      - ./backups/load:/backups
+    networks: [database]
+    mem_limit: 768m
+    cpus: 1
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U arena -d arena"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  app:
+    image: uet-arena-app:operations
+    init: true
+    ports: ["127.0.0.1:3002:3000"]
+    environment:
+      PUBLIC_ORIGIN: http://localhost:3002
+      DATABASE_URL_FILE: /run/secrets/database-url
+      DATABASE_DRIVER: pg
+      PG_POOL_MAX: "20"
+      JUDGE_TOKEN_FILE: /run/secrets/judge-token
+      ARENA_LOAD_DEMO: "1"
+    volumes:
+      - ./.secrets/load-postgres-url:/run/secrets/database-url:ro
+      - ./.secrets/load-judge-token:/run/secrets/judge-token:ro
+      - ./backups/load:/run/arena-backups:ro
+      - ./output/operations:/run/arena-operations:ro
+    networks: [web, database, judge]
+    mem_limit: 1536m
+    cpus: 2
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      start_period: 40s
+      retries: 30
+  judge:
+    image: uet-arena-judge:operations
+    init: true
+    environment:
+      CONTROL_URL: http://app:3000
+      JUDGE_TOKEN_FILE: /run/secrets/judge-token
+      IDLE_POLL_MS: "1500"
+    volumes:
+      - ./.secrets/load-judge-token:/run/secrets/judge-token:ro
+    networks: [judge]
+    read_only: true
+    tmpfs: ["/tmp:size=32m,noexec,nosuid"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 1024m
+    cpus: 1
+    depends_on:
+      app: { condition: service_healthy }
+volumes:
+  load-postgres:
+networks:
+  web:
+  database:
+    internal: true
+  judge:
+    internal: true

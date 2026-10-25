@@ -1,0 +1,10 @@
+{
+  "requestedAt": 1792858524779,
+  "from": 2,
+  "to": 6,
+  "freeDockerMiB": 5470,
+  "accepted": 4000,
+  "queued": 3561,
+  "reason": "Observed CPU saturation with low actual worker RSS",
+  "completedAt": 1792858527800
+}

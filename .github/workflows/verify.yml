@@ -26,6 +26,8 @@ jobs:
       - run: docker compose up -d --build --wait
       - name: Verify hostile Python in the real sandbox
         run: docker compose run --rm -v "$PWD/tests:/app/tests:ro" -v "$PWD/public/bots:/app/public/bots:ro" judge node tests/judge.test.mjs
+      - name: Verify bounded AST review without executing submissions
+        run: docker compose run --rm --no-deps -v "$PWD:/workspace" -w /workspace judge python3 tests/similarity.test.py
       - run: npm run test:docker && npm run test:competition:e2e
       - name: Show service diagnostics on failure
         if: failure()
