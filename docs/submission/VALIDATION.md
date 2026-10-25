@@ -11,12 +11,12 @@
 - PostgreSQL operations schema tạm, parser AST và WASI bot tests đã qua trong quá trình triển khai ngày 24/10. Phiên load thật đã chạy xuyên suốt API và worker.
 - Run `859f0c413587`: 4.000 bài HTTP tiếp nhận; 4.032 validation và 126 game done; replay xác minh; Elo giữ nguyên sau restart. Xem evidence JSON, không chỉ ảnh biểu đồ.
 - PDF 8 trang: đã render và kiểm tra font tiếng Việt, bố cục, sơ đồ và biểu đồ.
+- Ngày 25/10 sau khi khôi phục Docker: chạy lại PostgreSQL operations và API, đều PASS. `/health`, `/load-demo`, demo metrics trả 200; metrics quản trị không đăng nhập trả 401. Hai worker healthy; kết quả 4.000 bài và 126 trận của phiên đo được giữ nguyên.
+- Backup sau burst đã restore vào DB riêng và đối chiếu khớp: 4.134 accounts, 6 events, 4.160 submissions, 252 games, 6 ops_bots, 6 ops_ratings, 16 ops_pairs và 44 ops_jobs. Đây là tổng database gồm cả các lần thử trước; không phải số riêng run 859f0c413587. Xem `evidence/restore-after-load.json`. Bản kiểm tra đối chiếu số bản ghi, không phải chứng minh mọi giá trị từng hàng đều giống nhau.
 
 ## Chưa khẳng định
 
-- Bản restore đã thành công trước burst 4.000 bài; không phải bằng chứng restore toàn bộ dữ liệu sau burst.
-- Kiểm tra bổ sung restore các bảng ops_* và chạy lại PostgreSQL cuối bị gián đoạn do Docker daemon không phản hồi sau sự cố đầy ổ host. Không tính lần chạy treo là PASS.
 - Không có visual QA desktop/mobile đầy đủ. Xem UI_REVIEW.md (`disposition: recapture`).
 - Chưa cài DNS/TLS và systemd backup timer trên hạ tầng trường; chưa thử HA hoặc 4.000 người đồng thời.
 
-Trạng thái cuối có thể cập nhật khi Docker được khôi phục; giữ kết quả đo gốc bất biến. Không đưa tài khoản fixture, token/cookie, backup hoặc secret vào bộ nộp.
+Các lần kiểm tra bị treo khi Docker không phản hồi không được tính là PASS; chỉ lần chạy hoàn tất sau khôi phục mới được ghi nhận. Kết quả đo tải gốc được giữ bất biến. Không đưa tài khoản fixture, token/cookie, backup hoặc secret vào bộ nộp.

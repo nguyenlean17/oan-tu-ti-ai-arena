@@ -170,6 +170,8 @@ Queue đạt đỉnh 4.013 job; cuối phiên hết official backlog. Có 4.032 
 
 Bộ test bao gồm engine, account policy, sandbox, replay, competition API, operations API/PostgreSQL trong schema tạm và AST không chạy source. WASI được kiểm tra với bot lỗi/nguy hiểm. Phiên HTTP thật hoàn tất nhận bài, drain, giải nhỏ và độ bền Elo qua restart. Evidence JSON và biểu đồ không chứa token/cookie; không nộp fixture login hoặc database dump.
 
+Ngày 25/10, sau khi khôi phục Docker, web và hai worker hoạt động; chạy lại PostgreSQL/API đều qua. Backup sau đợt tải đã restore vào database riêng và đối chiếu số bản ghi khớp cả dữ liệu giải lẫn ops_bots/ratings/pairs/jobs. Evidence restore-after-load.json phản ánh tổng database, gồm các lần thử trước; không phải số riêng phiên tải. Kiểm tra số bản ghi không thay thế đối chiếu mọi giá trị dữ liệu.
+
 Chưa chứng minh 4.000 người đồng thời đăng nhập/polling, source lớn đồng loạt, full tournament 4.000 bot, DDoS Internet, HA tự failover hoặc an toàn tuyệt đối. Review AST chỉ là hỗ trợ; email chưa xác minh. Thời gian giải phụ thuộc runtime và lịch đấu thực tế.
 
 ## Cần nghiệm thu tại trường

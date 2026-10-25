@@ -1,0 +1,16 @@
+{
+  "backup": "backups/load/arena-2026-10-25T12-14-09.499Z.dump",
+  "bytes": 2082064,
+  "counts": {
+    "accounts": 4134,
+    "events": 6,
+    "submissions": 4160,
+    "games": 252,
+    "ops_bots": 6,
+    "ops_ratings": 6,
+    "ops_pairs": 16,
+    "ops_jobs": 44
+  },
+  "restoredToSeparateDatabase": true,
+  "finishedAt": "2026-10-25T12:14:16.767Z"
+}

@@ -7,6 +7,7 @@ Mục tiêu triển khai: trường sở hữu tên miền, chạy toàn bộ we
 - `BAO_CAO_UET_ARENA.pdf`: báo cáo kiến trúc, bảo mật, an toàn thực thi, ổn định, chi phí, setup và kết quả đo.
 - `load-overview.png`: biểu đồ từ dữ liệu thật; không phải mô phỏng.
 - `evidence/load-run.json`, `evidence/scale-evidence.json`: số liệu đã loại thông tin đăng nhập.
+- `evidence/restore-after-load.json`: kết quả restore backup sau đợt tải, gồm các bảng giải và operations; tổng số bản ghi bao gồm cả lịch sử thử trước.
 - `DEMO.md`: kịch bản trình bày và checklist bàn giao.
 - `tournament-example.json`: config hợp lệ cho ví dụ 32 đội/8 bảng; sửa deadline theo ngày thi thật (giá trị mẫu là UTC). BTC dán vào phần cấu hình JSON khi tạo giải nháp. Không thay cấu hình đã freeze.
 - `VALIDATION.md`: kết quả kiểm tra và các giới hạn nghiệm thu.
