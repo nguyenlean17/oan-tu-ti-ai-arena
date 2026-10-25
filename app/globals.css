@@ -14,7 +14,19 @@
 @media(max-width:650px){.strategy-tokens{display:none}.intro-copy{max-width:100%;padding-right:27px}.intro-copy p{max-width:275px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
-.sidebar{max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.sidebar{height:100dvh;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
+.sidebar>*{flex-shrink:0}
+@media(max-height:820px){
+.sidebar{padding-top:16px;padding-bottom:12px}
+.sidebar .brand{padding-bottom:20px}
+.sidebar .workspace-label{margin-bottom:6px}
+.sidebar .nav-item{padding-top:8px;padding-bottom:8px}
+.sidebar .nav-divider{margin-top:12px;margin-bottom:12px}
+.sidebar .sidebar-bottom{padding-top:12px}
+.sidebar .help-box{padding:12px;margin-bottom:12px}
+.sidebar .help-box>svg{margin-bottom:6px}
+.sidebar .repo-link{padding-top:8px;padding-bottom:8px}
+}
 .main-shell,.content,.overview-hero>*,.lower-grid>*,.editor-layout>*,.replay-layout>*{min-width:0}
 
 @media(max-width:800px){.sidebar{width:min(228px,calc(100vw - 32px))}}
