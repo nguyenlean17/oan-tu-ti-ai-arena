@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-25T00:00:00+07:00",
+  "title": "Design System: UET Arena practice workspace",
+  "extensions": {
+    "breakpoints": [
+      { "name": "compact-desktop", "value": "1000px" },
+      { "name": "stacked-practice", "value": "650px" }
+    ],
+    "shadows": [],
+    "motion": [
+      { "name": "inherited-control-transition", "value": "background .18s, color .18s, border-color .18s, transform .18s", "purpose": "Inherited control feedback; reduced-motion preference removes transitions." }
+    ],
+    "typographyMeta": {
+      "source": { "displayName": "Python source", "purpose": "Editable draft code, distinct from the Vietnamese task interface." }
+    }
+  },
+  "components": [
+    {
+      "name": "Task action",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Shared outlined treatment for explicitly labeled self-check, benchmark, load, and Elo actions.",
+      "html": "<button class=\"ds-task\">Tự kiểm tra bản nháp</button>",
+      "css": ".ds-task{font:12px 'Be Vietnam Pro',system-ui,sans-serif;border:1px solid #a9bfd3;background:#fff;color:#034ea1;padding:10px 13px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;min-height:39px;transition:background .18s,color .18s,border-color .18s,transform .18s}.ds-task:hover{background:#e8f0f8}.ds-task:focus-visible{outline:3px solid #4381bc;outline-offset:3px}.ds-task:disabled{opacity:.45;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-task{transition:none}}"
+    },
+    {
+      "name": "Reference selector",
+      "kind": "input",
+      "description": "Labeled full-width field with the five supported reference opponents.",
+      "html": "<label class=\"ds-field\">Bot tham chiếu<select><option>Starter Config</option><option>Heuristic Hunter</option><option>Sprinter</option><option>Guardian</option><option>Tactician</option></select></label>",
+      "css": ".ds-field{display:grid;gap:8px;margin:16px 0;font:12px 'Be Vietnam Pro',system-ui,sans-serif;color:#18344d;max-width:100%}.ds-field select{width:100%;max-width:100%;font:inherit;border:1px solid #a9bfd3;background:#fff;color:#034ea1;padding:10px 13px;border-radius:6px;min-height:39px;cursor:pointer}.ds-field select:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+    },
+    {
+      "name": "Draft editor",
+      "kind": "input",
+      "refersTo": "source-editor",
+      "description": "Plain labeled Python draft field with monospace code and visible keyboard focus.",
+      "html": "<label class=\"ds-source\">choose_move(state)<textarea spellcheck=\"false\">def choose_move(state):\n    return state[\"legal_moves\"][0]</textarea></label>",
+      "css": ".ds-source{display:block;margin:12px 0;font:12px 'Be Vietnam Pro',system-ui,sans-serif;color:#18344d}.ds-source textarea{display:block;width:100%;font:12px/1.7 monospace;border:1px solid #a9bfd3;padding:14px;min-height:280px;background:#fff;color:#18344d}.ds-source textarea:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+    },
+    {
+      "name": "Workspace navigation",
+      "kind": "nav",
+      "description": "Compact UET-blue text links with a wrapping mobile arrangement.",
+      "html": "<nav class=\"ds-nav\"><a href=\"/competition\">Giải đấu</a><a href=\"/\">Editor &amp; bot mẫu</a></nav>",
+      "css": ".ds-nav{display:flex;gap:24px;font:13px 'Be Vietnam Pro',system-ui,sans-serif}.ds-nav a{color:#034ea1;text-decoration:none;text-underline-offset:4px}.ds-nav a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}@media(max-width:650px){.ds-nav{gap:15px;flex-wrap:wrap;font-size:12px}}"
+    },
+    {
+      "name": "Benchmark disclosure",
+      "kind": "custom",
+      "description": "Flat native report disclosure; summary counts remain separate from per-game measured data.",
+      "html": "<details class=\"ds-benchmark\"><summary>Starter Config · bản nháp · 2/2 ván · 1 thắng / 0 hòa / 1 thua</summary><p>Thời gian gồm startup và giao tiếp WASI; không dùng để phân thắng thua.</p></details>",
+      "css": ".ds-benchmark{margin-top:16px;font:12px 'Be Vietnam Pro',system-ui,sans-serif;color:#18344d;overflow:auto;border-bottom:1px solid #d5e0ea;padding:8px 0}.ds-benchmark summary{cursor:pointer;padding:12px 0;line-height:1.7}.ds-benchmark summary:focus-visible{outline:3px solid #4381bc;outline-offset:3px}.ds-benchmark p{margin:10px 0;font-size:13px;line-height:1.65;color:#536b80;max-width:80ch}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The UET/VNU working desk",
+    "overview": "This scoped inventory inherits the established blue and navy world from ../operations/DESIGN.md. It documents workspace.tsx and the shared ../operations/workspace.css; it does not replace global design authority. Vietnamese task labels, a plain source editor, and flat result tables keep the student's next action clear.",
+    "keyCharacteristics": [
+      "UET blue controls and navy text.",
+      "Flat task sections and compact numeric tables.",
+      "Explicit separation between draft diagnostics, unrated benchmarks, and Elo.",
+      "Results identify measured data, missing data, and infrastructure failures."
+    ],
+    "rules": [
+      { "name": "The Independent Results Rule", "body": "Self-check and benchmark must never silently submit a bot to Elo or the official competition.", "section": "components" },
+      { "name": "The Timing Context Rule", "body": "Timing includes startup and WASI communication, depends on the machine and load, and does not decide wins. Move statistics cover completed calls and exclude failed or timed-out calls.", "section": "components" }
+    ],
+    "dos": [
+      "Do preserve UET/VNU identity, blue controls, flat dividers, and the responsive task grid.",
+      "Do label pending, completed, validation, and infrastructure states in text.",
+      "Do retain timing context and explicit missing-measurement labels.",
+      "Do obtain fresh practice captures before visual sign-off."
+    ],
+    "donts": [
+      "Don't merge self-check, benchmark, Elo, or official competition outcomes.",
+      "Don't present queue admission as a validation pass or replay as live execution.",
+      "Don't promote inherited CSS defects or older green screenshots into this scoped design contract."
+    ]
+  }
+}

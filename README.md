@@ -4,6 +4,8 @@
 
 Nhánh `integrate-safe-enhancements` bổ sung dashboard vận hành, chẩn đoán bot E01-E06, hàng đợi cá nhân, đấu tập Elo bền vững, review tương đồng AST có giới hạn và bộ kiểm thử tải HTTP độc lập. Xem [vận hành và tái lập kiểm thử](docs/OPERATIONS.md) và [bộ tài liệu nộp](docs/submission/README.md). Mô hình triển khai chính là Docker + PostgreSQL + WASI tại trường; Vercel được giữ riêng, không bắt buộc sử dụng.
 
+Sinh viên vào `/practice` để nạp 5 bot mẫu, tự kiểm tra bản nháp và benchmark 1-5 cặp đổi bên trước khi tham gia Elo. Có CLI local chạy qua WASI; xem [đối chiếu tính năng, hướng dẫn và hạn mức](docs/STUDENT_TOOLS.md).
+
 Nền tảng giải đấu bot Python tiếng Việt, dùng luật bàn cờ 9×9 của dự án ban đầu. Giải chính thức hỗ trợ Vercel + Neon PostgreSQL cho website và bộ chấm Docker tại máy BTC; vẫn giữ tùy chọn chạy toàn bộ bằng Docker/SQLite.
 
 ## Toàn bộ chạy local: Docker + PostgreSQL

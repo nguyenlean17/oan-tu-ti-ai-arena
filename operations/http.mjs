@@ -2,7 +2,7 @@ import { readdirSync, statSync, readFileSync } from 'node:fs';
 import { sessionUser } from '../lib/vercel-auth-store.mjs';
 import { withCompetition } from '../competition/postgres.mjs';
 import { fail, RUNTIME_VERSION } from '../competition/store.mjs';
-import { practiceView, submitPractice, selftest, review } from './store.mjs';
+import { practiceView, submitPractice, diagnoseStudent, benchmarkStudent, selftest, review } from './store.mjs';
 
 let lastLoad = null;
 function localEvidence() {
@@ -62,6 +62,8 @@ export async function operationsRequest(request) {
     let body; try { body = JSON.parse(Buffer.concat(parts).toString('utf8')); } catch { fail('JSON không hợp lệ.'); }
     if (!body || typeof body !== 'object') fail('JSON không hợp lệ.');
     if (body.action === 'practice_submit') return send(200, await withCompetition(db => submitPractice(db, user, body.source), { write: true }));
+    if (body.action === 'student_validate') return send(200, await withCompetition(db => diagnoseStudent(db, user, body.source), { write: true }));
+    if (body.action === 'benchmark') return send(200, await withCompetition(db => benchmarkStudent(db, user, body.source, body.opponent, body.pairs), { write: true }));
     if (!user.is_admin) fail('Chỉ BTC được thực hiện.', 403);
     if (body.action === 'selftest') return send(200, await withCompetition(db => selftest(db, user), { write: true }));
     if (body.action === 'review' && typeof body.event === 'string' && body.event.length <= 100) return send(200, await withCompetition(db => review(db, user, body.event), { write: true }));

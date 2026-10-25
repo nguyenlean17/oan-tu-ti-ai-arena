@@ -86,11 +86,12 @@ export async function validateBot(payload) {
     return { valid: false, message: `[${diagnostic.code}] ${diagnostic.help} ${diagnostic.message}`.slice(0, 1000), sha: payload.sha, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION };
   } finally { bot?.close(); }
 }
-export async function runGame(payload) {
+export async function runGame(payload, { measure = false } = {}) {
   if (payload.engine !== ENGINE_VERSION || payload.runtime !== RUNTIME_VERSION) throw new InfrastructureError('Pinned job version mismatch');
   for (const seat of ['p1', 'p2']) if (sha(payload[seat].source) !== payload[seat].sha) throw new InfrastructureError('Source hash mismatch');
   const board = createInitialBoard(), moves = [];
   const result = { moves, winner: null, reason: 'max_plies', seed: payload.seed, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION, p1sha: payload.p1.sha, p2sha: payload.p2.sha };
+  const started = performance.now(), timings = { P1: { count: 0, totalMs: 0, maxMs: 0 }, P2: { count: 0, totalMs: 0, maxMs: 0 } };
   const bots = [startBot(payload.p1.source, payload.config, payload.seed), startBot(payload.p2.source, payload.config, payload.seed)];
   let player = 'P1', phase = 'startup';
   try {
@@ -100,7 +101,9 @@ export async function runGame(payload) {
       player = i % 2 ? 'P2' : 'P1';
       const state = stateFor(board, player, moves);
       if (!state.legal_moves.length) { result.winner = player === 'P1' ? 'P2' : 'P1'; result.reason = 'no_moves'; break; }
+      const moveStarted = measure ? performance.now() : 0;
       const move = await bots[i % 2].move(state);
+      if (measure) { const elapsed = performance.now() - moveStarted, stat = timings[player]; stat.count++; stat.totalMs += elapsed; stat.maxMs = Math.max(stat.maxMs, elapsed); }
       let step;
       try { step = applyMove(board, move, player); } catch { throw new BotFailure('invalid_move', 'Bot trả về nước đi không hợp lệ.'); }
       moves.push(step);
@@ -112,5 +115,6 @@ export async function runGame(payload) {
     result.diagnostic = botDiagnostic(result.reason, error.message);
     result.message = `[${result.diagnostic.code}] ${result.diagnostic.help} ${result.diagnostic.message}`.slice(0, 1000);
   } finally { bots.forEach(bot => bot.close()); }
+  if (measure) result.timing = { wallMs: Math.round(performance.now() - started), moves: Object.fromEntries(Object.entries(timings).map(([side, stat]) => [side, { count: stat.count, totalMs: Math.round(stat.totalMs), maxMs: Math.round(stat.maxMs) }])) };
   return result;
 }

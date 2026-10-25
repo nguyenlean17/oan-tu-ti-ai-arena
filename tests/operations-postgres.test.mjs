@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto';
 import pg from 'pg';
 import { connectionString } from '../lib/postgres.mjs';
 import { withCompetition } from '../competition/postgres.mjs';
-import { submitPractice, leaseOperation, finishOperation, heartbeatOperation, selftest } from '../operations/store.mjs';
+import { submitPractice, diagnoseStudent, benchmarkStudent, practiceView, leaseOperation, finishOperation, heartbeatOperation, selftest } from '../operations/store.mjs';
 import { createInitialBoard, applyMove, referenceMove } from '../lib/engine.mjs';
 if (process.env.ARENA_LOAD_DEMO !== '1' && process.env.ARENA_ALLOW_OPERATIONS_TEST !== '1') throw new Error('Explicit operations-test opt-in required; use a disposable local test database');
 const schema = 'ops_test_' + randomBytes(8).toString('hex'), client = new pg.Client({ connectionString: connectionString() });
@@ -54,5 +54,38 @@ try {
   await assert.rejects(run(db => finishOperation(db, 'test-worker', probe.id, probe.lease, resultFor(probe.payload))), e => e.status === 409);
   await run(db => leaseOperation(db, 'test-worker', 'game'));
   assert.equal((await run(db => db.prepare('SELECT status FROM ops_jobs WHERE id=?').get(probe.id))).status, 'failed');
+  const diagnostic = await run(db => diagnoseStudent(db, { id: 'c' }, code));
+  assert.equal((await run(db => diagnoseStudent(db, { id: 'c' }, code))).id, diagnostic.id, 'Repeated pending diagnostic should reuse its job');
+  await assert.rejects(run(db => diagnoseStudent(db, { id: 'c' }, code + '# another')), e => e.status === 429);
+  const check = await run(db => leaseOperation(db, 'test-worker', 'validate'));
+  assert.equal(check.kind, 'validate');
+  const checkResult = { valid: true, message: 'fixture', sha: check.payload.sha, engine: check.payload.engine, runtime: check.payload.runtime };
+  await run(db => finishOperation(db, 'test-worker', check.id, check.lease, checkResult));
+  assert.equal((await run(db => db.prepare('SELECT count(*) n FROM ops_bots WHERE user_id=?').get('c'))).n, 0, 'Draft check must not enroll into Elo');
+  await assert.rejects(run(db => benchmarkStudent(db, { id: 'c' }, code, '../../secret', 1)), e => e.status === 400);
+  await assert.rejects(run(db => benchmarkStudent(db, { id: 'c' }, code, 'sprinter', 6)), e => e.status === 400);
+  const benchmark = await run(db => benchmarkStudent(db, { id: 'c' }, code, 'sprinter', 1));
+  await assert.rejects(run(db => benchmarkStudent(db, { id: 'c' }, code, 'sprinter', 1)), e => e.status === 429);
+  const benchmarkJobs = [];
+  for (let i = 0; i < 2; i++) {
+    const job = await run(db => leaseOperation(db, 'test-worker', 'game'));
+    assert.equal(job.kind, 'benchmark_game'); assert.equal(job.pair_id, null); assert.equal(job.payload.benchmarkId, benchmark.id);
+    benchmarkJobs.push(job);
+    await run(db => finishOperation(db, 'test-worker', job.id, job.lease, resultFor(job.payload)));
+  }
+  assert.deepEqual(benchmarkJobs.map(j => j.payload.studentSide).sort(), ['P1','P2']);
+  assert.equal(benchmarkJobs[0].payload.seed, benchmarkJobs[1].payload.seed);
+  assert.deepEqual(await run(db => db.prepare('SELECT * FROM ops_ratings ORDER BY user_id').all()), ratings, 'Unrated benchmark must not change any Elo');
+  const ownerView = await run(db => practiceView(db, { id: 'c' })), strangerView = await run(db => practiceView(db, { id: 'd' }));
+  assert.equal(ownerView.checks.length, 1); assert.equal(ownerView.benchmarks[0].summary.completed, 2);
+  assert.equal(strangerView.checks.length, 0); assert.equal(strangerView.benchmarks.length, 0);
+  assert.ok(!JSON.stringify(ownerView).includes('def choose_move'), 'Tool results must not expose source');
+  await run(db => db.prepare('UPDATE ops_pairs SET created=0').run());
+  await run(db => db.prepare('UPDATE ops_ratings SET rating=1500 WHERE user_id=?').run('b'));
+  assert.equal(await run(db => leaseOperation(db, 'test-worker', 'game')), null, 'No rated matchmaking beyond 200 Elo');
+  await run(db => db.prepare('UPDATE ops_jobs SET created=0 WHERE subject=?').run('c'));
+  await run(db => db.prepare("INSERT INTO ops_jobs(id,kind,subject,payload,created,status) SELECT 'cap-'||n,'benchmark_game','c','{}',?, 'done' FROM generate_series(1,40) n").run(Date.now()));
+  await assert.rejects(run(db => benchmarkStudent(db, { id: 'c' }, code, 'sprinter', 1)), e => e.status === 429, 'Benchmark daily compute cap must hold');
+  assert.equal((await run(db => db.prepare('SELECT COUNT(*) n FROM games').get())).n, 0);
   console.log('PostgreSQL operations passed: duplicate submission/result, stale lease, payload integrity, exactly-once ratings, daily caps and official/practice isolation.');
 } finally { await client.query('ROLLBACK').catch(() => {}); await client.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`); await client.end(); }

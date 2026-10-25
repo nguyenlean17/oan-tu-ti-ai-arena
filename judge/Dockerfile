@@ -19,6 +19,8 @@ COPY judge ./judge
 COPY competition ./competition
 COPY lib/engine.mjs ./lib/engine.mjs
 COPY lib/bot-diagnostics.mjs ./lib/bot-diagnostics.mjs
+COPY lib/practice-tools.mjs ./lib/practice-tools.mjs
+COPY scripts/diagnose-bot.mjs scripts/benchmark-arena.mjs ./scripts/
 COPY lib/rules ./lib/rules
 ENV JUDGE_PYTHON=python3
 USER node

@@ -144,7 +144,7 @@ Mỗi cặp hai ván đổi bên. Thắng ván 1 điểm, hòa 0,5; thắng/hòa
 
 ## Công cụ vận hành và hỗ trợ
 
-/operations hiển thị queue, worker, readiness, self-test chạy sandbox, bằng chứng backup/restore và review AST. HTTPS readiness phản ánh cấu hình, không xác minh chứng thư từ ngoài. /practice có Elo riêng K=24, hai ván đổi bên và matching có hạn mức; không sửa standings chính thức. /load-demo là trang chỉ đọc dành riêng profile thử tải.
+/operations hiển thị queue, worker, readiness, self-test chạy sandbox, bằng chứng backup/restore và review AST. HTTPS readiness phản ánh cấu hình, không xác minh chứng thư từ ngoài. /practice có Elo riêng K=24, ghép trong khoảng 200 Elo, đổi bên và hạn mức; không sửa standings chính thức. Sinh viên có thể nạp 5 bot mẫu, tự kiểm tra bản nháp, benchmark 1-5 cặp không tính Elo và tải JSON/replay HTML. Có CLI dùng cùng WASI. Thời gian đo không dùng phân thắng thua. /load-demo chỉ đọc, dành riêng profile thử tải.
 
 Origin sai: sửa PUBLIC_ORIGIN khớp URL. Worker im lặng: kiểm tra token, mạng và runtime. Pending tăng: kiểm tra CPU/RAM rồi scale theo tài nguyên host. Invalid: đọc E01-E06. Dữ liệu thiếu sau restart: kiểm tra volume/profile/secret. Dừng bằng stop, không dùng down -v để dừng thông thường.
 
@@ -172,6 +172,8 @@ Bộ test bao gồm engine, account policy, sandbox, replay, competition API, op
 
 Ngày 25/10, sau khi khôi phục Docker, web và hai worker hoạt động; chạy lại PostgreSQL/API đều qua. Backup sau đợt tải đã restore vào database riêng và đối chiếu số bản ghi khớp cả dữ liệu giải lẫn ops_bots/ratings/pairs/jobs. Evidence restore-after-load.json phản ánh tổng database, gồm các lần thử trước; không phải số riêng phiên tải. Kiểm tra số bản ghi không thay thế đối chiếu mọi giá trị dữ liệu.
 
+Công cụ sinh viên bổ sung ngày 25/10 đã qua HTTP: 5 bot mẫu, E01, benchmark đổi bên có timing/replay, cách ly chủ bài và không tự đăng ký Elo. Xem student-tools-check.json và docs/STUDENT_TOOLS.md. Phép thử này không đại diện cho 4.000 người dùng tool đồng thời; số liệu tải 24/10 được giữ nguyên.
+
 Chưa chứng minh 4.000 người đồng thời đăng nhập/polling, source lớn đồng loạt, full tournament 4.000 bot, DDoS Internet, HA tự failover hoặc an toàn tuyệt đối. Review AST chỉ là hỗ trợ; email chưa xác minh. Thời gian giải phụ thuộc runtime và lịch đấu thực tế.
 
 ## Cần nghiệm thu tại trường
@@ -186,4 +188,4 @@ BAO_CAO_UET_ARENA.pdf: báo cáo này. REPORT.md: nguồn chỉnh sửa. README.
 
 Nguồn đối chiếu: docs/OPERATIONS.md; deploy/LOCAL_POSTGRES.md; competition/README.md; docs/NOP_DONG_THOI_VNU.md; evidence/load-run.json và source trên nhánh integrate-safe-enhancements. Repository: https://github.com/nguyenlean17/oan-tu-ti-ai-arena
 
-Tài liệu cũ về SQLite/Vercel là profile riêng. Không thay thế hướng dẫn PostgreSQL local và không xem các giả định thiết kế là kết quả đã đo. Tên miền thực, timer Linux, hạ tầng backup độc lập và chính sách danh tính do trường cấu hình trước khi vận hành chính thức.
+Tên miền, timer Linux, backup độc lập và chính sách danh tính cần được trường cấu hình trước khi vận hành chính thức.

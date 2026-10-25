@@ -22,3 +22,4 @@ CREATE TABLE IF NOT EXISTS ops_pairs(id TEXT PRIMARY KEY,a TEXT NOT NULL,b TEXT 
 CREATE INDEX IF NOT EXISTS ops_pairs_daily ON ops_pairs(a,b,created);
 CREATE TABLE IF NOT EXISTS ops_jobs(id TEXT PRIMARY KEY,kind TEXT NOT NULL,subject TEXT NOT NULL,pair_id TEXT REFERENCES ops_pairs(id),status TEXT NOT NULL DEFAULT 'queued',worker TEXT,lease TEXT,"until" BIGINT NOT NULL DEFAULT 0,attempts BIGINT NOT NULL DEFAULT 0,payload TEXT NOT NULL,result TEXT,result_hash TEXT,created BIGINT NOT NULL,completed BIGINT);
 CREATE INDEX IF NOT EXISTS ops_jobs_ready ON ops_jobs(status,kind,created);
+CREATE INDEX IF NOT EXISTS ops_jobs_owner ON ops_jobs(subject,kind,created DESC);

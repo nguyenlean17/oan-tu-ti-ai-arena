@@ -14,7 +14,14 @@
 - Ngày 25/10 sau khi khôi phục Docker: chạy lại PostgreSQL operations và API, đều PASS. `/health`, `/load-demo`, demo metrics trả 200; metrics quản trị không đăng nhập trả 401. Hai worker healthy; kết quả 4.000 bài và 126 trận của phiên đo được giữ nguyên.
 - Backup sau burst đã restore vào DB riêng và đối chiếu khớp: 4.134 accounts, 6 events, 4.160 submissions, 252 games, 6 ops_bots, 6 ops_ratings, 16 ops_pairs và 44 ops_jobs. Đây là tổng database gồm cả các lần thử trước; không phải số riêng run 859f0c413587. Xem `evidence/restore-after-load.json`. Bản kiểm tra đối chiếu số bản ghi, không phải chứng minh mọi giá trị từng hàng đều giống nhau.
 
-## Chưa khẳng định
+## Bổ sung công cụ sinh viên, 25/10
+
+- PostgreSQL kiểm tra thêm: draft không tạo bot Elo, benchmark không thay rating/official games, đổi bên cùng seed, hạn mức compute, cách ly chủ bài và không ghép Elo vượt 200 điểm.
+- WASI/CLI thực: cả 5 bot mẫu hợp lệ; diagnostic trả đúng E03 cho nước sai; benchmark đo thời gian và đổi bên; kết quả chính thức không thêm timing ngoài yêu cầu.
+- HTTP với tài khoản QA mới: 5 bot mẫu tải được, E01 syntax, 2 ván benchmark có timing và 2 replay hợp lệ, không tự tham gia Elo, người khác không đọc được kết quả. Xem `evidence/student-tools-check.json`.
+- Unit tests và targeted lint qua. Build production app qua TypeScript. Các số liệu tải 4.000 bài ngày 24/10 không bị ghi đè và không đại diện cho 4.000 người dùng tool cùng lúc.
+
+## Giới hạn nghiệm thu còn lại
 
 - Không có visual QA desktop/mobile đầy đủ. Xem UI_REVIEW.md (`disposition: recapture`).
 - Chưa cài DNS/TLS và systemd backup timer trên hạ tầng trường; chưa thử HA hoặc 4.000 người đồng thời.

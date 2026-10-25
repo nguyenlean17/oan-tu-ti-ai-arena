@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-25T12:55:55.291Z",
+  "practicePageVerified": true,
+  "references": [
+    "starter_config",
+    "heuristic_hunter",
+    "sprinter",
+    "guardian",
+    "tactician"
+  ],
+  "diagnostic": "E01",
+  "benchmark": {
+    "expected": 2,
+    "completed": 2,
+    "wins": 0,
+    "draws": 0,
+    "losses": 2,
+    "measuredGames": 2,
+    "meanGameMs": 1021
+  },
+  "sameSeed": true,
+  "sideSwapped": true,
+  "replaysVerified": 2,
+  "noEloEnrollment": true,
+  "ownerIsolation": true,
+  "noSourceFields": true
+}

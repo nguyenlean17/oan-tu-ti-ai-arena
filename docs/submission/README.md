@@ -11,6 +11,7 @@ Mục tiêu triển khai: trường sở hữu tên miền, chạy toàn bộ we
 - `DEMO.md`: kịch bản trình bày và checklist bàn giao.
 - `tournament-example.json`: config hợp lệ cho ví dụ 32 đội/8 bảng; sửa deadline theo ngày thi thật (giá trị mẫu là UTC). BTC dán vào phần cấu hình JSON khi tạo giải nháp. Không thay cấu hình đã freeze.
 - `VALIDATION.md`: kết quả kiểm tra và các giới hạn nghiệm thu.
+- `../STUDENT_TOOLS.md`: đối chiếu từng mục từ repo/nhánh tham khảo; cách tự kiểm tra, benchmark và dùng 5 bot mẫu trên web/CLI. `evidence/student-tools-check.json` ghi kết quả HTTP thực.
 - Mã nguồn đầy đủ trong repository, nhánh `integrate-safe-enhancements`.
 - `../../deploy/LOCAL_POSTGRES.md`, `../OPERATIONS.md`: hướng dẫn chi tiết; ưu tiên các lệnh PostgreSQL local, không dùng hướng dẫn SQLite cũ cho cấu hình mới.
 

@@ -2,9 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { sha, RUNTIME_VERSION, verifyOfficial, fail } from '../competition/store.mjs';
 import { ENGINE_VERSION } from '../lib/engine.mjs';
+import { PRACTICE_CONFIG, REFERENCE_BOTS, benchmarkSummary } from '../lib/practice-tools.mjs';
 
 const id = () => 'ops-' + randomUUID();
-const practiceConfig = { maxPlies: 40, memoryMB: 128, startupMs: 8000, moveMs: 1000 };
+const practiceConfig = PRACTICE_CONFIG;
 const payloadFor = source => ({ source, sha: sha(source), engine: ENGINE_VERSION, runtime: RUNTIME_VERSION, config: practiceConfig });
 export function sourceOf(value) {
   if (typeof value !== 'string' || !value.trim() || Buffer.byteLength(value, 'utf8') > 65536) fail('Source cần là Python UTF-8, tối đa 64 KiB.');
@@ -32,14 +33,47 @@ export async function practiceView(db, user) {
   const own = await db.prepare('SELECT id,sha,status,verdict,active,created FROM ops_bots WHERE user_id=? ORDER BY created DESC LIMIT 50').all(user.id);
   const ratings = await db.prepare('SELECT r.*,u.name FROM ops_ratings r JOIN public.auth_users u ON u.id=r.user_id ORDER BY r.rating DESC,r.played DESC,r.user_id LIMIT 100').all();
   const matches = await db.prepare("SELECT p.id,p.created,p.completed,j.id game,j.result FROM ops_pairs p JOIN ops_jobs j ON j.pair_id=p.id WHERE (p.a=? OR p.b=?) AND j.status='done' ORDER BY j.completed DESC LIMIT 20").all(user.id, user.id);
-  return { own, ratings, matches: matches.map(m => ({ ...m, result: JSON.parse(m.result) })), config: practiceConfig, policy: 'Elo luyện tập K=24; hai ván đổi bên; tối đa 2 cặp/ngày với cùng đối thủ, 20 cặp/người/ngày. Điểm giải chính thức độc lập.' };
+  const rows = await db.prepare("SELECT id,kind,status,payload,result,created FROM ops_jobs WHERE subject=? AND kind IN ('student_validate','benchmark_game') ORDER BY created DESC,id DESC LIMIT 100").all(user.id);
+  const checks = [], batches = new Map();
+  for (const row of rows) {
+    const payload = JSON.parse(row.payload), result = row.result ? JSON.parse(row.result) : null;
+    if (row.kind === 'student_validate') checks.push({ id: row.id, status: row.status, created: row.created, sha: payload.sha, result });
+    else {
+      if (!batches.has(payload.benchmarkId)) batches.set(payload.benchmarkId, { id: payload.benchmarkId, created: row.created, opponent: payload.opponent, pairs: payload.pairs, sha: payload.studentSha, games: [] });
+      batches.get(payload.benchmarkId).games.push({ id: row.id, status: row.status, studentSide: payload.studentSide, seed: payload.seed, result });
+    }
+  }
+  return { own, ratings, matches: matches.map(m => ({ ...m, result: JSON.parse(m.result) })), references: REFERENCE_BOTS, checks, benchmarks: [...batches.values()].map(b => ({ ...b, summary: benchmarkSummary(b.games, b.pairs * 2) })), config: practiceConfig, policy: 'Elo K=24; ghép khi lệch tối đa 200 điểm; hai ván đổi bên; tối đa 2 cặp/ngày với cùng đối thủ, 20 cặp/người/ngày. Điểm giải chính thức độc lập.' };
+}
+async function toolQuota(db, user, kind, maximum, requested) {
+  const quota = await db.prepare('SELECT SUM(CASE WHEN status IN (\'queued\',\'running\') THEN 1 ELSE 0 END) pending,MAX(created) newest,SUM(CASE WHEN created>=? THEN 1 ELSE 0 END) today FROM ops_jobs WHERE subject=? AND kind=?').get(Date.now() - 86400000, user.id, kind);
+  if (quota.pending > 0 || Date.now() - (quota.newest || 0) < 5000 || (quota.today || 0) + requested > maximum) fail('Công cụ đang có bài chờ, vừa được gọi hoặc đã hết hạn mức 24 giờ. Đợi hoàn tất rồi thử lại.', 429);
+}
+export async function diagnoseStudent(db, user, source) {
+  sourceOf(source);
+  const pending = await db.prepare("SELECT id,payload FROM ops_jobs WHERE subject=? AND kind='student_validate' AND status IN ('queued','running') LIMIT 1").get(user.id);
+  if (pending && JSON.parse(pending.payload).sha === sha(source)) return { id: pending.id };
+  await toolQuota(db, user, 'student_validate', 50, 1);
+  return { id: await enqueue(db, 'student_validate', user.id, payloadFor(source)) };
+}
+export async function benchmarkStudent(db, user, source, opponent, pairs = 1) {
+  sourceOf(source);
+  const reference = REFERENCE_BOTS.find(b => b.id === opponent);
+  if (!reference || !Number.isInteger(pairs) || pairs < 1 || pairs > 5) fail('Chọn bot mẫu hợp lệ và từ 1 đến 5 cặp đổi bên.');
+  await toolQuota(db, user, 'benchmark_game', 40, pairs * 2);
+  const other = readFileSync(new URL(`../public/bots/${reference.id}.py`, import.meta.url), 'utf8'), benchmarkId = randomUUID(), studentSha = sha(source);
+  for (let i = 0; i < pairs; i++) for (const studentSide of ['P1','P2']) {
+    const own = { source, sha: studentSha }, rival = { source: other, sha: sha(other) };
+    await enqueue(db, 'benchmark_game', user.id, { config: practiceConfig, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION, benchmarkId, pairs, opponent: reference.id, studentSha, studentSide, seed: 42 + i, p1: studentSide === 'P1' ? own : rival, p2: studentSide === 'P2' ? own : rival });
+  }
+  return { id: benchmarkId };
 }
 async function matchmake(db, now) {
   const day = new Date(now).setUTCHours(0, 0, 0, 0);
   // Practice yields to official jobs. Daily caps bound background compute.
   const candidates = await db.prepare("SELECT r.*,b.source,b.sha FROM ops_ratings r JOIN ops_bots b ON b.user_id=r.user_id AND b.active=1 AND b.status='valid' WHERE NOT EXISTS(SELECT 1 FROM ops_pairs p WHERE p.completed=0 AND (p.a=r.user_id OR p.b=r.user_id)) AND (SELECT COUNT(*) FROM ops_pairs p WHERE p.created>=? AND (p.a=r.user_id OR p.b=r.user_id))<20 ORDER BY r.updated,r.user_id LIMIT 100").all(day);
   for (const a of candidates) {
-    const opponents = candidates.filter(b => b.user_id !== a.user_id).sort((x, y) => Math.abs(x.rating - a.rating) - Math.abs(y.rating - a.rating));
+    const opponents = candidates.filter(b => b.user_id !== a.user_id && Math.abs(b.rating - a.rating) <= 200).sort((x, y) => Math.abs(x.rating - a.rating) - Math.abs(y.rating - a.rating));
     for (const b of opponents) {
       const [low, high] = [a.user_id, b.user_id].sort();
       const count = await db.prepare('SELECT COUNT(*) n FROM ops_pairs WHERE a=? AND b=? AND created>=?').get(low, high, day);
@@ -53,13 +87,13 @@ async function matchmake(db, now) {
 }
 export async function leaseOperation(db, worker, queue, now = Date.now()) {
   await db.prepare("UPDATE ops_jobs SET status='failed' WHERE status='running' AND until<=? AND attempts>=3").run(now);
-  const kinds = queue === 'validate' ? ['practice_validate', 'similarity'] : ['practice_game', 'selftest'];
-  let row = await db.prepare("SELECT * FROM ops_jobs WHERE kind IN (?,?) AND (status='queued' OR (status='running' AND until<=?)) AND attempts<3 ORDER BY created LIMIT 1").get(...kinds, now);
+  const kinds = queue === 'validate' ? ['practice_validate', 'similarity', 'student_validate'] : ['practice_game', 'selftest', 'benchmark_game'];
+  let row = await db.prepare("SELECT * FROM ops_jobs WHERE kind IN (?,?,?) AND (status='queued' OR (status='running' AND until<=?)) AND attempts<3 ORDER BY created LIMIT 1").get(...kinds, now);
   if (!row && queue === 'game') { await matchmake(db, now); row = await db.prepare("SELECT * FROM ops_jobs WHERE kind='practice_game' AND status='queued' ORDER BY created LIMIT 1").get(); }
   if (!row) return null;
   const lease = randomUUID();
   await db.prepare("UPDATE ops_jobs SET status='running',lease=?,worker=?,until=?,attempts=attempts+1 WHERE id=?").run(lease, worker, now + 90000, row.id);
-  return { ...row, lease, payload: JSON.parse(row.payload), kind: row.kind === 'practice_validate' ? 'validate' : row.kind };
+  return { ...row, lease, payload: JSON.parse(row.payload), kind: ['practice_validate','student_validate'].includes(row.kind) ? 'validate' : row.kind };
 }
 export async function heartbeatOperation(db, worker, job, lease) {
   const row = await db.prepare("SELECT id FROM ops_jobs WHERE id=? AND worker=? AND lease=? AND status='running' AND until>?").get(job, worker, lease, Date.now());
@@ -77,12 +111,14 @@ export async function finishOperation(db, worker, job, lease, result) {
   if (row?.status === 'done' && row.worker === worker && row.lease === lease && row.result_hash === digest) return { ok: true, duplicate: true };
   if (!row || row.worker !== worker || row.lease !== lease || row.status !== 'running' || row.until <= Date.now()) fail('Lease cũ hoặc sai worker.', 409);
   const payload = JSON.parse(row.payload);
-  if (row.kind === 'practice_validate') {
+  if (['practice_validate','student_validate'].includes(row.kind)) {
     if (typeof result?.valid !== 'boolean' || result.sha !== payload.sha || result.engine !== payload.engine || result.runtime !== payload.runtime) fail('Validation không khớp source/runtime.');
+    if (row.kind === 'practice_validate') {
     const bot = await db.prepare('SELECT * FROM ops_bots WHERE id=?').get(row.subject);
     const newer = await db.prepare("SELECT id FROM ops_bots WHERE user_id=? AND status='valid' AND created>? LIMIT 1").get(bot.user_id, bot.created);
     if (result.valid && !newer) await db.prepare('UPDATE ops_bots SET active=0 WHERE user_id=?').run(bot.user_id);
     await db.prepare('UPDATE ops_bots SET status=?,verdict=?,active=? WHERE id=?').run(result.valid ? 'valid' : 'invalid', String(result.message || '').slice(0, 1000), result.valid && !newer ? 1 : 0, bot.id);
+    }
   } else if (row.kind === 'similarity') {
     if (!Array.isArray(result?.pairs) || !Array.isArray(result.templateExempt) || !Array.isArray(result.errors) || result.pairs.length > 100 || result.compared !== payload.submissions.length) fail('Kết quả review không hợp lệ.');
     for (const pair of result.pairs) if (!payload.submissions.some(s => s.id === pair.a) || !payload.submissions.some(s => s.id === pair.b) || !Number.isFinite(pair.score) || pair.score < 0 || pair.score > 100) fail('Cặp review không hợp lệ.');

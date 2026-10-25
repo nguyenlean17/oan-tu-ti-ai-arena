@@ -27,4 +27,10 @@ export type PracticeData = {
   ratings: { user_id: string; name: string; rating: number; played: number; won: number; drawn: number; lost: number }[];
   matches: { game: string; result: { winner: string | null; reason: string; moves: unknown[] } }[];
   policy: string;
+  config: { maxPlies: number; moveMs: number; startupMs: number; memoryMB: number };
+  references: { id: string; name: string; description: string }[];
+  checks: { id: string; status: string; sha: string; created: number; result: { valid: boolean; message: string } | null }[];
+  benchmarks: Benchmark[];
 };
+export type BenchmarkGame = { id: string; status: string; studentSide: string; seed: number; result: { winner: string | null; reason: string; moves: unknown[]; message?: string; timing?: { wallMs: number; moves: Record<string, { count: number; totalMs: number; maxMs: number }> } } | null };
+export type Benchmark = { id: string; created: number; opponent: string; pairs: number; sha: string; games: BenchmarkGame[]; summary: { expected: number; completed: number; wins: number; draws: number; losses: number; measuredGames: number; meanGameMs: number | null } };

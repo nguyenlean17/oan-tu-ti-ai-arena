@@ -3,6 +3,10 @@
 This branch starts from `main` at `ac4eeaa`, retaining its responsive-layout fixes.
 The example strategies are adapted from `enhancements` at `72b5558`.
 
+This document records the first selective integration (`5b49b01`). Later work
+adds safe equivalents for practice Elo, AST review and diagnostics; the current
+feature matrix and student tools are in [STUDENT_TOOLS.md](STUDENT_TOOLS.md).
+
 ## Included
 
 - **Starter Config:** adjust `BOT_CONFIG` weights in the existing Python editor;
@@ -29,7 +33,7 @@ be imported to change standings. Only display metadata is exported, never bot
 source or account information. Untrusted text is escaped, and the HTML prohibits
 network access through its Content Security Policy.
 
-## Intentionally excluded
+## Excluded from the initial integration
 
 Host-Python match runners and diagnostics, dynamic Elo, alternate tie-break rules,
 automatic matchmaking and the AST plagiarism checker are not integrated. They

@@ -33,7 +33,7 @@ while (!stopping) {
     idle = idlePoll;
     let leaseLost = false;
     timer = setInterval(() => { call({ action: 'heartbeat', job: job.id, lease: job.lease }).catch(error => { if (error.status === 409) leaseLost = true; }); }, 20000);
-    const result = await (job.kind === 'validate' ? validateBot(job.payload) : job.kind === 'similarity' ? runSimilarity(job.payload) : runGame(job.payload));
+    const result = await (job.kind === 'validate' ? validateBot(job.payload) : job.kind === 'similarity' ? runSimilarity(job.payload) : runGame(job.payload, { measure: job.kind === 'benchmark_game' }));
     if (leaseLost) throw new Error('Lease expired');
     // Retrying the exact result is safe: the control commits once by lease + hash.
     for (let attempt = 0; ; attempt++) {
