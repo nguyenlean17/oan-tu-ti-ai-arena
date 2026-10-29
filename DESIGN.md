@@ -22,3 +22,13 @@ Keep these patterns local to the official tournament workspace. Extend real rows
 ## UET–VNU refinement (current identity)
 
 The user requested a light UET–VNU rebrand. The existing layout, typography, spacing, tournament workflows and game semantics remain unchanged. University-blue actions (#034ea1), a navy navigation rail (#102b4d), cool light surfaces and the UET Arena / VNU name now supersede the previous lime action palette. The unmodified university icon from https://mis.uet.edu.vn/uet_logo.ico is served locally as `public/brand/uet.ico`, with provenance in `public/brand/SOURCE.md`; it accompanies a course project and does not imply an official university service or VNU SSO. Success, error and opposing-player colors retain their semantic meanings. Login, practice and official competition share this identity; the student workspace records its scoped patterns in `app/student/DESIGN.md`.
+
+### Role-based entry and dashboard extension
+
+The current root entry extends the UET identity with the same locally served icon and Be Vietnam Pro. Anonymous visitors see a quiet introduction, sign-in, registration and a link to view tournaments. Its bounded layout (1180px) uses a blue primary link, two flat audience sections and a course-project footer. At 650px the audience sections become one column and page padding contracts.
+
+For authenticated users on the Vercel account runtime, the root resolves the next destination from account role and membership. Administrators see the role dashboard with “Tạo giải đấu” as the primary action, followed by real tournament rows and account, management and operations links. A student with one membership is redirected on the server to `/competition?tab=submit#<event>`; students with zero or multiple memberships see the dashboard for joining or choosing a tournament. `/student` keeps the dashboard, team and account views accessible. Practice and legacy room links remain separate destinations.
+
+The dashboard reuses the navy rail and cool content canvas. Event rows use dividers, textual lifecycle status and wrapping action groups rather than nested cards. Its primary action links have a minimum height (44px); the title and action stack at 950px. At 650px the rail enters page flow and navigation uses two columns. Scoped tokens and component evidence live in `app/student/DESIGN.md` and its sidecar.
+
+Tournament links preserve event selection in the fragment and request `admin`, `submit` or `matches` with the `tab` query. “Tạo giải đấu” opens the blank organizer form through `?tab=admin&new=1`; requesting a view does not grant its permissions. Keep server-side authorization authoritative and derive dashboard rows and actions from returned account, membership and event state.

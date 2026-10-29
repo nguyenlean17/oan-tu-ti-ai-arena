@@ -56,3 +56,9 @@ Logo dùng asset từ https://mis.uet.edu.vn/uet_logo.ico, lưu local ở
 `public/brand/uet.ico`; đây là dự án môn học, không tuyên bố dịch vụ chính thức
 hoặc VNU SSO. Các nguồn thiết kế cũ được giữ làm lịch sử; khu sinh viên mới dùng
 UET xanh/navy, hàng dữ liệu thật và bước tiếp theo dựa trên tài khoản/membership.
+
+## Trang đầu theo vai trò
+
+Trên bản PostgreSQL, / hiển thị lối vào đăng nhập/xem giải cho khách. BTC đăng nhập vào dashboard điều hành, có nút Tạo giải đấu mở thẳng form cấu hình và liên kết quản lý từng giải. Sinh viên có đúng một đội được chuyển thẳng tới trang viết/nộp bot của giải đó; người chưa có đội hoặc tham gia nhiều giải nhận dashboard để nhập mã/chọn giải. /student vẫn mở được hồ sơ, đội và bảo mật.
+
+Các liên kết /competition?tab=admin&new=1, tab=submit và tab=matches mở đúng chức năng. Mở form bằng GET không tạo giải; quyền tạo/cấu hình/nộp bài vẫn do API xác minh. Khi đã có đội, trang nộp bài không yêu cầu nhập lại mã. /workbench giữ khu luyện tập cũ; các liên kết chơi trực tiếp /?play=1 hoặc /?room=... tiếp tục hoạt động.

@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-29T11:34:13.919Z",
+  "guestEntry": true,
+  "adminDashboard": true,
+  "singleTeamStudentRedirect": true,
+  "accountPageAccessible": true,
+  "legacyHumanLinks": true,
+  "legacyWorkbench": true,
+  "browserChecks": {
+    "adminCreateFormOneClick": true,
+    "studentEditorOwnEvent": true,
+    "studentMatchesDeepLink": true,
+    "studentAdminQueryFallsBack": true,
+    "mobileWidth375NoPageOverflow": true
+  }
+}

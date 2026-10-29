@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-29T10:44:11Z",
-  "title": "Design System: UET Arena student workspace",
+  "generatedAt": "2026-10-29T11:34:12+00:00",
+  "title": "Design System: UET Arena role workspace",
   "extensions": {
     "colorMeta": {
       "university-blue": {
@@ -203,8 +203,8 @@
     },
     "typographyMeta": {
       "headline": {
-        "displayName": "Student headline",
-        "purpose": "Main page title; contracts at student breakpoints."
+        "displayName": "Role dashboard headline",
+        "purpose": "Role-specific main page title; contracts at workspace breakpoints."
       },
       "title": {
         "displayName": "Section title",
@@ -269,6 +269,14 @@
       "css": ".ds-secondary{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;min-height:40px;padding:10px 18px;border:1px solid #a9bfd3;border-radius:5px;background:white;color:#034ea1;font-weight:600;cursor:pointer;transition:background .18s,color .18s,border-color .18s,transform .18s}.ds-secondary:disabled{opacity:.5;cursor:wait}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
     },
     {
+      "name": "Dashboard primary action",
+      "kind": "button",
+      "refersTo": "dashboard-primary",
+      "description": "Direct organizer creation link; the same action treatment leads student submission.",
+      "html": "<a class=\"ds-dashboard-action\" href=\"/competition?tab=admin&new=1\"><svg aria-hidden=\"true\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>Tạo giải đấu</a>",
+      "css": ".ds-dashboard-action{font-family:\"Be Vietnam Pro\",sans-serif;font-size:13px;line-height:1.6;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:11px 17px;border:1px solid #034ea1;border-radius:5px;background:#034ea1;color:white;font-weight:600;text-decoration:none;transition:background .18s,color .18s,border-color .18s,transform .18s}.ds-dashboard-action:hover{background:#003f85}.ds-dashboard-action:focus-visible{outline:3px solid #4381bc;outline-offset:3px}.ds-dashboard-action svg{flex-shrink:0}"
+    },
+    {
       "name": "Labeled field",
       "kind": "input",
       "refersTo": "input",
@@ -277,19 +285,19 @@
       "css": ".ds-label{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;display:grid;gap:8px;font-size:13px;color:#19344d}.ds-input{font:inherit;color:#19344d;width:100%;min-width:0;padding:12px 14px;border:1px solid #a9bfd3;border-radius:5px;background:white;transition:background .18s,color .18s,border-color .18s,transform .18s}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
     },
     {
-      "name": "Student navigation",
+      "name": "Role workspace navigation",
       "kind": "nav",
       "refersTo": "navigation-active",
-      "description": "Visible rail navigation with an explicit active page state.",
-      "html": "<nav class=\"ds-nav\" aria-label=\"Khu sinh viên\"><button aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 22V3m0 0c4-3 8 3 12 0v11c-4 3-8-3-12 0\"/></svg>Bắt đầu tham gia</button><button><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg>Đội của tôi</button></nav>",
+      "description": "Dashboard, team and account navigation with an explicit active page state.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Khu sinh viên\"><button aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 22V3m0 0c4-3 8 3 12 0v11c-4 3-8-3-12 0\"/></svg>Bảng điều khiển</button><button><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg>Đội của tôi</button></nav>",
       "css": ".ds-nav{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;display:grid;gap:8px;padding:20px;background:#102b4d;color:#d8e4f3}.ds-nav button{font:inherit;font-size:13px;min-height:40px;border:0;background:transparent;color:inherit;display:flex;align-items:center;gap:12px;text-align:left;padding:13px 12px;border-radius:6px;cursor:pointer;transition:background .18s,color .18s}.ds-nav button:hover,.ds-nav button[aria-current=page]{background:#214770;color:white}.ds-nav svg{flex-shrink:0}@media(max-width:650px){.ds-nav{grid-template-columns:1fr 1fr;gap:4px}.ds-nav button{font-size:12px;padding:11px 7px}}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
     },
     {
-      "name": "Numbered next step",
+      "name": "Organizer tournament empty state",
       "kind": "custom",
-      "description": "A divided onboarding row whose action follows account state.",
-      "html": "<div class=\"ds-step\"><span>2</span><div><h2>Nhận đội thi của bạn</h2><p>Nhập mã riêng do BTC gửi cho email của bạn.</p><a href=\"#teams\">Nhập mã tham gia <svg aria-hidden=\"true\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></a></div></div>",
-      "css": ".ds-step{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;color:#19344d;display:flex;gap:24px;padding:27px 0;border-top:1px solid #d9e2ec}.ds-step>span{flex:0 0 34px;height:34px;border:1px solid #a9bfd3;border-radius:50%;display:grid;place-items:center;color:#034ea1;font-weight:600}.ds-step h2{font-size:20px;line-height:1.6;letter-spacing:-.015em;font-weight:600;margin:0 0 10px}.ds-step p{margin:0;line-height:1.75;max-width:75ch}.ds-step a{display:inline-flex;gap:10px;align-items:center;color:#034ea1;font-weight:600;margin-top:13px;padding:5px 0;text-decoration:none;transition:background .18s,color .18s}.ds-step svg{flex-shrink:0}@media(max-width:650px){.ds-step{gap:15px}}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+      "description": "Shipped empty-state text and creation link, with no fabricated tournament data.",
+      "html": "<div class=\"ds-empty\"><h3>Chưa có giải đấu</h3><p>Tạo giải đầu tiên để cấu hình luật, chia bảng và cấp mã cho sinh viên.</p><a href=\"/competition?tab=admin&new=1\">Tạo giải đấu đầu tiên <svg aria-hidden=\"true\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></a></div>",
+      "css": ".ds-empty{font-family:\"Be Vietnam Pro\",sans-serif;font-size:14px;line-height:1.6;color:#19344d;padding:28px 0}.ds-empty h3{font-size:20px;font-weight:600;letter-spacing:-.015em;line-height:1.6;margin:0}.ds-empty p{line-height:1.75;max-width:75ch;margin:12px 0 22px}.ds-empty>a{display:inline-flex;align-items:center;gap:8px;color:#034ea1;margin-left:20px;text-decoration:none;transition:background .18s,color .18s,border-color .18s,transform .18s}.ds-empty>a:hover{text-decoration:underline;text-underline-offset:4px}.ds-empty>a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}.ds-empty svg{flex-shrink:0}@media(max-width:650px){.ds-empty>a{display:flex;margin:18px 0 0}}"
     },
     {
       "name": "Local mail information",
@@ -316,12 +324,12 @@
   ],
   "narrative": {
     "northStar": "The University Competition Desk",
-    "overview": "This is a scoped record of the implemented `/student` workspace and the related sign-in, registration, email confirmation and password recovery screens. It extends the current UET identity; it does not replace the root design system or prescribe changes to practice, the board engine or tournament operations.\n\nThe workspace is a quiet administrative surface for Vietnamese students. A navy rail carries navigation, while cool light content uses headings, numbered steps and divided data rows to make the next action visible. Account entry screens carry the same identity through a navy introduction beside a focused form.\n\nThe unmodified university icon is served from `public/brand/uet.ico`, with provenance in `public/brand/SOURCE.md`. Its use accompanies the course-project identity; it does not establish official university service status or VNU SSO.",
+    "overview": "This is a scoped record of the role dashboard shared by the authenticated root entry and `/student`, and the related sign-in, registration, email confirmation and password recovery screens. It extends the current UET identity; it does not replace the root design system or prescribe changes to practice, the board engine or tournament operations.\n\nThe workspace is a quiet administrative surface for Vietnamese students and organizers. A navy rail carries navigation, while cool light content uses a role-specific heading, a direct primary action and divided tournament rows. Organizers create or manage tournaments; students enter their team's submission workspace or join with a private invitation. Account entry screens carry the same identity through a navy introduction beside a focused form.\n\nThe unmodified university icon is served from `public/brand/uet.ico`, with provenance in `public/brand/SOURCE.md`. Its use accompanies the course-project identity; it does not establish official university service status or VNU SSO.",
     "keyCharacteristics": [
       "University blue actions, navy navigation and cool light surfaces.",
       "Vietnamese interface text in Be Vietnam Pro, with locally served font files.",
       "Flat sections and real data rows, with text accompanying state.",
-      "Direct verification, private invitation and submission actions."
+      "Direct tournament creation, submission and selection actions, with account and team tools close by."
     ],
     "rules": [
       {
@@ -338,6 +346,11 @@
         "name": "The Divided Surface Rule",
         "body": "Separate related account, team and event content with spacing and thin rules; preserve the flat page structure.",
         "section": "elevation"
+      },
+      {
+        "name": "The Role and Destination Rule",
+        "body": "Make the next authorized tournament task visible from real role and membership data; query parameters choose a view and never confer permissions.",
+        "section": "components"
       }
     ],
     "dos": [
@@ -345,6 +358,7 @@
       "Do keep account, verification and membership status readable as text.",
       "Do retain local font loading for standalone account screens and the student page.",
       "Do show the next action supported by actual verification, membership and tournament state.",
+      "Do keep creation prominent for organizers and submission/dashboard links explicit for students.",
       "Do preserve the local Mailpit notice when that demo mode is active.",
       "Do retain the sourced icon and its documented course-project context."
     ],
