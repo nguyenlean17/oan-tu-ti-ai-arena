@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-29T13:24:56.143Z",
+  "profile": "isolated-local-demo",
+  "sourceRestoreOwnTeamOnly": true,
+  "anonymousDenied": true,
+  "ownGamesScoped": true,
+  "lockedSubmissionVisible": true,
+  "syntaxFeedback": "E01",
+  "correctedCodeValid": true,
+  "benchmarkGames": 2,
+  "replaysAvailable": true,
+  "existingOfficialGameCount": 8
+}

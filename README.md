@@ -1,5 +1,7 @@
 # Oẳn Tù Tì 2.0 — AI Coding Arena
 
+Sinh viên vào **Code & chạy thử** trong giải: viết Python, kiểm tra lỗi, đấu hai ván với bot mẫu, nộp bài và xem phản hồi/replay trong cùng trang. Có bản nháp theo tab và mở lại source đã nộp. Xem [luồng dự thi và giới hạn](docs/STUDENT_WORKBENCH.md).
+
 ## Demo tự tổ chức giải và Resend
 
 Bản demo local hỗ trợ tài khoản thường tự tạo/điều hành giải của mình, tham gia trực tiếp không cần mã BTC, biểu mẫu cấu hình cơ bản và thêm hai bot mẫu để thử bộ chấm. Xem [kịch bản trình bày, cách bật profile và Resend](docs/DEMO_OPEN_RESEND.md). Quyền BTC hệ thống và chế độ danh sách có mã vẫn được giữ riêng.

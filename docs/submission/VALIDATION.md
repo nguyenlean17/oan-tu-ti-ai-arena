@@ -39,3 +39,10 @@ Các lần kiểm tra bị treo khi Docker không phản hồi không được t
 - Browser thực: tạo và mở giải, tham gia không mã, thêm hai bot mẫu, nộp Python và nhận verdict hợp lệ. Đã kiểm tra ảnh desktop/mobile cho landing, tạo giải, nộp bài và điều hành; đánh giá này chỉ bao phủ các bề mặt vừa sửa, không thay thế giới hạn visual QA toàn hệ thống ở trên.
 - Resend được cấu hình qua file secret. Provider xác nhận `delivered` cho thư thử tới địa chỉ do người dùng chỉ định. Chưa có domain gửi đã xác minh; chưa nghiệm thu gửi thư tới các người nhận bất kỳ. Phép thử giao thư này không được tính là E2E token xác nhận/reset qua Resend.
 - Demo bật hai cờ riêng và không yêu cầu xác nhận email; profile thi thật giữ chính sách VNU và có thể bắt buộc xác nhận. PDF ngày 25/10 vẫn là snapshot cũ. Xem `../DEMO_OPEN_RESEND.md`.
+
+## Bàn làm việc sinh viên — 29/10/2026
+
+- Kiểm thử API/worker thật: source chỉ đọc bởi thành viên đúng đội, khách và đội khác bị từ chối; lịch sử cá nhân chỉ có trận của đội và có phiên bản đã khóa. Code lỗi nhận E01, sửa code đạt kiểm tra, hoàn tất hai ván benchmark có replay. Xem `evidence/student-workbench.json`.
+- Browser trên desktop 1365×900 và mobile 375×812: giữ code qua reload, nút xem kết quả không đổi fragment chọn giải, hiện lỗi E01, kiểm tra mã sửa thành công, benchmark hoàn tất hai ván, nộp chính thức hiện hàng đợi rồi tự chuyển hợp lệ; replay tua được từ nước 0 sang nước 1. Không phát hiện tràn ngang ở viewport mobile đã kiểm tra. Đây là kiểm tra trong trình duyệt hiện tại, không phải thử nghiệm với nhóm sinh viên thật hoặc kiểm tra mọi trình duyệt.
+- `npm test`, regression competition/open-entry, unit student-feedback, TypeScript, lint các module mới và build Docker production đã qua. Bộ chấm cũ được tái sử dụng; các lượt luyện tập không đổi Elo hay kết quả chính thức.
+- Hướng dẫn thao tác và giới hạn lưu bản nháp: `../STUDENT_WORKBENCH.md`. PDF ngày 25/10 vẫn là snapshot trước thay đổi này.

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import { sessionUser } from '../lib/vercel-auth-store.mjs';
 import { withCompetition } from './postgres.mjs';
-import { overview, action, leaseJob, heartbeat, finishJob, failJob, replay, exportEvent, submit, fail } from './store.mjs';
+import { overview, action, leaseJob, heartbeat, finishJob, failJob, replay, exportEvent, submit, fail, submissionSource } from './store.mjs';
 import { leaseOperation, heartbeatOperation, finishOperation, failOperation } from '../operations/store.mjs';
 
 const hash = value => createHash('sha256').update(value).digest();
@@ -62,7 +62,7 @@ export async function competitionRequest(request, judge = false) {
     const user = await sessionUser(token);
     if (request.method === 'GET') {
       const event = url.searchParams.get('event');
-      const result = await withCompetition(db => url.searchParams.has('game') ? replay(db, url.searchParams.get('game')) : url.searchParams.has('export') ? exportEvent(db, user, event) : overview(db, user, event));
+      const result = await withCompetition(db => url.searchParams.has('submission') ? submissionSource(db,user,url.searchParams.get('submission')) : url.searchParams.has('game') ? replay(db, url.searchParams.get('game')) : url.searchParams.has('export') ? exportEvent(db, user, event) : overview(db, user, event));
       return send(200, result, url.searchParams.has('export') ? { 'Content-Disposition': 'attachment; filename="tournament-export.json"' } : {});
     }
     if (request.method !== 'POST') fail('Method not allowed', 405);

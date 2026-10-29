@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { timingSafeEqual, createHash } from 'node:crypto';
 import { z } from 'zod';
-import { openCompetition, overview, action, leaseJob, heartbeat, finishJob, failJob, replay, exportEvent, submit, fail } from './store.mjs';
+import { openCompetition, overview, action, leaseJob, heartbeat, finishJob, failJob, replay, exportEvent, submit, fail, submissionSource } from './store.mjs';
 
 async function bodyOf(req, limit) {
   if (!(req.headers['content-type'] || '').startsWith('application/json')) fail('Cần dữ liệu JSON.', 415);
@@ -33,7 +33,8 @@ export function competitionHandler(directory) {
           else fail('Thao tác worker không hợp lệ.');
         } else if (req.method === 'GET') {
           const event = url.searchParams.get('event');
-          if (url.searchParams.has('game')) send(200, (await replay(db, url.searchParams.get('game'))));
+          if (url.searchParams.has('submission')) send(200, await submissionSource(db,user,url.searchParams.get('submission')));
+          else if (url.searchParams.has('game')) send(200, (await replay(db, url.searchParams.get('game'))));
           else if (url.searchParams.has('export')) send(200, (await exportEvent(db, user, event)), { 'Content-Disposition': 'attachment; filename="tournament-export.json"' });
           else send(200, (await overview(db, user, event)));
         } else if (req.method === 'POST') {

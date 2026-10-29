@@ -21,7 +21,7 @@ export type Metrics = {
 };
 export type TournamentOption = { id: string; name: string };
 export type Mutation = { id: string; partial?: boolean; error?: string };
-export type QueueData = { submissions: { id: string; status: string; verdict: string | null; job_status: string; position: number | null; ageMs: number }[] };
+export type QueueData = { submissions: { id: string; sha: string; created: number; status: string; verdict: string | null; job_status: string; position: number | null; ageMs: number }[] };
 export type PracticeData = {
   own: { id: string; sha: string; status: string; verdict: string | null; active: number }[];
   ratings: { user_id: string; name: string; rating: number; played: number; won: number; drawn: number; lost: number }[];

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {submissionFeedback,gameReason} from '../lib/student-feedback.mjs';
+assert.match(submissionFeedback(null).title,/Chưa nộp/);
+assert.match(submissionFeedback({status:'pending',job_status:'queued'}).title,/đang chờ/);
+assert.match(submissionFeedback({status:'pending',job_status:'running'}).title,/Đang kiểm tra/);
+assert.match(submissionFeedback({status:'pending',job_status:'failed'}).next,/chưa phải kết luận/);
+assert.equal(submissionFeedback({status:'valid',job_status:'done'}).tone,'success');
+assert.match(submissionFeedback({status:'invalid',verdict:'[E03] invalid move'}).next,/legal_moves/);
+assert.match(submissionFeedback({status:'invalid',verdict:'[E04] timeout'}).next,/thời gian/);
+assert.match(submissionFeedback({status:'invalid',verdict:'unknown exception'}).next,/Xem lỗi/);
+assert.equal(gameReason('timeout'),'Bot quá thời gian');
+assert.equal(gameReason('future_reason'),'future_reason','Unknown reasons must remain inspectable');
+console.log('Student feedback passed: pending/running/failed, valid/invalid, actionable diagnostics and unknown-reason fallback.');

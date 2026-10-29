@@ -446,15 +446,23 @@ async function readOverview(db, user, event) {
   const e = (await eventOf(db, event)), isAdmin = await canManage(db,user,event);
   const owned = user ? (await db.prepare('SELECT team FROM members WHERE event=? AND user=?').get(event, user.id))?.team : null;
   const teams = (await db.prepare('SELECT id,name,seed,repo FROM teams WHERE event=? ORDER BY seed').all(event));
-  const submissions = owned ? (await db.prepare('SELECT id,sha,status,verdict,created,provenance FROM submissions WHERE team=? ORDER BY created DESC LIMIT 30').all(owned)) : [];
+  const submissions = owned ? (await db.prepare('SELECT id,sha,status,verdict,created,provenance FROM submissions WHERE team=? ORDER BY created DESC,id DESC LIMIT 30').all(owned)) : [];
   const series = (await db.prepare('SELECT s.*,a.name a_name,b.name b_name FROM series s JOIN teams a ON a.id=s.a JOIN teams b ON b.id=s.b WHERE s.event=? ORDER BY s.stage,s.round,s.rowid LIMIT 500').all(event));
   const jobs = (await db.prepare('SELECT status,kind,COUNT(*) count FROM jobs WHERE event=? GROUP BY status,kind').all(event));
   const recentGames = (await db.prepare('SELECT g.id,g.ordinal,g.p1,g.p2,g.result IS NOT NULL completed,s.stage,a.name p1_name,b.name p2_name FROM games g JOIN series s ON s.id=g.series JOIN teams a ON a.id=g.p1 JOIN teams b ON b.id=g.p2 WHERE s.event=? ORDER BY g.rowid DESC LIMIT 50').all(event));
+  const ownGames = owned ? (await db.prepare('SELECT g.id,g.p1,g.p2,g.result,s.stage,a.name p1_name,b.name p2_name FROM games g JOIN series s ON s.id=g.series JOIN teams a ON a.id=g.p1 JOIN teams b ON b.id=g.p2 WHERE s.event=? AND (g.p1=? OR g.p2=?) ORDER BY g.rowid DESC LIMIT 20').all(event,owned,owned)).map(g=>{const result=g.result?JSON.parse(g.result):null;return {...g,result:result?{winner:result.winner,reason:result.reason,message:result.message,moves:result.moves.length}:null};}) : [];
+  const selectedSubmission = owned ? (await db.prepare('SELECT submission FROM entries WHERE event=? AND team=?').get(event,owned))?.submission : null;
   const workers = isAdmin ? (await db.prepare('SELECT id,seen,runtime FROM workers ORDER BY seen DESC LIMIT 50').all()) : [];
   const failed = isAdmin ? (await db.prepare("SELECT id,kind,subject,attempts FROM jobs WHERE event=? AND status='failed' LIMIT 50").all(event)) : [];
   const members = isAdmin ? (await db.prepare('SELECT * FROM members WHERE event=?').all(event)) : [];
   const audit = isAdmin ? (await db.prepare('SELECT * FROM audit WHERE event=? ORDER BY id DESC LIMIT 50').all(event)) : [];
-  return { ...(await overview(db, user)), event: e,canManage:isAdmin, owned, teams, submissions, standings: (await standings(db, event)), series, jobs, recentGames, workers, failed, members, audit };
+  return { ...(await overview(db, user)), event: e,canManage:isAdmin, owned, teams, submissions, selectedSubmission, ownGames, standings: (await standings(db, event)), series, jobs, recentGames, workers, failed, members, audit };
+}
+async function readSubmission(db,user,submission){
+  if(!user)fail('Bạn cần đăng nhập.',401);
+  const row=await db.prepare('SELECT v.id,v.source,v.sha,v.created FROM submissions v JOIN teams t ON t.id=v.team JOIN members m ON m.team=t.id AND m.event=t.event WHERE v.id=? AND m.user=?').get(submission,user.id);
+  if(!row)fail('Không tìm thấy bài nộp của đội bạn.',404);
+  return row;
 }
 async function readReplay(db, game) {
   const row = (await db.prepare('SELECT g.*,s.event FROM games g JOIN series s ON s.id=g.series WHERE g.id=?').get(game));
@@ -472,4 +480,5 @@ export const submit = (db, ...args) => transaction(db, () => saveSubmission(db, 
 export const heartbeat = (db, ...args) => transaction(db, () => renewHeartbeat(db, ...args));
 export const overview = (db, ...args) => transaction(db, () => readOverview(db, ...args));
 export const replay = (db, ...args) => transaction(db, () => readReplay(db, ...args));
+export const submissionSource = (db,...args) => transaction(db,()=>readSubmission(db,...args));
 export const exportEvent = (db, ...args) => transaction(db, () => readExport(db, ...args));

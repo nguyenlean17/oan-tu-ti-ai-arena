@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {randomBytes} from 'node:crypto';
+import {CloudClient} from './cloud-client.mjs';
+if(process.env.ARENA_ALLOW_LOAD_TEST!=='1')throw Error('Local demonstration opt-in required');
+// Reuse disposable local fixtures; never email these accounts or publish their credentials.
+const {accounts,event}=JSON.parse(readFileSync('.secrets/demo-self-service.json','utf8'));
+const base='http://localhost:3002',[host,player,observer]=accounts.map(()=>new CloudClient(base));
+for(const [i,c] of [host,player,observer].entries())await c.login(accounts[i].email,accounts[i].password);
+const mine=await host.call('/api/competition?event='+event),other=await player.call('/api/competition?event='+event);
+assert.ok(mine.submissions.length&&mine.ownGames.length);
+assert.equal(mine.selectedSubmission,mine.submissions.find(s=>s.status==='valid').id);
+assert.ok(mine.ownGames.every(g=>g.p1===mine.owned||g.p2===mine.owned));
+assert.ok(mine.ownGames.every(g=>typeof g.result.moves==='number'));
+const submission=mine.submissions[0].id;
+const saved=await host.call('/api/competition?submission='+submission);
+assert.ok(saved.source.includes('choose_move'));
+for(const client of [player,observer])await client.call('/api/competition?submission='+submission,undefined,404);
+await (new CloudClient(base)).call('/api/competition?submission='+submission,undefined,401);
+assert.notEqual(other.owned,mine.owned);
+const tag=randomBytes(4).toString('hex'),bad='def choose_move(state)\n return {} # '+tag;
+const invalid=await host.call('/api/operations',{action:'student_validate',source:bad});
+async function waitFor(predicate,timeout=180000){const end=Date.now()+timeout;while(Date.now()<end){const d=await host.call('/api/operations?view=practice');const value=predicate(d);if(value)return value;await new Promise(r=>setTimeout(r,1000));}throw Error('Worker timeout');}
+const failed=await waitFor(d=>d.checks.find(c=>c.id===invalid.id&&c.result));
+assert.equal(failed.result.valid,false);assert.match(failed.result.message,/E01/);
+const source='def choose_move(state):\n return state["legal_moves"][0]\n# workbench '+tag;
+const check=await host.call('/api/operations',{action:'student_validate',source});
+const valid=await waitFor(d=>d.checks.find(c=>c.id===check.id&&c.result));assert.equal(valid.result.valid,true);
+const bench=await host.call('/api/operations',{action:'benchmark',source,opponent:'starter_config',pairs:1});
+const result=await waitFor(d=>d.benchmarks.find(b=>b.id===bench.id&&b.summary.completed===2));
+assert.equal(result.summary.wins+result.summary.draws+result.summary.losses,2);
+assert.ok(result.games.every(g=>g.result.moves&&g.result.p1sha&&g.result.p2sha));
+const proof={at:new Date().toISOString(),profile:'isolated-local-demo',sourceRestoreOwnTeamOnly:true,anonymousDenied:true,ownGamesScoped:true,lockedSubmissionVisible:true,syntaxFeedback:'E01',correctedCodeValid:true,benchmarkGames:2,replaysAvailable:true,existingOfficialGameCount:mine.ownGames.length};
+writeFileSync('docs/submission/evidence/student-workbench.json',JSON.stringify(proof,null,2)+'\n');console.log(proof);

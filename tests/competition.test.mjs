@@ -91,6 +91,13 @@ try {
   (await action(db, admin, { action: 'publish', event }));
   const exported = (await exportEvent(db, admin, event));
   assert.equal(exported.event.status, 'published'); assert.equal(exported.entries.length, 4);
+  const mine=await overview(db,users[0],event);
+  assert.equal(mine.selectedSubmission,submission.id);
+  const expectedGames=exported.games.filter(g=>g.p1===teamIds[0]||g.p2===teamIds[0]);
+  assert.equal(mine.ownGames.length,Math.min(20,expectedGames.length));
+  assert.ok(mine.ownGames.every(g=>g.p1===teamIds[0]||g.p2===teamIds[0]));
+  assert.ok(mine.ownGames.every(g=>typeof g.result.moves==='number'&&!('source' in g.result)));
+  assert.deepEqual((await overview(db,null,event)).ownGames,[]);
   const snapshot = exported.event.snapshot;
   assert.equal(JSON.parse(snapshot).engine, ENGINE_VERSION);
   assert.equal(exported.submissions.every(v => sha(v.source) === v.sha), true);
