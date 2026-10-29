@@ -1,5 +1,7 @@
 # Oẳn Tù Tì 2.0 — AI Coding Arena
 
+**Demo tự trải nghiệm:** vào [bản demo sinh viên](https://oan-tu-ti-ai-arena.vercel.app/demo), đăng nhập → tham gia → **Nộp & đấu thử** → theo dõi kiểm tra, hai ván và replay. Xem [kịch bản trình bày và bật worker không tải image](docs/DEMO_STUDENT.md).
+
 Sinh viên vào **Code & chạy thử** trong giải: viết Python, kiểm tra lỗi, đấu hai ván với bot mẫu, nộp bài và xem phản hồi/replay trong cùng trang. Có bản nháp theo tab và mở lại source đã nộp. Xem [luồng dự thi và giới hạn](docs/STUDENT_WORKBENCH.md).
 
 ## Demo tự tổ chức giải và Resend

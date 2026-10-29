@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-29T20:49:12.281Z",
+  "site": "https://oan-tu-ti-ai-arena.vercel.app",
+  "event": "df1fb3e0-2097-4cc0-994f-c23783e822c4",
+  "studentLaunchRedirect": true,
+  "noInvite": true,
+  "oneRequestSubmitsAndStartsTwoGames": true,
+  "repeatedClickDeduplicated": true,
+  "officialValidation": "valid",
+  "trial": {
+    "expected": 2,
+    "completed": 2,
+    "wins": 0,
+    "draws": 1,
+    "losses": 1,
+    "measuredGames": 2,
+    "meanGameMs": 505
+  },
+  "matchingSourceVersion": true,
+  "replays": true,
+  "resumeFromServer": true,
+  "handoffAccountNotAdmin": true,
+  "handoffAccountStillUnjoined": true,
+  "waitedForJudgeMs": 4262,
+  "measuredResponseBodyBytes": 31205
+}

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { sessionUser } from '../lib/vercel-auth-store.mjs';
 import { withCompetition } from './postgres.mjs';
 import { overview, action, leaseJob, heartbeat, finishJob, failJob, replay, exportEvent, submit, fail, submissionSource } from './store.mjs';
-import { leaseOperation, heartbeatOperation, finishOperation, failOperation } from '../operations/store.mjs';
+import { leaseOperation, heartbeatOperation, finishOperation, failOperation,submitAndTrial } from '../operations/store.mjs';
 
 const hash = value => createHash('sha256').update(value).digest();
 async function bodyOf(request, limit) {
@@ -68,19 +68,20 @@ export async function competitionRequest(request, judge = false) {
     if (request.method !== 'POST') fail('Method not allowed', 405);
     if (!user) fail('Bạn cần đăng nhập.', 401);
     const body = await bodyOf(request, 100000);
-    if(process.env.REQUIRE_EMAIL_VERIFICATION==='1'&&!user.verified&&!user.is_admin&&['join','join_open','submit','git'].includes(body.action))fail('Xác nhận email trong Khu sinh viên trước khi nhận đội hoặc nộp bài.',403);
+    if(process.env.REQUIRE_EMAIL_VERIFICATION==='1'&&!user.verified&&!user.is_admin&&['join','join_open','submit','submit_trial','git'].includes(body.action))fail('Xác nhận email trong Khu sinh viên trước khi nhận đội hoặc nộp bài.',403);
     if (body.action === 'git') {
       const membership = await withCompetition(db => db.prepare('SELECT t.repo FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(body.event, user.id));
       if (!membership?.repo) fail('BTC chưa gắn GitHub repository cho đội.', 403);
       const source = await gitSource(membership.repo, body.commit);
       return send(200, await withCompetition(db => submit(db, user, body.event, source, `github:${membership.repo}@${body.commit}:bot.py`), { write: true, submission: { event: body.event, user: user.id } }));
     }
-    if (body.action === 'submit') {
+    if (body.action === 'submit'||body.action==='submit_trial') {
       z.string().min(1).max(100).parse(body.event);
-      return send(200, await withCompetition(db => submit(db, user, body.event, body.source), { write: true, submission: { event: body.event, user: user.id } }));
+      return send(200, await withCompetition(db => body.action==='submit_trial'?submitAndTrial(db,user,body.event,body.source,body.opponent):submit(db, user, body.event, body.source), { write: true,...(body.action==='submit'?{submission: { event: body.event, user: user.id }}:{}) }));
     }
     return send(200, await withCompetition(db => action(db, user, body), { write: true }));
   } catch (error) {
+    if(!error.status&&!(error instanceof z.ZodError))console.error('Competition request failed',{code:error.code||error.name,syscall:error.syscall,path:error.path?String(error.path).split(/[\\/]/).slice(-2).join('/'):undefined});
     const validation = error instanceof z.ZodError, conflict = error.code === '23505';
     const status = error.status || (validation || conflict ? 400 : 503);
     return send(status, { error: validation ? error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ') : conflict ? 'Tên đội, hạt giống hoặc sinh viên đã tồn tại.' : error.status ? error.message : 'Hệ thống đang bận. Hãy thử lại sau vài giây; gửi lại cùng bài sẽ không tạo bản trùng.' }, status === 503 || status === 429 ? { 'Retry-After': status === 429 ? '5' : '3' } : {});

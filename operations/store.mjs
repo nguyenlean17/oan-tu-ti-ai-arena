@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { sha, RUNTIME_VERSION, verifyOfficial, fail } from '../competition/store.mjs';
+import path from 'node:path';
+import { sha, RUNTIME_VERSION, verifyOfficial, fail,submit,transaction } from '../competition/store.mjs';
 import { ENGINE_VERSION } from '../lib/engine.mjs';
 import { PRACTICE_CONFIG, REFERENCE_BOTS, benchmarkSummary } from '../lib/practice-tools.mjs';
 
@@ -12,8 +13,7 @@ export function sourceOf(value) {
   return value;
 }
 function admin(user) { if (!user?.is_admin) fail('Chỉ BTC được truy cập.', 403); }
-async function enqueue(db, kind, subject, payload, pair = null) {
-  const job = id();
+async function enqueue(db, kind, subject, payload, pair = null,job = id()) {
   await db.prepare('INSERT INTO ops_jobs(id,kind,subject,pair_id,payload,created) VALUES(?,?,?,?,?,?)').run(job, kind, subject, pair, JSON.stringify(payload), Date.now());
   return job;
 }
@@ -39,7 +39,7 @@ export async function practiceView(db, user) {
     const payload = JSON.parse(row.payload), result = row.result ? JSON.parse(row.result) : null;
     if (row.kind === 'student_validate') checks.push({ id: row.id, status: row.status, created: row.created, sha: payload.sha, result });
     else {
-      if (!batches.has(payload.benchmarkId)) batches.set(payload.benchmarkId, { id: payload.benchmarkId, created: row.created, opponent: payload.opponent, pairs: payload.pairs, sha: payload.studentSha, games: [] });
+      if (!batches.has(payload.benchmarkId)) batches.set(payload.benchmarkId, { id: payload.benchmarkId, submission:payload.submission,event:payload.event,created: row.created, opponent: payload.opponent, pairs: payload.pairs, sha: payload.studentSha, games: [] });
       batches.get(payload.benchmarkId).games.push({ id: row.id, status: row.status, studentSide: payload.studentSide, seed: payload.seed, result });
     }
   }
@@ -56,17 +56,27 @@ export async function diagnoseStudent(db, user, source) {
   await toolQuota(db, user, 'student_validate', 50, 1);
   return { id: await enqueue(db, 'student_validate', user.id, payloadFor(source)) };
 }
-export async function benchmarkStudent(db, user, source, opponent, pairs = 1) {
+export async function benchmarkStudent(db, user, source, opponent, pairs = 1,context = null) {
   sourceOf(source);
   const reference = REFERENCE_BOTS.find(b => b.id === opponent);
   if (!reference || !Number.isInteger(pairs) || pairs < 1 || pairs > 5) fail('Chọn bot mẫu hợp lệ và từ 1 đến 5 cặp đổi bên.');
+  const benchmarkId=context?`submission-${context.submission}-${reference.id}`:randomUUID();
+  const jobId=(i,side)=>context?`ops-trial-${sha(`${benchmarkId}|${i}|${side}`)}`:id();
+  if(context&&await db.prepare('SELECT id FROM ops_jobs WHERE id=? AND subject=?').get(jobId(0,'P1'),user.id))return {id:benchmarkId};
   await toolQuota(db, user, 'benchmark_game', 40, pairs * 2);
-  const other = readFileSync(new URL(`../public/bots/${reference.id}.py`, import.meta.url), 'utf8'), benchmarkId = randomUUID(), studentSha = sha(source);
+  const other = readFileSync(path.join(process.cwd(),'public','bots',reference.id+'.py'), 'utf8'),studentSha = sha(source);
   for (let i = 0; i < pairs; i++) for (const studentSide of ['P1','P2']) {
     const own = { source, sha: studentSha }, rival = { source: other, sha: sha(other) };
-    await enqueue(db, 'benchmark_game', user.id, { config: practiceConfig, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION, benchmarkId, pairs, opponent: reference.id, studentSha, studentSide, seed: 42 + i, p1: studentSide === 'P1' ? own : rival, p2: studentSide === 'P2' ? own : rival });
+    await enqueue(db, 'benchmark_game', user.id, { config: practiceConfig, engine: ENGINE_VERSION, runtime: RUNTIME_VERSION, benchmarkId,...(context?{submission:context.submission,event:context.event}:{}), pairs, opponent: reference.id, studentSha, studentSide, seed: 42 + i, p1: studentSide === 'P1' ? own : rival, p2: studentSide === 'P2' ? own : rival },null,jobId(i,studentSide));
   }
   return { id: benchmarkId };
+}
+export async function submitAndTrial(db,user,event,source,opponent='starter_config'){
+  return transaction(db,async()=>{
+    const submission=await submit(db,user,event,source);
+    const trial=await benchmarkStudent(db,user,source,opponent,1,{submission:submission.id,event});
+    return {...submission,sha:sha(source),benchmark:trial.id};
+  });
 }
 async function matchmake(db, now) {
   const day = new Date(now).setUTCHours(0, 0, 0, 0);

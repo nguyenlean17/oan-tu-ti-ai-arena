@@ -188,6 +188,8 @@ The public introduction retains registration, practice and **Tham gia giải** l
 
 ## Do's and Don'ts
 
+The student workbench now leads with **Nộp & đấu thử** and the **Tiến độ** view. The view uses flat stages for server receipt, validation and two side-swapped games, followed by the actual score and replay actions. Before the first attempt, a working primary action explains the prefilled starter code; no mandatory tour is added. Manual checking, benchmarking and **Chỉ nộp vào giải** remain secondary paths. Source-linked trial metadata survives reload; trial outcomes remain explicitly separate from official standings. `/demo` preserves the destination through sign-in and redirects to the configured event without silently enrolling or granting roles.
+
 Tournament management extends the existing flat interface with native **Xoá giải đấu** disclosure and an explicit **Xoá giải này** action, using existing error ink. The tournament list places a scoped **Thùng rác** disclosure above event rows; each deleted event has **Khôi phục giải**. The copy names reversible hiding, stopped judging and preserved records. Restored judging stays paused until the organizer resumes. The direct-entry demo flag changes participation affordances, never organizer permissions or frozen rules; students see **Tham gia ngay**, including legacy invite configurations during this presentation policy.
 
 ### Do:

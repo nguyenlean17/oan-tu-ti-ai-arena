@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { timingSafeEqual, createHash } from 'node:crypto';
 import { z } from 'zod';
 import { openCompetition, overview, action, leaseJob, heartbeat, finishJob, failJob, replay, exportEvent, submit, fail, submissionSource } from './store.mjs';
+import {submitAndTrial} from '../operations/store.mjs';
 
 async function bodyOf(req, limit) {
   if (!(req.headers['content-type'] || '').startsWith('application/json')) fail('Cần dữ liệu JSON.', 415);
@@ -51,7 +52,8 @@ export function competitionHandler(directory) {
             for await (const chunk of response.body) { bytes += chunk.length; if (bytes > 65536) { await response.body.cancel().catch(() => {}); fail('bot.py vượt 64 KiB.'); } parts.push(Buffer.from(chunk)); }
             const source = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(parts));
             send(200, (await submit(db, user, body.event, source, `github:${membership.repo}@${commit}:bot.py`)));
-          } else send(200, (await action(db, user, body)));
+          } else if(body.action==='submit_trial')send(200,await submitAndTrial(db,user,body.event,body.source,body.opponent));
+          else send(200, (await action(db, user, body)));
         } else fail('Method not allowed', 405);
       } catch (error) {
         const validation = error instanceof z.ZodError;
