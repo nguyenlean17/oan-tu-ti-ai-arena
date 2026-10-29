@@ -30,6 +30,6 @@ try {
   assert.equal((await authenticate(db,'legacy@example.test',password)).id,user.id);
   assert.equal(sessionUser(db,oldSession).id,user.id);
   const html=authPage({mode:'register',csrf:'test',returnTo:'/competition'});
-  assert.match(html,/@vnu\.edu\.vn/); assert.match(html,/Không gửi mã xác nhận/);
+  assert.match(html,/@vnu\.edu\.vn/); assert.match(html,/Xác nhận email/);
   console.log('VNU policy passed: exact domain, normalization, rejected lookalikes, local/cloud registration boundary, passwords, legacy sessions and existing admin access.');
 } finally { db.close(); rmSync(directory,{recursive:true,force:true}); }

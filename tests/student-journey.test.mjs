@@ -1,0 +1,48 @@
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {CloudClient} from './cloud-client.mjs';
+if(process.env.ARENA_ALLOW_LOAD_TEST!=='1')throw Error('Explicit localhost demo opt-in required');
+const base='http://localhost:3002',mail='http://localhost:8025',id=randomBytes(5).toString('hex'),email=`arena-journey-${id}@vnu.edu.vn`,password='Student-Demo-'+randomBytes(12).toString('hex'),nextPassword='Student-New-'+randomBytes(12).toString('hex');
+const fixtures=JSON.parse(readFileSync('.secrets/load-fixtures.json','utf8')),admin=new CloudClient(base),student=new CloudClient(base),stranger=new CloudClient(base);
+await admin.login(fixtures.admin.email,fixtures.admin.password);
+const call=body=>student.call('/api/portal',body);
+async function mailLink(address,kind){
+ const until=Date.now()+30000;while(Date.now()<until){const inbox=await(await fetch(mail+'/api/v1/messages')).json();for(const item of inbox.messages||[]){if(!item.To?.some(t=>t.Address===address))continue;const m=await(await fetch(mail+'/api/v1/message/'+item.ID)).json();const match=m.Text?.match(new RegExp(`http://localhost:3002/${kind}\\?token=[a-f0-9]{64}`));if(match)return match[0];}await new Promise(r=>setTimeout(r,500));}throw Error('Missing test email '+kind);
+}
+async function form(client,path,fields,status=200){const html=await client.call(path),csrf=/name="csrf" value="([a-f0-9]+)"/.exec(html)?.[1];assert.ok(csrf);const r=await fetch(base+path,{method:'POST',headers:{Cookie:client.cookies(),Origin:base,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({csrf,...fields})});client.remember(r);assert.equal(r.status,status,(await r.clone().text()).slice(0,200));return r.text();}
+await student.register(email,'Sinh viên trải nghiệm',password);
+assert.equal((await call()).user.verified,0);
+await student.post({action:'join',token:'x'.repeat(30)},403);
+const verify=new URL(await mailLink(email,'verify-email'));await form(student,verify.pathname+verify.search,{token:verify.searchParams.get('token')});
+await form(student,verify.pathname+verify.search,{token:verify.searchParams.get('token')},400);
+assert.ok((await call()).user.verified>0);
+const event=await admin.post({action:'create',name:'UET · Trải nghiệm sinh viên '+id,config:{groupCount:1,qualifiers:2,deadline:new Date(Date.now()+7*86400000).toISOString(),seed:2026,maxPlies:40,moveMs:1000,startupMs:8000,memoryMB:128,extraSets:0}});
+const team=await admin.post({action:'team',event:event.id,name:'Đội trải nghiệm '+id,seed:1});
+const invite=await admin.post({action:'invite',event:event.id,team:team.id,email,student:'QA-'+id});
+await student.post({action:'join',token:invite.token});
+const mine=await call();assert.ok(mine.teams.some(t=>t.id===team.id));assert.equal(mine.accounts.length,0);
+await call({action:'rename_team',team:team.id,name:'Đội sinh viên '+id});
+await student.call('/api/portal',{action:'rename_team',team:'not-owned',name:'Wrong team'},403);
+await student.call('/api/portal',{action:'disable',id:mine.user.id,disabled:true},403);
+await admin.post({action:'open',event:event.id});
+const submitted=await student.post({action:'submit',event:event.id,source:'def choose_move(state):\n    return state["legal_moves"][0]\n'});
+const deadline=Date.now()+90000;let verdict;while(Date.now()<deadline){const d=await student.call('/api/competition?event='+event.id);verdict=d.submissions.find(s=>s.id===submitted.id)?.status;if(verdict!=='pending')break;await new Promise(r=>setTimeout(r,1000));}assert.equal(verdict,'valid');
+const trialEmail=`arena-student-${id}@vnu.edu.vn`,trialTeam=await admin.post({action:'team',event:event.id,name:'Đội của bạn '+id,seed:2});
+const trialInvite=await admin.post({action:'invite',event:event.id,team:trialTeam.id,email:trialEmail,student:'DEMO-'+id});
+await form(stranger,'/forgot-password',{email:'absent-'+id+'@vnu.edu.vn'});
+await form(student,'/forgot-password',{email});
+const reset=new URL(await mailLink(email,'reset-password'));await form(student,reset.pathname+reset.search,{token:reset.searchParams.get('token'),password:nextPassword,confirm:nextPassword});
+await student.call('/api/portal',undefined,401);
+await form(stranger,reset.pathname+reset.search,{token:reset.searchParams.get('token'),password:nextPassword,confirm:nextPassword},400);
+await student.login(email,nextPassword);
+await call({action:'profile',name:'Sinh viên đã kiểm tra'});
+await admin.call('/api/portal',{action:'disable',id:mine.user.id,disabled:true});
+await student.call('/api/portal',undefined,401);
+await admin.call('/api/portal',{action:'disable',id:mine.user.id,disabled:false});
+await student.login(email,nextPassword);
+const csrf=await fetch(base+'/api/portal',{method:'POST',headers:{Cookie:student.cookies(),Origin:'https://wrong.invalid','Content-Type':'application/json'},body:JSON.stringify({action:'profile',name:'Bad'})});assert.equal(csrf.status,403);
+mkdirSync('output/operations',{recursive:true});
+writeFileSync('.secrets/student-experience.json',JSON.stringify({email,password:nextPassword,event:event.id,trialEmail,trialInvite:trialInvite.token,register:base+'/register?return_to=/student',mail},null,2),{mode:0o600});
+const proof={at:new Date().toISOString(),verifiedEmail:true,singleUseVerification:true,submittedBot:verdict,resetRevokesSessions:true,resetReplayRejected:true,teamOwnership:true,adminLockRevokesSessions:true,studentCannotAdmin:true,csrf:true,event:event.id};
+writeFileSync('output/operations/student-journey.json',JSON.stringify(proof,null,2));console.log(JSON.stringify(proof,null,2));

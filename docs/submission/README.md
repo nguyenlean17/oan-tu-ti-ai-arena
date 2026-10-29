@@ -37,3 +37,7 @@ Máy chủ cần Docker Linux containers và Node 22.16+; lần build đầu c�
 Để tái lập biểu đồ/PDF khi đã có evidence: chạy `scripts/build-submission-report.py` bằng Python có reportlab, matplotlib và pypdf. Bộ ZIP được tạo từ các tệp Git được quản lý cộng tài liệu cuối; không chứa dữ liệu vận hành riêng.
 
 Để tạo ZIP từ commit đã chốt và working tree sạch: `node scripts/package-submission.mjs`. Kết quả trong `output/handin/`, kèm commit và SHA-256. Bộ ZIP gồm mã nguồn và toàn bộ thư mục tài liệu này; bot mẫu ở `public/bots/`.
+
+## Bổ sung ngày 29/10/2026
+
+Khu sinh viên, quản lý tài khoản/đội, xác nhận và khôi phục mật khẩu: [hướng dẫn và cấu hình Mailpit](../STUDENT_PORTAL.md). Bằng chứng chức năng [student-journey.json](evidence/student-journey.json). Báo cáo PDF hiện có là snapshot ngày 25/10; hướng dẫn mới bổ sung và thay thế phần chính sách email chưa xác minh trong snapshot đó.

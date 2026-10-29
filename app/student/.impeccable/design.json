@@ -1,0 +1,359 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T10:44:11Z",
+  "title": "Design System: UET Arena student workspace",
+  "extensions": {
+    "colorMeta": {
+      "university-blue": {
+        "role": "primary",
+        "displayName": "University Blue",
+        "tonalRamp": [
+          "oklch(15% 0.1495 256.54)",
+          "oklch(26% 0.1495 256.54)",
+          "oklch(38% 0.1495 256.54)",
+          "oklch(49% 0.1495 256.54)",
+          "oklch(61% 0.1495 256.54)",
+          "oklch(72% 0.1495 256.54)",
+          "oklch(84% 0.1495 256.54)",
+          "oklch(95% 0.1495 256.54)"
+        ]
+      },
+      "navigation-navy": {
+        "role": "primary",
+        "displayName": "Navigation Navy",
+        "tonalRamp": [
+          "oklch(15% 0.0706 255.53)",
+          "oklch(26% 0.0706 255.53)",
+          "oklch(38% 0.0706 255.53)",
+          "oklch(49% 0.0706 255.53)",
+          "oklch(61% 0.0706 255.53)",
+          "oklch(72% 0.0706 255.53)",
+          "oklch(84% 0.0706 255.53)",
+          "oklch(95% 0.0706 255.53)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0559 248.31)",
+          "oklch(26% 0.0559 248.31)",
+          "oklch(38% 0.0559 248.31)",
+          "oklch(49% 0.0559 248.31)",
+          "oklch(61% 0.0559 248.31)",
+          "oklch(72% 0.0559 248.31)",
+          "oklch(84% 0.0559 248.31)",
+          "oklch(95% 0.0559 248.31)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0439 245.20)",
+          "oklch(26% 0.0439 245.20)",
+          "oklch(38% 0.0439 245.20)",
+          "oklch(49% 0.0439 245.20)",
+          "oklch(61% 0.0439 245.20)",
+          "oklch(72% 0.0439 245.20)",
+          "oklch(84% 0.0439 245.20)",
+          "oklch(95% 0.0439 245.20)"
+        ]
+      },
+      "cool-paper": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0045 258.32)",
+          "oklch(26% 0.0045 258.32)",
+          "oklch(38% 0.0045 258.32)",
+          "oklch(49% 0.0045 258.32)",
+          "oklch(61% 0.0045 258.32)",
+          "oklch(72% 0.0045 258.32)",
+          "oklch(84% 0.0045 258.32)",
+          "oklch(95% 0.0045 258.32)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "divider": {
+        "role": "neutral",
+        "displayName": "Divider",
+        "tonalRamp": [
+          "oklch(15% 0.0168 250.85)",
+          "oklch(26% 0.0168 250.85)",
+          "oklch(38% 0.0168 250.85)",
+          "oklch(49% 0.0168 250.85)",
+          "oklch(61% 0.0168 250.85)",
+          "oklch(72% 0.0168 250.85)",
+          "oklch(84% 0.0168 250.85)",
+          "oklch(95% 0.0168 250.85)"
+        ]
+      },
+      "field-stroke": {
+        "role": "neutral",
+        "displayName": "Field Stroke",
+        "tonalRamp": [
+          "oklch(15% 0.0373 245.72)",
+          "oklch(26% 0.0373 245.72)",
+          "oklch(38% 0.0373 245.72)",
+          "oklch(49% 0.0373 245.72)",
+          "oklch(61% 0.0373 245.72)",
+          "oklch(72% 0.0373 245.72)",
+          "oklch(84% 0.0373 245.72)",
+          "oklch(95% 0.0373 245.72)"
+        ]
+      },
+      "active-navigation": {
+        "role": "neutral",
+        "displayName": "Active Navigation",
+        "tonalRamp": [
+          "oklch(15% 0.0823 252.21)",
+          "oklch(26% 0.0823 252.21)",
+          "oklch(38% 0.0823 252.21)",
+          "oklch(49% 0.0823 252.21)",
+          "oklch(61% 0.0823 252.21)",
+          "oklch(72% 0.0823 252.21)",
+          "oklch(84% 0.0823 252.21)",
+          "oklch(95% 0.0823 252.21)"
+        ]
+      },
+      "information-surface": {
+        "role": "neutral",
+        "displayName": "Information Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0131 251.56)",
+          "oklch(26% 0.0131 251.56)",
+          "oklch(38% 0.0131 251.56)",
+          "oklch(49% 0.0131 251.56)",
+          "oklch(61% 0.0131 251.56)",
+          "oklch(72% 0.0131 251.56)",
+          "oklch(84% 0.0131 251.56)",
+          "oklch(95% 0.0131 251.56)"
+        ]
+      },
+      "success-surface": {
+        "role": "neutral",
+        "displayName": "Success Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0125 164.80)",
+          "oklch(26% 0.0125 164.80)",
+          "oklch(38% 0.0125 164.80)",
+          "oklch(49% 0.0125 164.80)",
+          "oklch(61% 0.0125 164.80)",
+          "oklch(72% 0.0125 164.80)",
+          "oklch(84% 0.0125 164.80)",
+          "oklch(95% 0.0125 164.80)"
+        ]
+      },
+      "success-ink": {
+        "role": "neutral",
+        "displayName": "Success Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0740 162.34)",
+          "oklch(26% 0.0740 162.34)",
+          "oklch(38% 0.0740 162.34)",
+          "oklch(49% 0.0740 162.34)",
+          "oklch(61% 0.0740 162.34)",
+          "oklch(72% 0.0740 162.34)",
+          "oklch(84% 0.0740 162.34)",
+          "oklch(95% 0.0740 162.34)"
+        ]
+      },
+      "error-surface": {
+        "role": "neutral",
+        "displayName": "Error Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0172 35.34)",
+          "oklch(26% 0.0172 35.34)",
+          "oklch(38% 0.0172 35.34)",
+          "oklch(49% 0.0172 35.34)",
+          "oklch(61% 0.0172 35.34)",
+          "oklch(72% 0.0172 35.34)",
+          "oklch(84% 0.0172 35.34)",
+          "oklch(95% 0.0172 35.34)"
+        ]
+      },
+      "error-ink": {
+        "role": "neutral",
+        "displayName": "Error Ink",
+        "tonalRamp": [
+          "oklch(15% 0.1299 33.36)",
+          "oklch(26% 0.1299 33.36)",
+          "oklch(38% 0.1299 33.36)",
+          "oklch(49% 0.1299 33.36)",
+          "oklch(61% 0.1299 33.36)",
+          "oklch(72% 0.1299 33.36)",
+          "oklch(84% 0.1299 33.36)",
+          "oklch(95% 0.1299 33.36)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Student headline",
+        "purpose": "Main page title; contracts at student breakpoints."
+      },
+      "title": {
+        "displayName": "Section title",
+        "purpose": "Account, team and event sections."
+      },
+      "body": {
+        "displayName": "Vietnamese body",
+        "purpose": "Explanatory copy with a 75ch maximum."
+      },
+      "label": {
+        "displayName": "Field label",
+        "purpose": "Visible form labels."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "student-state",
+        "value": "background .18s, color .18s, border-color .18s, transform .18s",
+        "purpose": "Inherited application transitions on interactive elements."
+      },
+      {
+        "name": "account-submit",
+        "value": "background 150ms",
+        "purpose": "Standalone account submit hover and active fills."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "student-narrow",
+        "value": "950px"
+      },
+      {
+        "name": "student-in-flow",
+        "value": "650px"
+      },
+      {
+        "name": "auth-narrow",
+        "value": "850px"
+      },
+      {
+        "name": "auth-form-only",
+        "value": "620px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Student primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary form action for profile or joining a team.",
+      "html": "<button class=\"ds-primary\">Lưu hồ sơ</button>",
+      "css": ".ds-primary{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;min-height:40px;padding:10px 18px;border:1px solid #034ea1;border-radius:5px;background:#034ea1;color:white;font-weight:600;cursor:pointer;transition:background .18s,color .18s,border-color .18s,transform .18s}.ds-primary:disabled{opacity:.5;cursor:wait}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+    },
+    {
+      "name": "Student secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined form action for renaming and secondary account tasks.",
+      "html": "<button class=\"ds-secondary\">Lưu tên đội</button>",
+      "css": ".ds-secondary{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;min-height:40px;padding:10px 18px;border:1px solid #a9bfd3;border-radius:5px;background:white;color:#034ea1;font-weight:600;cursor:pointer;transition:background .18s,color .18s,border-color .18s,transform .18s}.ds-secondary:disabled{opacity:.5;cursor:wait}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+    },
+    {
+      "name": "Labeled field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Visible label and white field used for private invitation codes.",
+      "html": "<label class=\"ds-label\">Mã tham gia đội<input class=\"ds-input\" autocomplete=\"off\" placeholder=\"Dán mã BTC đã gửi riêng\"></label>",
+      "css": ".ds-label{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;display:grid;gap:8px;font-size:13px;color:#19344d}.ds-input{font:inherit;color:#19344d;width:100%;min-width:0;padding:12px 14px;border:1px solid #a9bfd3;border-radius:5px;background:white;transition:background .18s,color .18s,border-color .18s,transform .18s}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+    },
+    {
+      "name": "Student navigation",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Visible rail navigation with an explicit active page state.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Khu sinh viên\"><button aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 22V3m0 0c4-3 8 3 12 0v11c-4 3-8-3-12 0\"/></svg>Bắt đầu tham gia</button><button><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg>Đội của tôi</button></nav>",
+      "css": ".ds-nav{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;display:grid;gap:8px;padding:20px;background:#102b4d;color:#d8e4f3}.ds-nav button{font:inherit;font-size:13px;min-height:40px;border:0;background:transparent;color:inherit;display:flex;align-items:center;gap:12px;text-align:left;padding:13px 12px;border-radius:6px;cursor:pointer;transition:background .18s,color .18s}.ds-nav button:hover,.ds-nav button[aria-current=page]{background:#214770;color:white}.ds-nav svg{flex-shrink:0}@media(max-width:650px){.ds-nav{grid-template-columns:1fr 1fr;gap:4px}.ds-nav button{font-size:12px;padding:11px 7px}}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+    },
+    {
+      "name": "Numbered next step",
+      "kind": "custom",
+      "description": "A divided onboarding row whose action follows account state.",
+      "html": "<div class=\"ds-step\"><span>2</span><div><h2>Nhận đội thi của bạn</h2><p>Nhập mã riêng do BTC gửi cho email của bạn.</p><a href=\"#teams\">Nhập mã tham gia <svg aria-hidden=\"true\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></a></div></div>",
+      "css": ".ds-step{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;color:#19344d;display:flex;gap:24px;padding:27px 0;border-top:1px solid #d9e2ec}.ds-step>span{flex:0 0 34px;height:34px;border:1px solid #a9bfd3;border-radius:50%;display:grid;place-items:center;color:#034ea1;font-weight:600}.ds-step h2{font-size:20px;line-height:1.6;letter-spacing:-.015em;font-weight:600;margin:0 0 10px}.ds-step p{margin:0;line-height:1.75;max-width:75ch}.ds-step a{display:inline-flex;gap:10px;align-items:center;color:#034ea1;font-weight:600;margin-top:13px;padding:5px 0;text-decoration:none;transition:background .18s,color .18s}.ds-step svg{flex-shrink:0}@media(max-width:650px){.ds-step{gap:15px}}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+    },
+    {
+      "name": "Local mail information",
+      "kind": "card",
+      "refersTo": "information-panel",
+      "description": "Flat information fill used for the actual Mailpit demo notice.",
+      "html": "<p class=\"ds-info\">Bản thử local: thư được giữ trong <a href=\"http://localhost:8025\">hộp thư Mailpit</a>, không gửi ra email thật.</p>",
+      "css": ".ds-info{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;line-height:1.75;color:#19344d;padding:20px;background:#e8eff7;margin:24px 0;max-width:75ch}.ds-info a{color:inherit;text-decoration:underline;text-underline-offset:4px;transition:background .18s,color .18s}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-input:focus-visible,.ds-nav button:focus-visible,.ds-step a:focus-visible,.ds-info a:focus-visible{outline:3px solid #4381bc;outline-offset:3px}"
+    },
+    {
+      "name": "Membership rows",
+      "kind": "custom",
+      "description": "Member table structure with no fabricated sample personal data.",
+      "html": "<div class=\"ds-table\"><table><thead><tr><th>Thành viên</th><th>MSSV</th><th>Email</th></tr></thead><tbody><tr><td colspan=\"3\">Bạn chưa thuộc đội nào.</td></tr></tbody></table></div>",
+      "css": ".ds-table{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;overflow:auto;color:#19344d}.ds-table table{border-collapse:collapse;width:100%;font-size:13px}.ds-table td,.ds-table th{padding:16px 10px;text-align:left;border-bottom:1px solid #d9e2ec;overflow-wrap:anywhere}.ds-table th{color:#536b80;font-size:12px;font-weight:500}.ds-table td{font-size:13px;line-height:1.6}@media(max-width:650px){.ds-table table{min-width:480px}.ds-table td,.ds-table th{padding:12px 7px}}"
+    },
+    {
+      "name": "Standalone account action",
+      "kind": "button",
+      "description": "Shared login, registration, confirmation and recovery submit treatment.",
+      "html": "<button class=\"ds-auth\">Gửi liên kết đặt lại mật khẩu</button>",
+      "css": ".ds-auth{font-family:'Be Vietnam Pro',sans-serif;font-size:14px;line-height:1.6;border:0;border-radius:7px;color:#f5f8ee;background:#034ea1;padding:14px 17px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background 150ms}.ds-auth:hover{background:#003f85}.ds-auth:active{background:#00356f}.ds-auth:focus-visible{outline:3px solid #034ea1;outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The University Competition Desk",
+    "overview": "This is a scoped record of the implemented `/student` workspace and the related sign-in, registration, email confirmation and password recovery screens. It extends the current UET identity; it does not replace the root design system or prescribe changes to practice, the board engine or tournament operations.\n\nThe workspace is a quiet administrative surface for Vietnamese students. A navy rail carries navigation, while cool light content uses headings, numbered steps and divided data rows to make the next action visible. Account entry screens carry the same identity through a navy introduction beside a focused form.\n\nThe unmodified university icon is served from `public/brand/uet.ico`, with provenance in `public/brand/SOURCE.md`. Its use accompanies the course-project identity; it does not establish official university service status or VNU SSO.",
+    "keyCharacteristics": [
+      "University blue actions, navy navigation and cool light surfaces.",
+      "Vietnamese interface text in Be Vietnam Pro, with locally served font files.",
+      "Flat sections and real data rows, with text accompanying state.",
+      "Direct verification, private invitation and submission actions."
+    ],
+    "rules": [
+      {
+        "name": "The Action and State Rule",
+        "body": "Keep blue for actions and navigation; keep success and error colors attached to explicit feedback text.",
+        "section": "colors"
+      },
+      {
+        "name": "The Local Overflow Rule",
+        "body": "Keep wide membership and account rows scrollable within their table container while the surrounding page remains fluid.",
+        "section": "layout"
+      },
+      {
+        "name": "The Divided Surface Rule",
+        "body": "Separate related account, team and event content with spacing and thin rules; preserve the flat page structure.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve blue actions, navy navigation and flat divided sections in this scoped surface.",
+      "Do keep account, verification and membership status readable as text.",
+      "Do retain local font loading for standalone account screens and the student page.",
+      "Do show the next action supported by actual verification, membership and tournament state.",
+      "Do preserve the local Mailpit notice when that demo mode is active.",
+      "Do retain the sourced icon and its documented course-project context."
+    ],
+    "donts": [
+      "Don't add decorative shadows or gradients to this flat student workspace.",
+      "Don't turn team and account rows into nested dashboard cards.",
+      "Don't expose organizer controls as student actions or imply the frontend grants organizer rights.",
+      "Don't represent local Mailpit delivery as external email delivery or VNU SSO.",
+      "Don't replace the sourced university icon with a fabricated university seal."
+    ]
+  }
+}

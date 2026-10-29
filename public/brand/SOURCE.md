@@ -1,0 +1,1 @@
+UET logo icon: https://mis.uet.edu.vn/uet_logo.ico (official university management system), downloaded 2026-10-29. Displayed without redrawing or modification; UET Arena is a course project, not an official university service.

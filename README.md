@@ -1,5 +1,9 @@
 # Oẳn Tù Tì 2.0 — AI Coding Arena
 
+## Khu sinh viên, quản lý tài khoản và xác nhận email
+
+Cập nhật 29/10/2026: vào `/student` sau đăng nhập để xác nhận email, nhận đội bằng mã riêng, xem thành viên, đổi tên đội và đến đúng bài nộp. BTC có tìm kiếm và khóa/mở khóa tài khoản; sinh viên có sửa hồ sơ, đổi mật khẩu, xác nhận email và khôi phục mật khẩu. Demo local dùng Mailpit, không gửi thư ra email thật. Xem [hướng dẫn trải nghiệm, cấu hình email và giới hạn](docs/STUDENT_PORTAL.md).
+
 ## Bản nộp UET: triển khai tại trường và bằng chứng kiểm thử
 
 Nhánh `integrate-safe-enhancements` bổ sung dashboard vận hành, chẩn đoán bot E01-E06, hàng đợi cá nhân, đấu tập Elo bền vững, review tương đồng AST có giới hạn và bộ kiểm thử tải HTTP độc lập. Xem [vận hành và tái lập kiểm thử](docs/OPERATIONS.md) và [bộ tài liệu nộp](docs/submission/README.md). Mô hình triển khai chính là Docker + PostgreSQL + WASI tại trường; Vercel được giữ riêng, không bắt buộc sử dụng.
@@ -22,7 +26,7 @@ Mở **http://localhost:3000/competition**. Web, API, tài khoản, hàng đợi
 
 Mở **https://oan-tu-ti-ai-arena.vercel.app/competition**. Không cần mua tên miền hoặc mở cổng máy chấm. Xem [hướng dẫn triển khai Vercel + Docker](deploy/VERCEL_JUDGE.md) và [PDF hướng dẫn mô hình mới](docs/huong-dan-vercel-docker-uet.pdf).
 
-Sinh viên đăng ký/đăng nhập bằng email **đúng tên miền `@vnu.edu.vn`**, dùng mật khẩu riêng của website. Không gửi mã xác nhận theo yêu cầu BTC: đây là lọc tên miền, **không xác minh chủ hộp thư**. Tài khoản admin hiện có được giữ lối đăng nhập; phiên cũ của tài khoản thường ngoài VNU không còn được chấp nhận. Dữ liệu và kết quả cũ vẫn được giữ. Xem [nộp đồng thời và chính sách tài khoản](docs/NOP_DONG_THOI_VNU.md).
+Sinh viên đăng ký/đăng nhập bằng email **đúng tên miền `@vnu.edu.vn`**, dùng mật khẩu riêng của website. Chính sách cũ chỉ lọc tên miền. Bản mới có xác nhận email và đặt lại mật khẩu; bật `REQUIRE_EMAIL_VERIFICATION=1` và cấu hình dịch vụ gửi thư để xác minh chủ hộp thư trước khi nhận đội/nộp bài. Mailpit chỉ dành cho demo local; profile cũ chưa bật cờ giữ chính sách cũ. Tài khoản admin hiện có được giữ lối đăng nhập; phiên cũ của tài khoản thường ngoài VNU không còn được chấp nhận. Dữ liệu và kết quả cũ vẫn được giữ. Xem [nộp đồng thời và chính sách tài khoản](docs/NOP_DONG_THOI_VNU.md).
 
 ## Chạy toàn bộ trên máy local
 

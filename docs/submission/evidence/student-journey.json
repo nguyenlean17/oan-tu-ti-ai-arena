@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-29T10:24:47.812Z",
+  "verifiedEmail": true,
+  "singleUseVerification": true,
+  "submittedBot": "valid",
+  "resetRevokesSessions": true,
+  "resetReplayRejected": true,
+  "teamOwnership": true,
+  "adminLockRevokesSessions": true,
+  "studentCannotAdmin": true,
+  "csrf": true,
+  "event": "b14c5484-5296-428c-9d10-91ca2006f1aa"
+}

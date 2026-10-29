@@ -27,3 +27,7 @@
 - Chưa cài DNS/TLS và systemd backup timer trên hạ tầng trường; chưa thử HA hoặc 4.000 người đồng thời.
 
 Các lần kiểm tra bị treo khi Docker không phản hồi không được tính là PASS; chỉ lần chạy hoàn tất sau khôi phục mới được ghi nhận. Kết quả đo tải gốc được giữ bất biến. Không đưa tài khoản fixture, token/cookie, backup hoặc secret vào bộ nộp.
+
+## Khu sinh viên và tài khoản — 29/10/2026
+
+Đã kiểm tra HTTP trên profile PostgreSQL local + Mailpit: đăng ký, xác nhận email dùng một lần, nhận đúng đội, đổi tên đội, nộp Python và nhận verdict valid từ worker; reset mật khẩu thu hồi session cũ và từ chối link dùng lại; BTC khóa/mở khóa tài khoản, sinh viên không có quyền quản trị hoặc đổi đội khác; từ chối POST khác origin. Bằng chứng: evidence/student-journey.json. Mailpit không xác minh email ngoài Internet và chỉ dùng cho demo local. Đây là kiểm thử chức năng, không phải kiểm định bảo mật độc lập. Chính sách xác nhận email mới chỉ áp dụng khi bật REQUIRE_EMAIL_VERIFICATION=1; báo cáo PDF ngày 25/10 là snapshot trước thay đổi này. Xem ../STUDENT_PORTAL.md.
