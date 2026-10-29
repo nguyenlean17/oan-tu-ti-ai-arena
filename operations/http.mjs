@@ -23,7 +23,7 @@ async function metrics(db) {
   const stamp = Date.now();
   const { backup, restore, load } = localEvidence();
   const scope = Array.isArray(load?.eventIds) && load.eventIds.length === 2 && load.eventIds.every(x => typeof x === 'string') ? load.eventIds : [];
-  const jobs = await db.prepare('SELECT kind,status,COUNT(*) count,MIN(created) oldest FROM jobs' + (scope.length ? ' WHERE event IN (?,?)' : '') + ' GROUP BY kind,status').all(...scope);
+  const jobs = await db.prepare('SELECT kind,status,COUNT(*) count,MIN(created) oldest FROM jobs' + (scope.length ? " WHERE event IN (?,?) AND event IN (SELECT id FROM events WHERE status<>'archived')" : " WHERE event IN (SELECT id FROM events WHERE status<>'archived')") + ' GROUP BY kind,status').all(...scope);
   const operations = await db.prepare('SELECT kind,status,COUNT(*) count,MIN(created) oldest FROM ops_jobs GROUP BY kind,status').all();
   const submissions = await db.prepare('SELECT status,COUNT(*) count FROM submissions' + (scope.length ? ' WHERE team IN (SELECT id FROM teams WHERE event IN (?,?))' : '') + ' GROUP BY status').all(...scope);
   const workers = await db.prepare('SELECT id,seen,runtime FROM workers ORDER BY seen DESC LIMIT 50').all();
@@ -33,7 +33,8 @@ async function metrics(db) {
   return { at: stamp, jobs, operations, submissions, workers, errors, selftest: checks ? { id: checks.id, at: checks.completed, passed: !['timeout', 'bot_error', 'output_limit', 'invalid_move'].includes(JSON.parse(checks.result).reason) } : null, reviews: reviews.map(r => ({ ...r, result: r.result ? JSON.parse(r.result) : null })), backup, restore, load, deployment: process.env.ARENA_DEPLOYMENT || 'postgres', readiness: { database: true, worker: workers.some(w => stamp - w.seen < 120000 && w.runtime === RUNTIME_VERSION), backup: !!backup && stamp - backup.at < 86400000, restore: !!restore?.restoredToSeparateDatabase, publicHttpsConfigured: (process.env.PUBLIC_ORIGIN || '').startsWith('https:') } };
 }
 async function queue(db, user, event) {
-  const rows = await db.prepare("SELECT v.id,v.sha,v.status,v.verdict,v.created,j.status job_status,(SELECT COUNT(*) FROM jobs q WHERE q.kind='validate' AND q.status='queued' AND q.created<=j.created) position FROM members m JOIN submissions v ON v.team=m.team LEFT JOIN jobs j ON j.subject=v.id AND j.kind='validate' WHERE m.user=? AND m.event=? ORDER BY v.created DESC,v.id DESC LIMIT 10").all(user.id, event);
+  if(!await db.prepare("SELECT id FROM events WHERE id=? AND status<>'archived'").get(event))fail('Không tìm thấy giải đấu.',404);
+  const rows = await db.prepare("SELECT v.id,v.sha,v.status,v.verdict,v.created,j.status job_status,(SELECT COUNT(*) FROM jobs q WHERE q.kind='validate' AND q.status='queued' AND q.event IN (SELECT id FROM events WHERE status<>'archived') AND q.created<=j.created) position FROM members m JOIN submissions v ON v.team=m.team LEFT JOIN jobs j ON j.subject=v.id AND j.kind='validate' WHERE m.user=? AND m.event=? ORDER BY v.created DESC,v.id DESC LIMIT 10").all(user.id, event);
   return { at: Date.now(), submissions: rows.map(r => ({ ...r, ageMs: Date.now() - r.created, position: r.job_status === 'queued' ? r.position : null })) };
 }
 export async function operationsRequest(request) {

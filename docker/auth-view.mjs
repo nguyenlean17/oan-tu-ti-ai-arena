@@ -1,4 +1,4 @@
-import {demoSelfService} from '../lib/demo-policy.mjs';
+import {demoSelfService,demoOpenEntry} from '../lib/demo-policy.mjs';
 const escape = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
 export function authPage({ mode, csrf, returnTo, error = '', email = '', name = '' }) {
   const signup = mode === 'register', logout = mode === 'logout';
@@ -18,5 +18,5 @@ export function authPage({ mode, csrf, returnTo, error = '', email = '', name = 
     ${error ? `<div class="error" role="alert">${escape(error)}</div>` : ''}
     <form method="post" action="/${mode}"><input type="hidden" name="csrf" value="${escape(csrf)}"><input type="hidden" name="return_to" value="${escape(returnTo)}">${fields}<button type="submit">${action} <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></form>
     <p class="switch">${logout ? '<a href="/">Tiếp tục chơi</a>' : signup ? `Đã có tài khoản? <a href="/login?return_to=${encodeURIComponent(returnTo)}">Đăng nhập</a>` : `Lần đầu đến đây? <a href="/register?return_to=${encodeURIComponent(returnTo)}">Tạo tài khoản</a> · <a href="/forgot-password">Quên mật khẩu?</a>`}</p>
-    <p class="account-note">${demoSelfService()?'Demo: dùng email và mật khẩu riêng. Bạn có thể tạo giải và tham gia trực tiếp.':'Dùng email @vnu.edu.vn và mật khẩu riêng của website.'} Xác nhận email trước khi tham gia đội nếu giải yêu cầu. ${demoSelfService()?'Giải mở không cần mã BTC.':'Mã nhận đội do BTC phát riêng.'}</p></div></section></main></body></html>`;
+    <p class="account-note">${demoSelfService()?'Demo: dùng email và mật khẩu riêng. Bạn có thể tạo giải và tham gia trực tiếp.':'Dùng email @vnu.edu.vn và mật khẩu riêng của website.'} Xác nhận email trước khi tham gia đội nếu giải yêu cầu. ${demoSelfService()||demoOpenEntry()?'Chọn giải đang mở để tham gia trực tiếp, không cần mã BTC.':'Mã nhận đội do BTC phát riêng.'}</p></div></section></main></body></html>`;
 }

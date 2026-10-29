@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-29T17:28:27.408Z",
+  "site": "https://oan-tu-ti-ai-arena.vercel.app",
+  "event": "ac36695a-68d3-43ad-b5bc-bea0de372f4a",
+  "codeFreeLegacyEnrollment": true,
+  "adminRoleUnchanged": true,
+  "unauthorizedArchiveAndRestoreRejected": true,
+  "archiveHidesEventAndMembership": true,
+  "restorePreservesTeamAndSource": true,
+  "restoredJudgingPaused": true,
+  "fixtureLeftInTrash": true
+}

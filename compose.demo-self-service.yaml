@@ -2,6 +2,7 @@ services:
   app:
     environment:
       DEMO_SELF_SERVICE: "1"
+      DEMO_OPEN_ENTRY: "1"
       REQUIRE_EMAIL_VERIFICATION: "0"
       MAIL_PROVIDER: resend
       RESEND_API_KEY_FILE: /run/secrets/resend-api-key

@@ -27,7 +27,21 @@ Nếu còn bài đang kiểm tra khi đóng giải, trạng thái chuyển sang 
 
 ## Cơ chế dữ liệu và đồng thời
 
-`event_hosts(event,user_id)` lưu quyền tổ chức từ session; client không tự gán chủ giải. `entryMode` trong config có hai giá trị `open` và `invite`. Giải mới từ biểu mẫu mặc định mở trực tiếp; config cũ thiếu trường này giữ cơ chế mã để không đổi chính sách giải đang tồn tại.
+### Xoá và khôi phục giải
+
+Trong **Ban tổ chức**, mở **Xoá giải đấu** rồi chọn **Xoá giải này**. Chỉ admin hoặc chủ giải được thực hiện. Đây là chuyển vào thùng rác: giải bị ẩn, đóng thao tác và dừng chấm; đội, bài nộp, kết quả và audit được giữ nguyên. Lượt chấm đang chạy bị thu hồi lease, kết quả gửi muộn bị từ chối.
+
+Ở danh sách giải, mở **Thùng rác** và chọn **Khôi phục giải**. Giải trở lại trạng thái trước khi xoá, bộ chấm vẫn tạm dừng để BTC chủ động chọn **Tiếp tục chấm**. Hạn nộp không tự gia hạn. Thùng rác chỉ hiện các giải mà tài khoản có quyền quản lý.
+
+### Bản demo Vercel không yêu cầu mã
+
+`DEMO_OPEN_ENTRY=1` cho phép đăng nhập rồi bấm **Tham gia ngay** với mọi giải còn đang nhận bài và còn hạn, kể cả config cũ dùng mã BTC. Cờ này độc lập với `DEMO_SELF_SERVICE`: không cấp quyền tạo/điều hành giải cho tài khoản thường, không thay luật đã khóa, không đổi chính sách email VNU, không cho tham gia giải đã đóng hoặc trong thùng rác.
+
+Vercel Production đã bật cờ này cho bản trình bày. Muốn quay lại chính sách mã theo config, đặt cờ về `0` rồi redeploy. Profile local demo trong `compose.demo-self-service.yaml` cũng bật cờ; profile thi thật không tự bật.
+
+Kiểm thử: `node tests/tournament-trash.test.mjs`. Smoke test Vercel có opt-in `ARENA_ALLOW_CLOUD_SMOKE=1`, dùng tài khoản admin từ file riêng được chỉ định bởi `ARENA_CLOUD_ADMIN_FILE` (mặc định `.secrets/vercel-demo-admin.json`), chạy với env database Production: `node --env-file=.env.vercel.local tests/tournament-trash-cloud.test.mjs`. Test chỉ xoá/khôi phục giải mới mang nhãn DEMO do nó tạo, không sửa giải của người dùng và không gửi email. Bằng chứng: `docs/submission/evidence/tournament-trash-cloud.json`.
+
+`event_hosts(event,user_id)` lưu quyền tổ chức từ session; client không tự gán chủ giải. `entryMode` trong config có hai giá trị `open` và `invite`. Giải mới từ biểu mẫu mặc định mở trực tiếp; khi không bật DEMO_OPEN_ENTRY, config cũ thiếu trường này giữ cơ chế mã để không đổi chính sách giải đang tồn tại.
 
 Tham gia trực tiếp tạo team và membership trong một transaction. PostgreSQL sử dụng khóa điều khiển sẵn có để cấp hạt giống duy nhất; gửi lại cùng yêu cầu trả về đội đã có. Đóng đăng ký sau hạn nộp hoặc khi khóa danh sách. Không nhận user ID hoặc team ID từ client làm danh tính người tham gia. Tối đa 4.000 đội/giải; mỗi tài khoản demo tạo tối đa 10 giải/giờ. Nộp bài và chấm giữ các hạn mức, cơ chế lease, retry và kiểm tra phiên bản hiện có.
 

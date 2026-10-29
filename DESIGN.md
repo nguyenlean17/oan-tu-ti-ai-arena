@@ -188,6 +188,8 @@ The public introduction retains registration, practice and **Tham gia giải** l
 
 ## Do's and Don'ts
 
+Tournament management extends the existing flat interface with native **Xoá giải đấu** disclosure and an explicit **Xoá giải này** action, using existing error ink. The tournament list places a scoped **Thùng rác** disclosure above event rows; each deleted event has **Khôi phục giải**. The copy names reversible hiding, stopped judging and preserved records. Restored judging stays paused until the organizer resumes. The direct-entry demo flag changes participation affordances, never organizer permissions or frozen rules; students see **Tham gia ngay**, including legacy invite configurations during this presentation policy.
+
 ### Do:
 
 - **Do** preserve UET blue actions, navy navigation, Vietnamese typography and solid fills.

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { z } from 'zod';
 import { createInitialBoard, applyMove, legalMoves, ENGINE_VERSION } from '../lib/engine.mjs';
-import {demoSelfService} from '../lib/demo-policy.mjs';
+import {demoSelfService,demoOpenEntry,acceptsOpenEntry} from '../lib/demo-policy.mjs';
 
 export const RUNTIME_VERSION = 'cpython-3.15.0-wasmtime-50.0.1-v1';
 export const sha = value => createHash('sha256').update(value).digest('hex');
@@ -73,10 +73,10 @@ export async function transaction(db, fn) {
   } finally { release(); if (waiting.get(db) === next) waiting.delete(db); }
 }
 const log = async (db, actor, event, action, detail = {}) => (await db.prepare('INSERT INTO audit(actor,event,action,detail,created) VALUES(?,?,?,?,?)').run(actor, event, action, encode(detail), Date.now()));
-const eventOf = async (db, event) => decode((await db.prepare('SELECT * FROM events WHERE id=?').get(event))) || fail('Không tìm thấy giải đấu.', 404);
+const eventOf = async (db, event) => decode((await db.prepare("SELECT * FROM events WHERE id=? AND status<>'archived'").get(event))) || fail('Không tìm thấy giải đấu.', 404);
 const canManage=async(db,user,event)=>!!user&&(!!user.is_admin||!!(event&&await db.prepare('SELECT 1 FROM event_hosts WHERE event=? AND user_id=?').get(event,user.id)));
 const admin = async(db,user,event) => { if (!await canManage(db,user,event)) fail('Chỉ BTC hoặc người tạo giải được thực hiện thao tác này.', 403); };
-const teamOf = async (db, event, user) => (await db.prepare('SELECT t.* FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(event, user.id)) || fail('Cần mã tham gia do ban tổ chức cấp.', 403);
+const teamOf = async (db, event, user) => (await db.prepare('SELECT t.* FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(event, user.id)) || fail('Bạn chưa có đội trong giải này. Hãy tham gia giải trước khi nộp bài.', 403);
 const enqueue = async (db, event, kind, subject, payload) => (await db.prepare('INSERT INTO jobs(id,event,kind,subject,payload,created) VALUES(?,?,?,?,?,?)').run(id(), event, kind, subject, encode(payload), Date.now()));
 
 export async function createEvent(db, user, input) {
@@ -140,7 +140,7 @@ export async function joinOpen(db,user,event,name) {
   if(!user)fail('Bạn cần đăng nhập.',401);
   return transaction(db,async()=>{
     const e=await eventOf(db,event);
-    if(e.config.entryMode!=='open')fail('Giải này sử dụng danh sách do BTC cấp.',403);
+    if(!acceptsOpenEntry(e.config))fail('Giải này sử dụng danh sách do BTC cấp.',403);
     if(e.status!=='open'||Date.parse(e.config.deadline)<=Date.now())fail('Giải chưa mở đăng ký hoặc đã hết hạn.',409);
     const existing=await db.prepare('SELECT team FROM members WHERE event=? AND user=?').get(event,user.id);
     if(existing)return {event,team:existing.team,alreadyJoined:true};
@@ -395,6 +395,28 @@ async function dispatchAction(db, user, body) {
   if (!user) fail('Bạn cần đăng nhập.', 401);
   const event = body.event;
   switch (body.action) {
+    case 'archive': {
+      await admin(db,user,event);
+      const e=decode(await db.prepare('SELECT * FROM events WHERE id=?').get(event));
+      if(!e)fail('Không tìm thấy giải đấu.',404);
+      if(e.status==='archived')return {ok:true,message:'Giải đã ở trong thùng rác.'};
+      await log(db,user.id,event,'archive',{status:e.status});
+      await db.prepare("UPDATE events SET status='archived',paused=1 WHERE id=?").run(event);
+      // Fence in-flight work; an administrative interruption does not consume a retry.
+      await db.prepare("UPDATE jobs SET status='queued',lease=NULL,worker=NULL,until=0,next=0,attempts=CASE WHEN attempts>0 THEN attempts-1 ELSE 0 END WHERE event=? AND status='running'").run(event);
+      return {ok:true,message:'Đã chuyển giải vào thùng rác. Bạn có thể khôi phục ở danh sách giải.'};
+    }
+    case 'restore': {
+      await admin(db,user,event);
+      const e=await db.prepare("SELECT id FROM events WHERE id=? AND status='archived'").get(event);
+      if(!e)fail('Giải không nằm trong thùng rác.',404);
+      const entry=await db.prepare("SELECT detail FROM audit WHERE event=? AND action='archive' ORDER BY id DESC LIMIT 1").get(event);
+      const status=entry?JSON.parse(entry.detail).status:null;
+      if(!['draft','open','locking','groups','knockout','review','published'].includes(status))fail('Không tìm thấy trạng thái khôi phục.',409);
+      await db.prepare('UPDATE events SET status=?,paused=1 WHERE id=?').run(status,event);
+      await log(db,user.id,event,'restore');
+      return {id:event,message:'Đã khôi phục giải. Bộ chấm đang tạm dừng; BTC có thể chọn Tiếp tục chấm.'};
+    }
     case 'create': return (await createEvent(db, user, body));
     case 'config': return (await editConfig(db, user, event, body.config));
     case 'team': return (await addTeam(db, user, event, body));
@@ -439,10 +461,11 @@ async function dispatchAction(db, user, body) {
 }
 
 async function readOverview(db, user, event) {
-  let events = (await db.prepare('SELECT * FROM events ORDER BY created DESC LIMIT 50').all()).map(decode);
+  let events = (await db.prepare("SELECT * FROM events WHERE status<>'archived' ORDER BY created DESC LIMIT 50").all()).map(decode).map(e=>({...e,openEntry:acceptsOpenEntry(e.config)}));
+  const archivedEvents=user?(await db.prepare(user.is_admin?"SELECT id,name FROM events WHERE status='archived' ORDER BY created DESC LIMIT 50":"SELECT e.id,e.name FROM events e JOIN event_hosts h ON h.event=e.id WHERE e.status='archived' AND h.user_id=? ORDER BY e.created DESC LIMIT 50").all(...(user.is_admin?[]:[user.id]))):[];
   const managedEvents=user?(await db.prepare('SELECT event FROM event_hosts WHERE user_id=?').all(user.id)).map(h=>h.event):[];
-  if(demoSelfService()&&!user?.is_admin){const memberships=user?(await db.prepare('SELECT event FROM members WHERE user=?').all(user.id)).map(m=>m.event):[];events=events.filter(e=>e.config.entryMode==='open'||managedEvents.includes(e.id)||memberships.includes(e.id));}
-  if (!event) return { events,managedEvents,canCreate:!!user&&(!!user.is_admin||demoSelfService()),demoSelfService:demoSelfService(), user: user ? { id: user.id, name: user.name, admin: !!user.is_admin } : null, runtime: RUNTIME_VERSION };
+  if(demoSelfService()&&!user?.is_admin){const memberships=user?(await db.prepare('SELECT event FROM members WHERE user=?').all(user.id)).map(m=>m.event):[];events=events.filter(e=>e.openEntry||managedEvents.includes(e.id)||memberships.includes(e.id));}
+  if (!event) return { events,archivedEvents,managedEvents,canCreate:!!user&&(!!user.is_admin||demoSelfService()),demoSelfService:demoSelfService(),openEnrollmentDemo:demoOpenEntry(), user: user ? { id: user.id, name: user.name, admin: !!user.is_admin } : null, runtime: RUNTIME_VERSION };
   const e = (await eventOf(db, event)), isAdmin = await canManage(db,user,event);
   const owned = user ? (await db.prepare('SELECT team FROM members WHERE event=? AND user=?').get(event, user.id))?.team : null;
   const teams = (await db.prepare('SELECT id,name,seed,repo FROM teams WHERE event=? ORDER BY seed').all(event));
@@ -456,7 +479,7 @@ async function readOverview(db, user, event) {
   const failed = isAdmin ? (await db.prepare("SELECT id,kind,subject,attempts FROM jobs WHERE event=? AND status='failed' LIMIT 50").all(event)) : [];
   const members = isAdmin ? (await db.prepare('SELECT * FROM members WHERE event=?').all(event)) : [];
   const audit = isAdmin ? (await db.prepare('SELECT * FROM audit WHERE event=? ORDER BY id DESC LIMIT 50').all(event)) : [];
-  return { ...(await overview(db, user)), event: e,canManage:isAdmin, owned, teams, submissions, selectedSubmission, ownGames, standings: (await standings(db, event)), series, jobs, recentGames, workers, failed, members, audit };
+  return { ...(await overview(db, user)), event: {...e,openEntry:acceptsOpenEntry(e.config)},canManage:isAdmin, owned, teams, submissions, selectedSubmission, ownGames, standings: (await standings(db, event)), series, jobs, recentGames, workers, failed, members, audit };
 }
 async function readSubmission(db,user,submission){
   if(!user)fail('Bạn cần đăng nhập.',401);
@@ -467,6 +490,7 @@ async function readSubmission(db,user,submission){
 async function readReplay(db, game) {
   const row = (await db.prepare('SELECT g.*,s.event FROM games g JOIN series s ON s.id=g.series WHERE g.id=?').get(game));
   if (!row || !row.result) fail('Trận chưa có replay.', 404);
+  await eventOf(db,row.event);
   return { ...row, result: JSON.parse(row.result) };
 }
 async function readExport(db, user, event) {
