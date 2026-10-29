@@ -1,6 +1,8 @@
 CREATE SCHEMA IF NOT EXISTS arena_competition;
 SET LOCAL search_path TO arena_competition,public;
 CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY,name TEXT NOT NULL,status TEXT NOT NULL,config TEXT NOT NULL,paused BIGINT NOT NULL DEFAULT 0,snapshot TEXT,created BIGINT NOT NULL);
+CREATE TABLE IF NOT EXISTS event_hosts(event TEXT PRIMARY KEY REFERENCES events(id),user_id TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS event_hosts_user ON event_hosts(user_id);
     CREATE TABLE IF NOT EXISTS teams(id TEXT PRIMARY KEY,event TEXT NOT NULL REFERENCES events(id),name TEXT NOT NULL,seed BIGINT NOT NULL,repo TEXT,UNIQUE(event,name),UNIQUE(event,seed));
     CREATE TABLE IF NOT EXISTS members(event TEXT NOT NULL REFERENCES events(id),"user" TEXT NOT NULL,team TEXT NOT NULL REFERENCES teams(id),student TEXT NOT NULL,PRIMARY KEY(event,"user"),UNIQUE(event,student));
     CREATE TABLE IF NOT EXISTS invites(hash TEXT PRIMARY KEY,event TEXT NOT NULL REFERENCES events(id),team TEXT NOT NULL REFERENCES teams(id),email TEXT NOT NULL,student TEXT NOT NULL,expires BIGINT NOT NULL,redeemed BIGINT NOT NULL DEFAULT 0);

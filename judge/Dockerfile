@@ -18,6 +18,7 @@ RUN npm ci --omit=dev --ignore-scripts
 COPY judge ./judge
 COPY competition ./competition
 COPY lib/engine.mjs ./lib/engine.mjs
+COPY lib/demo-policy.mjs ./lib/demo-policy.mjs
 COPY lib/bot-diagnostics.mjs ./lib/bot-diagnostics.mjs
 COPY lib/practice-tools.mjs ./lib/practice-tools.mjs
 COPY scripts/diagnose-bot.mjs scripts/benchmark-arena.mjs ./scripts/

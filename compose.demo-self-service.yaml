@@ -1,0 +1,10 @@
+services:
+  app:
+    environment:
+      DEMO_SELF_SERVICE: "1"
+      REQUIRE_EMAIL_VERIFICATION: "0"
+      MAIL_PROVIDER: resend
+      RESEND_API_KEY_FILE: /run/secrets/resend-api-key
+      MAIL_FROM: "${MAIL_FROM:-UET Arena <onboarding@resend.dev>}"
+    volumes:
+      - ./.secrets/resend-api-key:/run/secrets/resend-api-key:ro

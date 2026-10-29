@@ -68,7 +68,7 @@ export async function competitionRequest(request, judge = false) {
     if (request.method !== 'POST') fail('Method not allowed', 405);
     if (!user) fail('Bạn cần đăng nhập.', 401);
     const body = await bodyOf(request, 100000);
-    if(process.env.REQUIRE_EMAIL_VERIFICATION==='1'&&!user.verified&&!user.is_admin&&['join','submit','git'].includes(body.action))fail('Xác nhận email trong Khu sinh viên trước khi nhận đội hoặc nộp bài.',403);
+    if(process.env.REQUIRE_EMAIL_VERIFICATION==='1'&&!user.verified&&!user.is_admin&&['join','join_open','submit','git'].includes(body.action))fail('Xác nhận email trong Khu sinh viên trước khi nhận đội hoặc nộp bài.',403);
     if (body.action === 'git') {
       const membership = await withCompetition(db => db.prepare('SELECT t.repo FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(body.event, user.id));
       if (!membership?.repo) fail('BTC chưa gắn GitHub repository cho đội.', 403);

@@ -31,3 +31,11 @@ Các lần kiểm tra bị treo khi Docker không phản hồi không được t
 ## Khu sinh viên và tài khoản — 29/10/2026
 
 Đã kiểm tra HTTP trên profile PostgreSQL local + Mailpit: đăng ký, xác nhận email dùng một lần, nhận đúng đội, đổi tên đội, nộp Python và nhận verdict valid từ worker; reset mật khẩu thu hồi session cũ và từ chối link dùng lại; BTC khóa/mở khóa tài khoản, sinh viên không có quyền quản trị hoặc đổi đội khác; từ chối POST khác origin. Bằng chứng: evidence/student-journey.json. Mailpit không xác minh email ngoài Internet và chỉ dùng cho demo local. Đây là kiểm thử chức năng, không phải kiểm định bảo mật độc lập. Chính sách xác nhận email mới chỉ áp dụng khi bật REQUIRE_EMAIL_VERIFICATION=1; báo cáo PDF ngày 25/10 là snapshot trước thay đổi này. Xem ../STUDENT_PORTAL.md.
+
+## Demo tự tổ chức và Resend — 29/10/2026
+
+- E2E HTTP với PostgreSQL và hai worker thật: tài khoản thường tạo giải, không được cấp admin toàn hệ thống; tài khoản khác không thể điều hành thay; đăng ký đồng thời không tạo đội trùng. Bốn bot kiểm tra hợp lệ, 14 ván được chấm và kết quả được công bố. Xem `evidence/demo-self-service.json`.
+- Unit tests cho open-entry/demo và regression competition, `npm test`, TypeScript và build Docker app/worker thành công.
+- Browser thực: tạo và mở giải, tham gia không mã, thêm hai bot mẫu, nộp Python và nhận verdict hợp lệ. Đã kiểm tra ảnh desktop/mobile cho landing, tạo giải, nộp bài và điều hành; đánh giá này chỉ bao phủ các bề mặt vừa sửa, không thay thế giới hạn visual QA toàn hệ thống ở trên.
+- Resend được cấu hình qua file secret. Provider xác nhận `delivered` cho thư thử tới địa chỉ do người dùng chỉ định. Chưa có domain gửi đã xác minh; chưa nghiệm thu gửi thư tới các người nhận bất kỳ. Phép thử giao thư này không được tính là E2E token xác nhận/reset qua Resend.
+- Demo bật hai cờ riêng và không yêu cầu xác nhận email; profile thi thật giữ chính sách VNU và có thể bắt buộc xác nhận. PDF ngày 25/10 vẫn là snapshot cũ. Xem `../DEMO_OPEN_RESEND.md`.

@@ -41,3 +41,5 @@ Máy chủ cần Docker Linux containers và Node 22.16+; lần build đầu c�
 ## Bổ sung ngày 29/10/2026
 
 Khu sinh viên, quản lý tài khoản/đội, xác nhận và khôi phục mật khẩu: [hướng dẫn và cấu hình Mailpit](../STUDENT_PORTAL.md). Bằng chứng chức năng [student-journey.json](evidence/student-journey.json). Báo cáo PDF hiện có là snapshot ngày 25/10; hướng dẫn mới bổ sung và thay thế phần chính sách email chưa xác minh trong snapshot đó.
+
+Demo tự tổ chức không cần mã BTC: [cấu hình và kịch bản Resend](../DEMO_OPEN_RESEND.md). [Bằng chứng E2E](evidence/demo-self-service.json): tài khoản thường tự tạo giải, tham gia trực tiếp, 4 bot hợp lệ và 14 ván chấm thật, công bố thành công. Quyền tổ chức giới hạn trong giải do mình tạo. Trang giới thiệu mới có thể mở tại `/welcome` kể cả khi đã đăng nhập.

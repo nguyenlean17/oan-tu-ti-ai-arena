@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-29T12:29:53.630Z",
+  "profile": "isolated-local-demo",
+  "normalAccountsCanHost": true,
+  "noGlobalAdminPromotion": true,
+  "noInviteRequired": true,
+  "concurrentEnrollmentIdempotent": true,
+  "hostCannotBeImpersonated": true,
+  "twoReferenceBots": true,
+  "validatedBots": 4,
+  "judgedGames": 14,
+  "realWorkerResults": true,
+  "published": true,
+  "event": "191808cc-da31-48ba-af78-fc525fb5656f"
+}

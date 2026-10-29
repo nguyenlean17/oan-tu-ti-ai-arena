@@ -1,10 +1,11 @@
 import { DatabaseSync } from 'node:sqlite';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync,readFileSync } from 'node:fs';
 import path from 'node:path';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { z } from 'zod';
 import { createInitialBoard, applyMove, legalMoves, ENGINE_VERSION } from '../lib/engine.mjs';
+import {demoSelfService} from '../lib/demo-policy.mjs';
 
 export const RUNTIME_VERSION = 'cpython-3.15.0-wasmtime-50.0.1-v1';
 export const sha = value => createHash('sha256').update(value).digest('hex');
@@ -13,6 +14,7 @@ const encode = JSON.stringify;
 const decode = row => row ? { ...row, config: row.config ? JSON.parse(row.config) : undefined } : null;
 export function fail(message, status = 400) { throw Object.assign(new Error(message), { status }); }
 export const configSchema = z.object({
+  entryMode:z.enum(['open','invite']).default('invite'),
   groupCount: z.number().int().min(1).max(128).default(4),
   qualifiers: z.number().int().min(1).max(4).default(2),
   deadline: z.string().datetime(),
@@ -54,6 +56,7 @@ export function openCompetition(directory) {
     } catch (error) { db.exec('ROLLBACK'); throw error; }
   }
   db.exec('CREATE INDEX IF NOT EXISTS games_scores ON games(series,completed,winner,p1,p2);');
+  db.exec('CREATE TABLE IF NOT EXISTS event_hosts(event TEXT PRIMARY KEY REFERENCES events(id),user_id TEXT NOT NULL); CREATE INDEX IF NOT EXISTS event_hosts_user ON event_hosts(user_id);');
   return db;
 }
 const contexts = new AsyncLocalStorage(), waiting = new WeakMap();
@@ -71,27 +74,31 @@ export async function transaction(db, fn) {
 }
 const log = async (db, actor, event, action, detail = {}) => (await db.prepare('INSERT INTO audit(actor,event,action,detail,created) VALUES(?,?,?,?,?)').run(actor, event, action, encode(detail), Date.now()));
 const eventOf = async (db, event) => decode((await db.prepare('SELECT * FROM events WHERE id=?').get(event))) || fail('Không tìm thấy giải đấu.', 404);
-const admin = user => { if (!user?.is_admin) fail('Chỉ ban tổ chức được thực hiện thao tác này.', 403); };
+const canManage=async(db,user,event)=>!!user&&(!!user.is_admin||!!(event&&await db.prepare('SELECT 1 FROM event_hosts WHERE event=? AND user_id=?').get(event,user.id)));
+const admin = async(db,user,event) => { if (!await canManage(db,user,event)) fail('Chỉ BTC hoặc người tạo giải được thực hiện thao tác này.', 403); };
 const teamOf = async (db, event, user) => (await db.prepare('SELECT t.* FROM members m JOIN teams t ON t.id=m.team WHERE m.event=? AND m.user=?').get(event, user.id)) || fail('Cần mã tham gia do ban tổ chức cấp.', 403);
 const enqueue = async (db, event, kind, subject, payload) => (await db.prepare('INSERT INTO jobs(id,event,kind,subject,payload,created) VALUES(?,?,?,?,?,?)').run(id(), event, kind, subject, encode(payload), Date.now()));
 
 export async function createEvent(db, user, input) {
-  admin(user);
+  if(!demoSelfService())await admin(db,user);
+  if(!user)fail('Bạn cần đăng nhập.',401);
+  if(!user.is_admin){const recent=await db.prepare('SELECT COUNT(*) count FROM event_hosts h JOIN events e ON e.id=h.event WHERE h.user_id=? AND e.created>?').get(user.id,Date.now()-3600000);if(recent.count>=10)fail('Mỗi tài khoản demo tạo tối đa 10 giải mỗi giờ.',429);}
   const name = z.string().trim().min(3).max(100).parse(input.name), config = configSchema.parse(input.config);
   const event = id();
-  (await transaction(db, async () => { (await db.prepare("INSERT INTO events(id,name,status,config,created) VALUES(?,?,'draft',?,?)").run(event, name, encode(config), Date.now())); (await log(db, user.id, event, 'create', config)); }));
+  if(input.openNow===true&&Date.parse(config.deadline)<=Date.now())fail('Chọn hạn nộp trong tương lai.');
+  (await transaction(db, async () => { (await db.prepare('INSERT INTO events(id,name,status,config,created) VALUES(?,?,?,?,?)').run(event, name, input.openNow===true?'open':'draft',encode(config), Date.now()));await db.prepare('INSERT INTO event_hosts(event,user_id) VALUES(?,?)').run(event,user.id); (await log(db, user.id, event, 'create', config)); }));
   return { id: event };
 }
 export async function editConfig(db, user, event, input) {
-  admin(user); const e = (await eventOf(db, event));
+  await admin(db,user,event); const e = (await eventOf(db, event));
   if (!['draft', 'open'].includes(e.status)) fail('Cấu hình đã khóa. Hãy tạo giải mới.');
   const config = configSchema.parse(input);
-  if (e.status === 'open' && Object.keys(config).some(key => key !== 'deadline' && config[key] !== e.config[key])) fail('Khi đã mở nhận bài, chỉ được sửa hạn nộp. Luật và giới hạn tài nguyên đã cố định.');
+  if (e.status === 'open' && Object.keys(config).some(key => key !== 'deadline' && config[key] !== (key==='entryMode'?(e.config.entryMode||'invite'):e.config[key]))) fail('Khi đã mở nhận bài, chỉ được sửa hạn nộp. Luật và giới hạn tài nguyên đã cố định.');
   (await transaction(db, async () => { (await db.prepare('UPDATE events SET config=? WHERE id=?').run(encode(config), event)); (await log(db, user.id, event, 'config', config)); }));
   return { ok: true };
 }
 export async function addTeam(db, user, event, input) {
-  admin(user); const e = (await eventOf(db, event));
+  await admin(db,user,event); const e = (await eventOf(db, event));
   if (!['draft', 'open'].includes(e.status)) fail('Danh sách đội đã khóa.');
   const data = z.object({ name: z.string().trim().min(2).max(80), seed: z.number().int().min(1).max(100000), repo: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/).optional() }).parse(input);
   const team = id();
@@ -99,7 +106,7 @@ export async function addTeam(db, user, event, input) {
   return { id: team };
 }
 export async function invite(db, user, event, input) {
-  admin(user); const e = (await eventOf(db, event));
+  await admin(db,user,event); const e = (await eventOf(db, event));
   if (!['draft', 'open'].includes(e.status)) fail('Danh sách đã khóa.');
   const team = (await db.prepare('SELECT * FROM teams WHERE id=? AND event=?').get(input.team, event));
   if (!team) fail('Đội không thuộc giải.');
@@ -127,6 +134,39 @@ export async function join(db, user, token) {
     (await log(db, user.id, row.event, 'join', { team: row.team }));
     return { event: row.event };
   }));
+}
+export async function joinOpen(db,user,event,name) {
+  z.string().min(1).max(100).parse(event);
+  if(!user)fail('Bạn cần đăng nhập.',401);
+  return transaction(db,async()=>{
+    const e=await eventOf(db,event);
+    if(e.config.entryMode!=='open')fail('Giải này sử dụng danh sách do BTC cấp.',403);
+    if(e.status!=='open'||Date.parse(e.config.deadline)<=Date.now())fail('Giải chưa mở đăng ký hoặc đã hết hạn.',409);
+    const existing=await db.prepare('SELECT team FROM members WHERE event=? AND user=?').get(event,user.id);
+    if(existing)return {event,team:existing.team,alreadyJoined:true};
+    const count=await db.prepare('SELECT COUNT(*) count,MAX(seed) max_seed FROM teams WHERE event=?').get(event);
+    if(count.count>=4000)fail('Giải đã đủ 4.000 đội.',409);
+    const team=id(),teamName=z.string().trim().min(2).max(80).parse(name||`Đội ${user.name||'Demo'} · ${user.id.slice(-4)}`);
+    await db.prepare('INSERT INTO teams(id,event,name,seed) VALUES(?,?,?,?)').run(team,event,teamName,(count.max_seed||0)+1);
+    await db.prepare('INSERT INTO members(event,user,team,student) VALUES(?,?,?,?)').run(event,user.id,team,user.id);
+    await log(db,user.id,event,'join_open',{team});
+    return {event,team};
+  });
+}
+async function addDemoBots(db,user,event){
+  if(!demoSelfService())fail('Chỉ khả dụng trên bản demo.',403);
+  await admin(db,user,event);
+  const e=await eventOf(db,event);if(e.status!=='open'||Date.parse(e.config.deadline)<=Date.now())fail('Mở giải để thêm bot mẫu.',409);
+  const added=[];
+  for(const [file,name] of [['tactician','Bot mẫu · Tactician'],['heuristic_hunter','Bot mẫu · Heuristic Hunter']]){
+    if(await db.prepare('SELECT id FROM teams WHERE event=? AND name=?').get(event,name))continue;
+    const count=await db.prepare('SELECT COUNT(*) count,MAX(seed) max_seed FROM teams WHERE event=?').get(event);if(count.count>=4000)fail('Giải đã đủ đội.',409);
+    const team=await addTeam(db,user,event,{name,seed:(count.max_seed||0)+1}),botUser={id:'sample_'+id(),name};
+    await db.prepare('INSERT INTO members(event,user,team,student) VALUES(?,?,?,?)').run(event,botUser.id,team.id,botUser.id);
+    await submit(db,botUser,event,readFileSync(path.join(process.cwd(),'public','bots',file+'.py'),'utf8'),'reference:'+file);
+    added.push(name);
+  }
+  return {message:added.length?'Đã thêm 2 bot mẫu và đưa vào hàng đợi kiểm tra.':'Hai bot mẫu đã có trong giải.'};
 }
 async function saveSubmission(db, user, event, source, provenance = 'upload') {
   const e = (await eventOf(db, event)), team = (await teamOf(db, event, user));
@@ -162,7 +202,7 @@ async function scheduleGames(db, e, s, offset) {
   }
 }
 export async function freeze(db, user, event) {
-  admin(user);
+  await admin(db,user,event);
   return (await transaction(db, async () => {
     const e = (await eventOf(db, event));
     if (!['open', 'locking'].includes(e.status)) fail('Giải cần mở nhận bài trước khi khóa.');
@@ -360,29 +400,38 @@ async function dispatchAction(db, user, body) {
     case 'team': return (await addTeam(db, user, event, body));
     case 'invite': return (await invite(db, user, event, body));
     case 'join': return (await join(db, user, body.token));
+    case 'join_open': return await joinOpen(db,user,event,body.name);
+    case 'demo_bots': return await addDemoBots(db,user,event);
+    case 'close_demo': {
+      if(!demoSelfService())fail('Chỉ khả dụng trên bản demo.',403);
+      await admin(db,user,event);
+      const e=await eventOf(db,event);if(e.status!=='open')fail('Giải không còn nhận bài.',409);
+      await editConfig(db,user,event,{...e.config,deadline:new Date(Date.now()-1).toISOString()});
+      return await freeze(db,user,event);
+    }
     case 'submit': return (await submit(db, user, event, body.source));
     case 'freeze': return (await freeze(db, user, event));
     case 'open': {
-      admin(user); const e = (await eventOf(db, event));
+      await admin(db,user,event); const e = (await eventOf(db, event));
       if (e.status !== 'draft' || Date.parse(e.config.deadline) <= Date.now()) fail('Giải cần ở bản nháp và có hạn nộp trong tương lai.');
       (await db.prepare("UPDATE events SET status='open' WHERE id=?").run(event)); (await log(db, user.id, event, 'open')); return { ok: true };
     }
     case 'pause': {
-      admin(user); const e = (await eventOf(db, event));
+      await admin(db,user,event); const e = (await eventOf(db, event));
       (await db.prepare('UPDATE events SET paused=? WHERE id=?').run(e.paused ? 0 : 1, event)); (await log(db, user.id, event, e.paused ? 'resume' : 'pause')); return { ok: true };
     }
     case 'publish': {
-      admin(user); if ((await eventOf(db, event)).status !== 'review') fail('Giải chưa hoàn tất để công bố.');
+      await admin(db,user,event); if ((await eventOf(db, event)).status !== 'review') fail('Giải chưa hoàn tất để công bố.');
       (await db.prepare("UPDATE events SET status='published' WHERE id=?").run(event)); (await log(db, user.id, event, 'publish')); return { ok: true };
     }
     case 'retry': {
-      admin(user); const e = (await eventOf(db, event));
+      await admin(db,user,event); const e = (await eventOf(db, event));
       if (['review', 'published'].includes(e.status)) fail('Không thể chấm lại kết quả đã hoàn tất.');
       (await db.prepare("UPDATE jobs SET status='queued',attempts=0,lease=NULL,next=0 WHERE id=? AND event=? AND status='failed'").run(body.job, event));
       (await log(db, user.id, event, 'retry', { job: body.job })); return { ok: true };
     }
     case 'revoke': {
-      admin(user); if (!['draft', 'open'].includes((await eventOf(db, event)).status)) fail('Danh sách đã khóa.');
+      await admin(db,user,event); if (!['draft', 'open'].includes((await eventOf(db, event)).status)) fail('Danh sách đã khóa.');
       (await db.prepare('DELETE FROM members WHERE event=? AND user=?').run(event, body.user)); (await log(db, user.id, event, 'revoke', { user: body.user })); return { ok: true };
     }
     default: fail('Thao tác không hợp lệ.');
@@ -390,9 +439,11 @@ async function dispatchAction(db, user, body) {
 }
 
 async function readOverview(db, user, event) {
-  const events = (await db.prepare('SELECT * FROM events ORDER BY created DESC LIMIT 50').all()).map(decode);
-  if (!event) return { events, user: user ? { id: user.id, name: user.name, admin: !!user.is_admin } : null, runtime: RUNTIME_VERSION };
-  const e = (await eventOf(db, event)), isAdmin = !!user?.is_admin;
+  let events = (await db.prepare('SELECT * FROM events ORDER BY created DESC LIMIT 50').all()).map(decode);
+  const managedEvents=user?(await db.prepare('SELECT event FROM event_hosts WHERE user_id=?').all(user.id)).map(h=>h.event):[];
+  if(demoSelfService()&&!user?.is_admin){const memberships=user?(await db.prepare('SELECT event FROM members WHERE user=?').all(user.id)).map(m=>m.event):[];events=events.filter(e=>e.config.entryMode==='open'||managedEvents.includes(e.id)||memberships.includes(e.id));}
+  if (!event) return { events,managedEvents,canCreate:!!user&&(!!user.is_admin||demoSelfService()),demoSelfService:demoSelfService(), user: user ? { id: user.id, name: user.name, admin: !!user.is_admin } : null, runtime: RUNTIME_VERSION };
+  const e = (await eventOf(db, event)), isAdmin = await canManage(db,user,event);
   const owned = user ? (await db.prepare('SELECT team FROM members WHERE event=? AND user=?').get(event, user.id))?.team : null;
   const teams = (await db.prepare('SELECT id,name,seed,repo FROM teams WHERE event=? ORDER BY seed').all(event));
   const submissions = owned ? (await db.prepare('SELECT id,sha,status,verdict,created,provenance FROM submissions WHERE team=? ORDER BY created DESC LIMIT 30').all(owned)) : [];
@@ -403,7 +454,7 @@ async function readOverview(db, user, event) {
   const failed = isAdmin ? (await db.prepare("SELECT id,kind,subject,attempts FROM jobs WHERE event=? AND status='failed' LIMIT 50").all(event)) : [];
   const members = isAdmin ? (await db.prepare('SELECT * FROM members WHERE event=?').all(event)) : [];
   const audit = isAdmin ? (await db.prepare('SELECT * FROM audit WHERE event=? ORDER BY id DESC LIMIT 50').all(event)) : [];
-  return { ...(await overview(db, user)), event: e, owned, teams, submissions, standings: (await standings(db, event)), series, jobs, recentGames, workers, failed, members, audit };
+  return { ...(await overview(db, user)), event: e,canManage:isAdmin, owned, teams, submissions, standings: (await standings(db, event)), series, jobs, recentGames, workers, failed, members, audit };
 }
 async function readReplay(db, game) {
   const row = (await db.prepare('SELECT g.*,s.event FROM games g JOIN series s ON s.id=g.series WHERE g.id=?').get(game));
@@ -411,7 +462,7 @@ async function readReplay(db, game) {
   return { ...row, result: JSON.parse(row.result) };
 }
 async function readExport(db, user, event) {
-  admin(user); const e = (await eventOf(db, event));
+  await admin(db,user,event); const e = (await eventOf(db, event));
   return { exportedAt: new Date().toISOString(), event: e, standings: (await standings(db, event)), teams: (await db.prepare('SELECT * FROM teams WHERE event=?').all(event)), entries: (await db.prepare('SELECT * FROM entries WHERE event=?').all(event)), series: (await db.prepare('SELECT * FROM series WHERE event=?').all(event)), games: (await db.prepare('SELECT g.* FROM games g JOIN series s ON s.id=g.series WHERE s.event=?').all(event)).map(g => ({ ...g, result: g.result ? JSON.parse(g.result) : null })), submissions: (await db.prepare('SELECT v.* FROM submissions v JOIN entries x ON x.submission=v.id WHERE x.event=?').all(event)), audit: (await db.prepare('SELECT * FROM audit WHERE event=? ORDER BY id').all(event)) };
 }
 

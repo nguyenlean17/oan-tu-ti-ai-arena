@@ -1,10 +1,11 @@
+import {demoSelfService} from '../lib/demo-policy.mjs';
 const escape = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
 export function authPage({ mode, csrf, returnTo, error = '', email = '', name = '' }) {
   const signup = mode === 'register', logout = mode === 'logout';
   const title = logout ? 'Hẹn gặp lại trên bàn cờ.' : signup ? 'Chiến thuật của bạn bắt đầu ở đây.' : 'Trở lại đấu trường.';
   const action = logout ? 'Đăng xuất' : signup ? 'Tạo tài khoản' : 'Đăng nhập';
   const fields = logout ? '<p class="logout-copy">Bạn muốn đăng xuất tài khoản trên thiết bị này?</p>' : `${signup ? `<label>Tên hiển thị<input name="name" autocomplete="nickname" minlength="2" maxlength="60" value="${escape(name)}" required></label>` : ''}
-    <label>Email VNU<input name="email" type="email" autocomplete="username" maxlength="254" placeholder="tenban@vnu.edu.vn" value="${escape(email)}" required></label>
+    <label>${demoSelfService()?'Email':'Email VNU'}<input name="email" type="email" autocomplete="username" maxlength="254" placeholder="${demoSelfService()?'ban@example.com':'tenban@vnu.edu.vn'}" value="${escape(email)}" required></label>
     <label>Mật khẩu<input name="password" type="password" autocomplete="${signup ? 'new-password' : 'current-password'}" ${signup ? 'minlength="12"' : ''} maxlength="128" required aria-describedby="password-help"></label>
     <p id="password-help" class="field-help">${signup ? 'Dùng 12–128 ký tự. Chọn mật khẩu riêng cho tài khoản này.' : 'Nhập mật khẩu bạn đã tạo tại đấu trường này.'}</p>
     ${signup ? '<label>Nhập lại mật khẩu<input name="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>' : ''}`;
@@ -17,5 +18,5 @@ export function authPage({ mode, csrf, returnTo, error = '', email = '', name = 
     ${error ? `<div class="error" role="alert">${escape(error)}</div>` : ''}
     <form method="post" action="/${mode}"><input type="hidden" name="csrf" value="${escape(csrf)}"><input type="hidden" name="return_to" value="${escape(returnTo)}">${fields}<button type="submit">${action} <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></form>
     <p class="switch">${logout ? '<a href="/">Tiếp tục chơi</a>' : signup ? `Đã có tài khoản? <a href="/login?return_to=${encodeURIComponent(returnTo)}">Đăng nhập</a>` : `Lần đầu đến đây? <a href="/register?return_to=${encodeURIComponent(returnTo)}">Tạo tài khoản</a> · <a href="/forgot-password">Quên mật khẩu?</a>`}</p>
-    <p class="account-note">Dùng email @vnu.edu.vn và mật khẩu riêng của website. Xác nhận email trước khi tham gia đội nếu giải yêu cầu. Mã nhận đội do BTC phát riêng.</p></div></section></main></body></html>`;
+    <p class="account-note">${demoSelfService()?'Demo: dùng email và mật khẩu riêng. Bạn có thể tạo giải và tham gia trực tiếp.':'Dùng email @vnu.edu.vn và mật khẩu riêng của website.'} Xác nhận email trước khi tham gia đội nếu giải yêu cầu. ${demoSelfService()?'Giải mở không cần mã BTC.':'Mã nhận đội do BTC phát riêng.'}</p></div></section></main></body></html>`;
 }

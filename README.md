@@ -1,8 +1,12 @@
 # Oẳn Tù Tì 2.0 — AI Coding Arena
 
+## Demo tự tổ chức giải và Resend
+
+Bản demo local hỗ trợ tài khoản thường tự tạo/điều hành giải của mình, tham gia trực tiếp không cần mã BTC, biểu mẫu cấu hình cơ bản và thêm hai bot mẫu để thử bộ chấm. Xem [kịch bản trình bày, cách bật profile và Resend](docs/DEMO_OPEN_RESEND.md). Quyền BTC hệ thống và chế độ danh sách có mã vẫn được giữ riêng.
+
 ## Khu sinh viên, quản lý tài khoản và xác nhận email
 
-Cập nhật 29/10/2026: vào `/student` sau đăng nhập để xác nhận email, nhận đội bằng mã riêng, xem thành viên, đổi tên đội và đến đúng bài nộp. BTC có tìm kiếm và khóa/mở khóa tài khoản; sinh viên có sửa hồ sơ, đổi mật khẩu, xác nhận email và khôi phục mật khẩu. Demo local dùng Mailpit, không gửi thư ra email thật. Xem [hướng dẫn trải nghiệm, cấu hình email và giới hạn](docs/STUDENT_PORTAL.md).
+Cập nhật 29/10/2026: vào `/student` sau đăng nhập để xác nhận email, nhận đội bằng mã riêng, xem thành viên, đổi tên đội và đến đúng bài nộp. BTC có tìm kiếm và khóa/mở khóa tài khoản; sinh viên có sửa hồ sơ, đổi mật khẩu, xác nhận email và khôi phục mật khẩu. Profile Mailpit phục vụ thư local; profile demo tự tổ chức ở trên ưu tiên Resend và cho phép tham gia trực tiếp. Xem [hướng dẫn trải nghiệm, cấu hình email và giới hạn](docs/STUDENT_PORTAL.md).
 
 ## Bản nộp UET: triển khai tại trường và bằng chứng kiểm thử
 

@@ -87,7 +87,7 @@ components:
 
 This is a scoped record of the role dashboard shared by the authenticated root entry and `/student`, and the related sign-in, registration, email confirmation and password recovery screens. It extends the current UET identity; it does not replace the root design system or prescribe changes to practice, the board engine or tournament operations.
 
-The workspace is a quiet administrative surface for Vietnamese students and organizers. A navy rail carries navigation, while cool light content uses a role-specific heading, a direct primary action and divided tournament rows. Organizers create or manage tournaments; students enter their team's submission workspace or join with a private invitation. Account entry screens carry the same identity through a navy introduction beside a focused form.
+The workspace is a quiet administrative surface for Vietnamese students and organizers. A navy rail carries navigation, while cool light content uses a role-specific heading, a direct primary action and divided tournament rows. Organizers create or manage tournaments; students enter their team's submission workspace or join an open event directly. Self-service demo accounts can create and host their own events without becoming system administrators. Account entry screens carry the same identity through a navy introduction beside a focused form.
 
 The unmodified university icon is served from `public/brand/uet.ico`, with provenance in `public/brand/SOURCE.md`. Its use accompanies the course-project identity; it does not establish official university service status or VNU SSO.
 
@@ -96,7 +96,7 @@ The unmodified university icon is served from `public/brand/uet.ico`, with prove
 - University blue actions, navy navigation and cool light surfaces.
 - Vietnamese interface text in Be Vietnam Pro, with locally served font files.
 - Flat sections and real data rows, with text accompanying state.
-- Direct tournament creation, submission and selection actions, with account and team tools close by.
+- Direct tournament creation, open enrollment and submission actions, with account and team tools close by.
 
 ## Colors
 
@@ -171,7 +171,7 @@ Keyboard focus is an offset blue outline (3px, with 3px offset) within the stude
 
 ### Inputs / Fields
 
-Student inputs and selects share white fill, a field-colored stroke, inherited font and compact padding. Labels stay visible above fields. Account password inputs use the correct current/new-password autocomplete roles; invitation token input disables autocomplete.
+Student inputs and selects share white fill, a field-colored stroke, inherited font and compact padding. Labels stay visible above fields. Account password inputs use the correct current/new-password autocomplete roles; the optional invitation token input disables autocomplete and sits inside a collapsed disclosure.
 
 Standalone account fields use a slightly softer radius and a minimum input height (46px). Confirmation and reset remain explicit form submissions rather than automatic actions on link open.
 
@@ -183,9 +183,9 @@ Use SVG icons for arrows, checks and navigation. Do not substitute text glyphs f
 
 ### Role dashboard / Tournament rows
 
-The organizer heading pairs “Điều hành giải đấu” with “Tạo giải đấu,” linking to the blank tournament form. Shortcuts expose account/team management, operations and the tournament dashboard. Each real tournament row shows its name, textual lifecycle status and dashboard/management links. An empty list offers creation without fabricated event data.
+The organizer heading pairs “Điều hành giải đấu” with “Tạo giải đấu,” linking to the blank tournament form. In self-service demo mode the heading reads “Không gian thi đấu”; accounts allowed to create receive the same creation action. Global account-management and operations shortcuts remain administrator-only. Each real tournament row shows its name, textual lifecycle status and dashboard/management links. An empty list offers creation without fabricated event data.
 
-The student heading leads to practice, while each membership row identifies the team and tournament and offers submission, tournament dashboard, and schedule/replay links. A student without membership gets a private-code join action and a tournament-list link. Email verification is contextual guidance when required, rather than a numbered onboarding sequence. The root sends students with one membership straight to the selected tournament submission view; `/student` remains available for account and team management.
+Each student membership row identifies the team and tournament and offers submission, tournament dashboard, and schedule/replay links. Students without membership get a tournament-list action. A separate flat list shows events the account hosts and events accepting direct enrollment; a hosted row offers event management, while an open event offers “Tham gia ngay” or the existing submission destination. Direct enrollment creates the account's own team before opening submission. Email verification is contextual guidance only when required; demo mode permits the presentation flow without verification. Outside self-service demo mode the root sends students with one membership straight to the selected submission view; `/student` remains available for account and team management.
 
 **The Role and Destination Rule.** Make the next authorized tournament task visible from real role and membership data; query parameters choose a view and never confer permissions.
 
@@ -199,7 +199,7 @@ Success and error messages use their semantic fills, with `role="status"` and `r
 
 ### Progressive disclosure
 
-Team rename and administrator lock/unlock confirmation use native details/summary disclosure. The latter reveals an explanatory line and an explicit confirmation button. Locked tournament rosters replace rename controls with status text. Password recovery remains a visible link from account security.
+Team rename, optional private-code enrollment and administrator lock/unlock confirmation use native details/summary disclosure. The latter reveals an explanatory line and an explicit confirmation button. Open enrollment remains visible in event rows; private codes are not a prerequisite for those events. Locked tournament rosters replace rename controls with status text. Password recovery remains a visible link from account security.
 
 ## Do's and Don'ts
 
@@ -209,7 +209,7 @@ Team rename and administrator lock/unlock confirmation use native details/summar
 - **Do** keep account, verification and membership status readable as text.
 - **Do** retain local font loading for standalone account screens and the student page.
 - **Do** show the next action supported by actual verification, membership and tournament state.
-- **Do** keep creation prominent for organizers and submission/dashboard links explicit for students.
+- **Do** keep creation prominent for authorized organizers and demo hosts, and direct enrollment and submission links explicit for students.
 - **Do** preserve the local Mailpit notice when that demo mode is active.
 - **Do** retain the sourced icon and its documented course-project context.
 
@@ -217,6 +217,6 @@ Team rename and administrator lock/unlock confirmation use native details/summar
 
 - **Don't** add decorative shadows or gradients to this flat student workspace.
 - **Don't** turn team and account rows into nested dashboard cards.
-- **Don't** expose organizer controls as student actions or imply the frontend grants organizer rights.
+- **Don't** imply demo event-host rights grant global account administration or management of another host's event.
 - **Don't** represent local Mailpit delivery as external email delivery or VNU SSO.
 - **Don't** replace the sourced university icon with a fabricated university seal.
