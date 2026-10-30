@@ -2,6 +2,8 @@
 
 Adapter tài khoản hỗ trợ `MAIL_PROVIDER=gmail` để gửi xác nhận email và đặt lại mật khẩu qua Gmail SMTP, dùng cùng liên kết một lần có thời hạn 30 phút. Không cần domain gửi riêng cho phương án này.
 
+Mở liên kết xác nhận email sẽ xác thực token ngay và hiện thông báo thành công, không cần bấm thêm nút. Token vẫn dùng một lần; liên kết sai, hết hạn hoặc đã dùng hiện thông báo lỗi. Mở liên kết reset chỉ hiện form nhập mật khẩu mới, không tự thay đổi mật khẩu.
+
 Cấu hình server:
 
 ```dotenv
