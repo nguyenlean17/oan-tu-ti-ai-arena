@@ -1,0 +1,11 @@
+{
+  "event": "e34145d3-bdfa-4221-be34-c296782393d1",
+  "url": "https://oan-tu-ti-ai-arena.vercel.app/competition#e34145d3-bdfa-4221-be34-c296782393d1",
+  "name": "QA workflow — 2 competitors — 2026-10-30 13:19",
+  "method": "Independent agent A: fresh temporary browser tab, actual UI creation from homepage, existing organizer login, one create submission, resulting visible event URL and saved state.",
+  "result": "PASS: opened automatically, accepting submissions, direct enrollment, one group, two qualifiers, deadline 2026-11-03 18:00 local, maxPlies 40.",
+  "hostUxVerdict": "Creation functional and discoverable. Post-create guidance is weaker: self-enrollment and expanded JSON precede inviting competitors; no visible copy/share link action.",
+  "nielsenScoresOutOf4": {"status":3,"realWorldMatch":2,"control":3,"consistency":2,"prevention":2,"recognition":2,"efficiency":3,"minimalism":2,"recovery":2,"help":2},
+  "limitations": "Desktop organizer path only. One deadline reversion observed after opening advanced disclosure; manual reproduction and cause unproven. Final date verified saved correctly. No implementation changes, builds, deployments or lifecycle transitions beyond creating/opening event.",
+  "screenshot": ".impeccable/review/workflow-host.png"
+}

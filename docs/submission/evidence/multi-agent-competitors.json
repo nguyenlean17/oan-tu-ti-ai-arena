@@ -1,0 +1,357 @@
+{
+  "site": "https://oan-tu-ti-ai-arena.vercel.app",
+  "event": "e34145d3-bdfa-4221-be34-c296782393d1",
+  "accounts": [
+    {
+      "id": "vercel_7f195a5c-28eb-4578-9d26-7b3720dba2c0",
+      "email": "workflow-competitor-1-3a2f0220@vnu.edu.vn",
+      "discoveredAt": "2026-10-29T23:20:49.546Z",
+      "joinedAt": "2026-10-29T23:21:00.517Z",
+      "fromHomepage": true,
+      "noDeepLinkBeforeDiscovery": true,
+      "joinWithoutCode": true,
+      "prefilledStarter": true,
+      "submittedAt": "2026-10-29T23:21:00.517Z",
+      "completionObservedAt": "2026-10-29T23:21:18.436Z",
+      "completionObservedAfterMs": 17919,
+      "firstSubmissionPrefix": "763337fd",
+      "firstShaPrefix": "87198c4b",
+      "validation": "valid",
+      "trial": {
+        "completed": 2,
+        "wins": 0,
+        "draws": 1,
+        "losses": 1
+      },
+      "replayAdvanced": {
+        "from": 0,
+        "to": 1,
+        "total": 40
+      },
+      "reloadedPersisted": true,
+      "repeatedUIClickSameReceipt": true,
+      "revisionSubmittedAt": "2026-10-29T23:21:53.126Z",
+      "revisionSubmissionPrefix": "80a08456",
+      "revisionShaPrefix": "0eda87af",
+      "revisionCompletionObservedAt": "2026-10-29T23:22:30.314Z",
+      "revisionTrial": {
+        "completed": 2,
+        "wins": 0,
+        "draws": 2,
+        "losses": 0
+      },
+      "revisionValid": true
+    },
+    {
+      "id": "vercel_7ae285bd-9441-48b1-acba-fb10285ce921",
+      "email": "workflow-competitor-2-3a2f0220@vnu.edu.vn",
+      "discoveredAt": "2026-10-29T23:22:53.052Z",
+      "joinedAt": "2026-10-29T23:23:06.664Z",
+      "fromHomepage": true,
+      "noDeepLinkBeforeDiscovery": true,
+      "joinWithoutCode": true,
+      "prefilledStarter": true,
+      "noOtherAccountHistory": true,
+      "submittedAt": "2026-10-29T23:23:06.664Z",
+      "completionObservedAt": "2026-10-29T23:23:27.377Z",
+      "completionObservedAfterMs": 20713,
+      "firstSubmissionPrefix": "6639910a",
+      "firstShaPrefix": "87198c4b",
+      "validation": "valid",
+      "trial": {
+        "completed": 2,
+        "wins": 0,
+        "draws": 1,
+        "losses": 1
+      },
+      "replayAdvanced": {
+        "from": 0,
+        "to": 1,
+        "total": 32
+      },
+      "reloadedPersisted": true,
+      "repeatedUIClickSameReceipt": true
+    }
+  ],
+  "completedAt": "2026-10-29T23:24:41.441Z",
+  "verdict": "PASS for both ordinary student browser loops, receipt deduplication, repeat enrollment and account separation. UI clarity has minor caveats; no workflow blocker encountered.",
+  "scope": "Fresh event stays open; server trial games against starter_config, not official tournament standings. No install, build, deployment, image/runtime download or direct production database access.",
+  "apiEvidence": {
+    "at": "2026-10-29T23:24:13.412Z",
+    "event": "e34145d3-bdfa-4221-be34-c296782393d1",
+    "accounts": [
+      {
+        "id": "vercel_7f195a5c-28eb-4578-9d26-7b3720dba2c0",
+        "email": "workflow-competitor-1-3a2f0220@vnu.edu.vn",
+        "is_admin": 0,
+        "verificationRequired": false,
+        "teams": [
+          {
+            "id": "8c933d4e-5291-4be5-a0fa-83c9825072d5",
+            "name": "Đội Competitor 1 3a2f0220 · a2c0",
+            "members": [
+              {
+                "email": "workflow-competitor-1-3a2f0220@vnu.edu.vn",
+                "name": "Competitor 1 3a2f0220"
+              }
+            ]
+          }
+        ],
+        "rejoin": {
+          "returnedTeam": "8c933d4e-5291-4be5-a0fa-83c9825072d5",
+          "before": 1,
+          "after": 1,
+          "sameTeam": true
+        },
+        "owned": "8c933d4e-5291-4be5-a0fa-83c9825072d5",
+        "canManage": false,
+        "submissions": [
+          {
+            "id": "80a08456-4164-4f16-a5ad-91283eba2c46",
+            "sha": "0eda87afd14a6895e68136ed22d269b1eb5c00b4ea882418263e2d3b37c3e087",
+            "status": "valid",
+            "verdict": "Đạt kiểm tra cơ bản ở hai phía. Mỗi trận vẫn áp dụng giới hạn tài nguyên."
+          },
+          {
+            "id": "763337fd-deb4-4477-9b24-b57523f750fb",
+            "sha": "87198c4be42a5a90c4baca71c8c124f75f3e857fe845fce14a9f3de7927eddb2",
+            "status": "valid",
+            "verdict": "Đạt kiểm tra cơ bản ở hai phía. Mỗi trận vẫn áp dụng giới hạn tài nguyên."
+          }
+        ],
+        "benchmarks": [
+          {
+            "id": "submission-80a08456-4164-4f16-a5ad-91283eba2c46-starter_config",
+            "event": "e34145d3-bdfa-4221-be34-c296782393d1",
+            "submission": "80a08456-4164-4f16-a5ad-91283eba2c46",
+            "sha": "0eda87afd14a6895e68136ed22d269b1eb5c00b4ea882418263e2d3b37c3e087",
+            "summary": {
+              "expected": 2,
+              "completed": 2,
+              "wins": 0,
+              "draws": 2,
+              "losses": 0,
+              "measuredGames": 2,
+              "meanGameMs": 575
+            },
+            "games": [
+              {
+                "id": "ops-trial-5b659f78fd8d058b0544682f741a3e39f1958d480010f96307053cddb8f676d8",
+                "status": "done",
+                "studentSide": "P2",
+                "result": {
+                  "winner": null,
+                  "reason": "max_plies",
+                  "moves": 40,
+                  "runtime": "cpython-3.15.0-wasmtime-50.0.1-v1",
+                  "engine": "ott-board-1.0",
+                  "p1sha": "d6daca083bfbe997095fc8edd7645b03a4fb7cc7585509a1602037cf82fd61bf",
+                  "p2sha": "0eda87afd14a6895e68136ed22d269b1eb5c00b4ea882418263e2d3b37c3e087"
+                }
+              },
+              {
+                "id": "ops-trial-6c44790ecf0eaa7d9282715753eaa5a7672b89e79477bc5377bd4fa4e24ce9e1",
+                "status": "done",
+                "studentSide": "P1",
+                "result": {
+                  "winner": null,
+                  "reason": "max_plies",
+                  "moves": 40,
+                  "runtime": "cpython-3.15.0-wasmtime-50.0.1-v1",
+                  "engine": "ott-board-1.0",
+                  "p1sha": "0eda87afd14a6895e68136ed22d269b1eb5c00b4ea882418263e2d3b37c3e087",
+                  "p2sha": "d6daca083bfbe997095fc8edd7645b03a4fb7cc7585509a1602037cf82fd61bf"
+                }
+              }
+            ]
+          },
+          {
+            "id": "submission-763337fd-deb4-4477-9b24-b57523f750fb-starter_config",
+            "event": "e34145d3-bdfa-4221-be34-c296782393d1",
+            "submission": "763337fd-deb4-4477-9b24-b57523f750fb",
+            "sha": "87198c4be42a5a90c4baca71c8c124f75f3e857fe845fce14a9f3de7927eddb2",
+            "summary": {
+              "expected": 2,
+              "completed": 2,
+              "wins": 0,
+              "draws": 1,
+              "losses": 1,
+              "measuredGames": 2,
+              "meanGameMs": 578
+            },
+            "games": [
+              {
+                "id": "ops-trial-c1cee29c29779159644fd8886a84847e2fc4049dd3268cef33b28105702d7d7a",
+                "status": "done",
+                "studentSide": "P2",
+                "result": {
+                  "winner": null,
+                  "reason": "max_plies",
+                  "moves": 40,
+                  "runtime": "cpython-3.15.0-wasmtime-50.0.1-v1",
+                  "engine": "ott-board-1.0",
+                  "p1sha": "d6daca083bfbe997095fc8edd7645b03a4fb7cc7585509a1602037cf82fd61bf",
+                  "p2sha": "87198c4be42a5a90c4baca71c8c124f75f3e857fe845fce14a9f3de7927eddb2"
+                }
+              },
+              {
+                "id": "ops-trial-dbd7d189b5b733c1105bbede42c14b2f921412bfd728a4d3e3653706eb4366f3",
+                "status": "done",
+                "studentSide": "P1",
+                "result": {
+                  "winner": "P2",
+                  "reason": "goal",
+                  "moves": 32,
+                  "runtime": "cpython-3.15.0-wasmtime-50.0.1-v1",
+                  "engine": "ott-board-1.0",
+                  "p1sha": "87198c4be42a5a90c4baca71c8c124f75f3e857fe845fce14a9f3de7927eddb2",
+                  "p2sha": "d6daca083bfbe997095fc8edd7645b03a4fb7cc7585509a1602037cf82fd61bf"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "vercel_7ae285bd-9441-48b1-acba-fb10285ce921",
+        "email": "workflow-competitor-2-3a2f0220@vnu.edu.vn",
+        "is_admin": 0,
+        "verificationRequired": false,
+        "teams": [
+          {
+            "id": "ba017851-7035-4795-9b3b-93b2604a3d8c",
+            "name": "Đội Competitor 2 3a2f0220 · e921",
+            "members": [
+              {
+                "email": "workflow-competitor-2-3a2f0220@vnu.edu.vn",
+                "name": "Competitor 2 3a2f0220"
+              }
+            ]
+          }
+        ],
+        "rejoin": {
+          "returnedTeam": "ba017851-7035-4795-9b3b-93b2604a3d8c",
+          "before": 1,
+          "after": 1,
+          "sameTeam": true
+        },
+        "owned": "ba017851-7035-4795-9b3b-93b2604a3d8c",
+        "canManage": false,
+        "submissions": [
+          {
+            "id": "6639910a-7f5c-461c-b129-202c7c038295",
+            "sha": "87198c4be42a5a90c4baca71c8c124f75f3e857fe845fce14a9f3de7927eddb2",
+            "status": "valid",
+            "verdict": "Đạt kiểm tra cơ bản ở hai phía. Mỗi trận vẫn áp dụng giới hạn tài nguyên."
+          }
+        ],
+        "benchmarks": [
+          {
+            "id": "submission-6639910a-7f5c-461c-b129-202c7c038295-starter_config",
+            "event": "e34145d3-bdfa-4221-be34-c296782393d1",
+            "submission": "6639910a-7f5c-461c-b129-202c7c038295",
+            "sha": "87198c4be42a5a90c4baca71c8c124f75f3e857fe845fce14a9f3de7927eddb2",
+            "summary": {
+              "expected": 2,
+              "completed": 2,
+              "wins": 0,
+              "draws": 1,
+              "losses": 1,
+              "measuredGames": 2,
+              "meanGameMs": 380
+            },
+            "games": [
+              {
+                "id": "ops-trial-72760416f83bbb210ab0ff9e5378dc9ccf8cba4f2f20c887673cfd3e143ec5a8",
+                "status": "done",
+                "studentSide": "P2",
+                "result": {
+                  "winner": null,
+                  "reason": "max_plies",
+                  "moves": 40,
+                  "runtime": "cpython-3.15.0-wasmtime-50.0.1-v1",
+                  "engine": "ott-board-1.0",
+                  "p1sha": "d6daca083bfbe997095fc8edd7645b03a4fb7cc7585509a1602037cf82fd61bf",
+                  "p2sha": "87198c4be42a5a90c4baca71c8c124f75f3e857fe845fce14a9f3de7927eddb2"
+                }
+              },
+              {
+                "id": "ops-trial-ce46d481e2813c399d26f1254e3aeb797c223489a476bdfa8a4f1de9c1967560",
+                "status": "done",
+                "studentSide": "P1",
+                "result": {
+                  "winner": "P2",
+                  "reason": "goal",
+                  "moves": 32,
+                  "runtime": "cpython-3.15.0-wasmtime-50.0.1-v1",
+                  "engine": "ott-board-1.0",
+                  "p1sha": "87198c4be42a5a90c4baca71c8c124f75f3e857fe845fce14a9f3de7927eddb2",
+                  "p2sha": "d6daca083bfbe997095fc8edd7645b03a4fb7cc7585509a1602037cf82fd61bf"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "measuredResponseBodyBytes": 40001
+  },
+  "totals": {
+    "ordinaryCompetitors": 2,
+    "separateTeams": 2,
+    "validSubmissions": 3,
+    "pairedTrials": 3,
+    "realTrialGames": 6,
+    "failedGames": 0,
+    "repeatUIClicksCreatedNoNewSubmission": true,
+    "repeatJoinCreatedNoNewMembership": true
+  },
+  "assessmentB": {
+    "detectorRunOnce": true,
+    "target": [
+      "app/competition",
+      "app/student",
+      "app/page.tsx"
+    ],
+    "counts": {
+      "border-accent-on-rounded": 1,
+      "design-system-color": 29,
+      "design-system-font-size": 29,
+      "design-system-radius": 3
+    },
+    "total": 62,
+    "severity": {
+      "warning": 1,
+      "advisory": 61
+    },
+    "browserInspected": true,
+    "overlayInjected": false,
+    "overlaySkipReason": "Task forbids injection/overlays; CUA evaluate is read-only. No live server was started.",
+    "caveats": [
+      "Source scan does not establish deployed pixel behavior or accessibility conformance.",
+      "Color/font/radius findings mostly compare implementation with incomplete documented scale, not functional failures. Board-side colors intentionally preserve incumbent game semantics.",
+      "12px!important radius flag appears parser-related: the documented event radius is12px.",
+      "The 3px border warning may be intentional tab/accent emphasis; it did not block completion."
+    ],
+    "observations": [
+      "Successful first-time homepage discovery; fresh event was first in open-event list.",
+      "Own prefilled source and empty history appeared for competitor2 after competitor1 revised code.",
+      "Automatic receipt, valid verdict, paired outcomes and next replay/edit action are clear.",
+      "After repeat submission, receipt copy says two games were queued even when old completed trial is reused; explanatory dedup note helps, but transient wording may suggest a new run.",
+      "Loading temporarily labels signed-in students as guest and shows Sign in until profile fetch resolves.",
+      "Multiple submit/check/benchmark controls require more reading than the combined primary action; no wrong choice occurred."
+    ]
+  },
+  "limits": [
+    "Desktop only; no mobile viewport, keyboard-only, screen reader or slow-network simulation.",
+    "No intentionally invalid Python, quota exhaustion, concurrent two-browser collision or cancellation tested.",
+    "Official event freeze, schedule, publication and standings untouched.",
+    "Completion timings are click-to-first-observed completed UI upper bounds; include tool/observation delay and are not judge execution durations.",
+    "API response bytes only: first supplementary snapshot31968 +final40001 bytes; excludes auth POST response bodies, browser traffic and registration transfer."
+  ],
+  "screenshot": {
+    "path": ".impeccable/review/workflow-competitor.png",
+    "bytes": 81838
+  },
+  "credentialStorage": "Ignored .secrets/workflow-competitors.json; no passwords or cookies in this evidence."
+}
