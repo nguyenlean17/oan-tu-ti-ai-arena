@@ -152,6 +152,7 @@ Các bài kiểm thử cần database, Docker hoặc worker phải được chu�
 - [Setup local, LAN, backup và chuyển dữ liệu](deploy/LOCAL_POSTGRES.md)
 - [Dashboard vận hành và kiểm thử tải](docs/OPERATIONS.md)
 - [Quản lý tài khoản, đội và email](docs/STUDENT_PORTAL.md)
+- [Gửi email bằng Gmail SMTP](docs/GMAIL_SMTP.md)
 - [Công cụ sinh viên, bot mẫu và Elo](docs/STUDENT_TOOLS.md)
 - [Cấu hình demo tự tổ chức và Resend](docs/DEMO_OPEN_RESEND.md)
 - [PDF hướng dẫn sử dụng](docs/huong-dan-su-dung-ai-arena.pdf)
